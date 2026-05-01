@@ -95,8 +95,12 @@ jobs:
       # together. With `id-token: write` set above and a Trusted Publisher
       # configured for `deepsec` on npmjs.com (see comment at top of file),
       # npm exchanges the GitHub OIDC token for a publish credential at
-      # publish time. --provenance signs the build with the same OIDC
-      # identity. No NPM_TOKEN / NODE_AUTH_TOKEN secret is consulted.
+      # publish time. No NPM_TOKEN / NODE_AUTH_TOKEN secret is consulted.
+      #
+      # Note: --provenance is intentionally OFF. npm rejects provenance
+      # uploads from repos whose GitHub visibility is "internal" or "private"
+      # (E422 "Unsupported GitHub Actions source repository visibility").
+      # Add --provenance once the repo is flipped to "public".
       - if: steps.ver.outputs.publish == 'true'
         working-directory: packages/deepsec
-        run: npm publish --provenance --access public
+        run: npm publish --access public

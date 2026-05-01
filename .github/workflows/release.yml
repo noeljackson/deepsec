@@ -1,5 +1,24 @@
 name: Release
 
+# Publishes `deepsec` to npm via OIDC Trusted Publishing — no NPM_TOKEN
+# secret in the repo. The workflow proves its identity via a GitHub OIDC
+# token; npm verifies it against a Trusted Publisher you register on
+# npmjs.com.
+#
+# One-time setup on npmjs.com:
+#   1. Visit https://www.npmjs.com/package/deepsec/access (must be a
+#      maintainer of the package).
+#   2. Under "Publishing access" → "Trusted Publisher", click Configure.
+#   3. Pick "GitHub Actions" and fill in:
+#        Organization or user:  vercel-labs
+#        Repository:            deepsec
+#        Workflow filename:     release.yml
+#        Environment name:      (leave blank)
+#   4. Save. From this point on, this workflow can publish without a token.
+#
+# Once a Trusted Publisher is set, an npm 2FA "automation" requirement is
+# satisfied by the OIDC exchange — no separate write-OTP needed.
+#
 # Fires on every push to main. The paths filter narrows it to commits that
 # touch the publish surface — the package.json (where the version lives) or
 # the workflow itself. The version-vs-npm comparison below is the real gate;
@@ -66,12 +85,18 @@ jobs:
       - if: steps.ver.outputs.publish == 'true'
         run: pnpm install --frozen-lockfile
 
+      # Trusted Publishing requires npm CLI ≥ 11.5.1. Node 24 LTS ships a
+      # recent npm but the patch level drifts; upgrade to latest to be safe.
+      - if: steps.ver.outputs.publish == 'true'
+        run: npm install -g npm@latest
+
       # `npm publish` runs the package's prepublishOnly hook (`pnpm -w validate`)
       # and then prepack (`pnpm bundle`) — full validation + fresh bundle ship
-      # together. With `id-token: write` and a Trusted Publisher configured for
-      # the `deepsec` package on npmjs.com pointing at this workflow, no
-      # NPM_TOKEN secret is needed: --provenance signs the build with the
-      # OIDC-issued token and authenticates the publish in the same exchange.
+      # together. With `id-token: write` set above and a Trusted Publisher
+      # configured for `deepsec` on npmjs.com (see comment at top of file),
+      # npm exchanges the GitHub OIDC token for a publish credential at
+      # publish time. --provenance signs the build with the same OIDC
+      # identity. No NPM_TOKEN / NODE_AUTH_TOKEN secret is consulted.
       - if: steps.ver.outputs.publish == 'true'
         working-directory: packages/deepsec
         run: npm publish --provenance --access public

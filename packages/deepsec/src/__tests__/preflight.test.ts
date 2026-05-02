@@ -30,6 +30,10 @@ describe("assertAgentCredential", () => {
   it("throws actionable message for claude-agent-sdk when no token", () => {
     expect(() => assertAgentCredential("claude-agent-sdk")).toThrow(/ANTHROPIC_AUTH_TOKEN/);
     expect(() => assertAgentCredential("claude-agent-sdk")).toThrow(/\.env\.local/);
+    expect(() => assertAgentCredential("claude-agent-sdk")).toThrow(/AI_GATEWAY_API_KEY/);
+    expect(() => assertAgentCredential("claude-agent-sdk")).toThrow(
+      /https:\/\/github\.com\/vercel-labs\/deepsec\/blob\/main\/docs\/vercel-setup\.md/,
+    );
   });
 
   it("passes for codex when OPENAI_API_KEY is set", () => {
@@ -44,6 +48,10 @@ describe("assertAgentCredential", () => {
 
   it("throws for codex when no token", () => {
     expect(() => assertAgentCredential("codex")).toThrow(/OPENAI_API_KEY/);
+    expect(() => assertAgentCredential("codex")).toThrow(/AI_GATEWAY_API_KEY/);
+    expect(() => assertAgentCredential("codex")).toThrow(
+      /https:\/\/github\.com\/vercel-labs\/deepsec\/blob\/main\/docs\/vercel-setup\.md/,
+    );
   });
 
   it("skips the credential check for custom plugin agents", () => {
@@ -87,6 +95,9 @@ describe("assertSandboxCredential", () => {
   it("throws actionable message when nothing is set", () => {
     expect(() => assertSandboxCredential()).toThrow(/vercel link/);
     expect(() => assertSandboxCredential()).toThrow(/VERCEL_OIDC_TOKEN/);
+    expect(() => assertSandboxCredential()).toThrow(
+      /https:\/\/github\.com\/vercel-labs\/deepsec\/blob\/main\/docs\/vercel-setup\.md/,
+    );
   });
 
   it("names every missing access-token piece", () => {

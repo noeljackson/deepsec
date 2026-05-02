@@ -8,7 +8,12 @@
 // from upstream as if it were a model issue. Each variant has cost the
 // human time before, so we trade ~20 lines for a clear message up front.
 
-const SETUP_DOC = "docs/vercel-setup.md";
+// Linkable URL — printed in error messages so users can paste the
+// URL into a browser instead of hunting through the repo. Points at
+// the rendered `main` version on github.com so it works whether the
+// CLI was invoked from inside the source repo, from an installed
+// package, or in CI.
+const SETUP_DOC_URL = "https://github.com/vercel-labs/deepsec/blob/main/docs/vercel-setup.md";
 
 // Vercel AI Gateway endpoints. The Anthropic adapter is at the root; the
 // OpenAI-compatible adapter is at /v1 (codex appends /responses to it).
@@ -69,16 +74,28 @@ export function assertAgentCredential(agentType: string | undefined): void {
     if (openai || anthropic) return;
     throw new Error(
       `Missing AI credentials for --agent codex.\n` +
-        `  Set OPENAI_API_KEY (preferred) or ANTHROPIC_AUTH_TOKEN in .env.local.\n` +
-        `  See ${SETUP_DOC} for AI Gateway setup.`,
+        `\n` +
+        `  Quickest fix — get a Vercel AI Gateway key (covers both Claude\n` +
+        `  and Codex with one token) and add it to .env.local:\n` +
+        `\n` +
+        `      AI_GATEWAY_API_KEY=vck_…\n` +
+        `\n` +
+        `  Or set OPENAI_API_KEY directly. Full setup:\n` +
+        `      ${SETUP_DOC_URL}`,
     );
   }
 
   if (anthropic) return;
   throw new Error(
     `Missing AI credentials for --agent ${agentType ?? "claude-agent-sdk"}.\n` +
-      `  Set ANTHROPIC_AUTH_TOKEN in .env.local.\n` +
-      `  See ${SETUP_DOC} for AI Gateway setup.`,
+      `\n` +
+      `  Quickest fix — get a Vercel AI Gateway key (covers both Claude\n` +
+      `  and Codex with one token) and add it to .env.local:\n` +
+      `\n` +
+      `      AI_GATEWAY_API_KEY=vck_…\n` +
+      `\n` +
+      `  Or set ANTHROPIC_AUTH_TOKEN directly. Full setup:\n` +
+      `      ${SETUP_DOC_URL}`,
   );
 }
 
@@ -104,9 +121,14 @@ export function assertSandboxCredential(): void {
 
   throw new Error(
     `Missing Vercel Sandbox credentials.\n` +
-      `  Recommended: run \`npx vercel link\` then \`npx vercel env pull\` to\n` +
-      `  populate VERCEL_OIDC_TOKEN in .env.local.\n` +
-      `  Alternative: set ${missing.join(", ")} (access-token mode).\n` +
-      `  See ${SETUP_DOC}.`,
+      `\n` +
+      `  Recommended: run these to populate VERCEL_OIDC_TOKEN in .env.local:\n` +
+      `\n` +
+      `      npx vercel link\n` +
+      `      npx vercel env pull\n` +
+      `\n` +
+      `  Alternative — access-token mode: set ${missing.join(", ")}.\n` +
+      `\n` +
+      `  Full setup: ${SETUP_DOC_URL}`,
   );
 }

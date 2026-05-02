@@ -192,6 +192,33 @@ function fingerprint(value: string | undefined): string {
   return `${value.slice(0, 4)}…`;
 }
 
+/**
+ * Pack the local `packages/deepsec` into a `.tgz` tarball — same format
+ * `npm publish` would ship. Returns the absolute path to the produced
+ * file. Used by the live-sandbox test to substitute the local source
+ * for the npm-published `deepsec` dep, so a version bump in HEAD
+ * doesn't break the test waiting for npm to catch up.
+ */
+function packLocalDeepsec(destDir: string): string {
+  fs.mkdirSync(destDir, { recursive: true });
+  const result = spawnSync("npm", ["pack", "--silent", "--pack-destination", destDir], {
+    cwd: path.join(ROOT, "packages/deepsec"),
+    encoding: "utf-8",
+    timeout: 60_000,
+  });
+  if (result.status !== 0) {
+    throw new Error(
+      `npm pack failed (exit ${result.status}):\nstdout: ${result.stdout}\nstderr: ${result.stderr}`,
+    );
+  }
+  // npm pack --silent prints just the filename to stdout, e.g. `deepsec-1.1.7.tgz\n`.
+  const filename = result.stdout.trim().split("\n").pop() ?? "";
+  if (!filename?.endsWith(".tgz")) {
+    throw new Error(`npm pack did not produce a .tgz (stdout: ${JSON.stringify(result.stdout)})`);
+  }
+  return path.join(destDir, filename);
+}
+
 describe.skipIf(!SHOULD_RUN)("pipeline e2e — live sandbox", () => {
   beforeAll(() => {
     const realBundle = path.join(ROOT, "packages/deepsec/dist/cli.mjs");
@@ -228,7 +255,21 @@ describe.skipIf(!SHOULD_RUN)("pipeline e2e — live sandbox", () => {
         );
         expect(init.status).toBe(0);
 
-        // 2. Drop the stub plugin + register it. Same shape as
+        // 2. Substitute the scaffolded `"deepsec": "^x.y.z"` (which
+        // points at npm) with a `file:` reference to a tarball of the
+        // local source. Otherwise: every version bump in HEAD breaks
+        // this test until npm catches up — `pnpm install` inside the
+        // sandbox can't resolve a version that hasn't been published
+        // yet. With `file:./deepsec-x.y.z.tgz`, the sandbox uses
+        // exactly the code in this branch, every run.
+        const tarballPath = packLocalDeepsec(workspaceDir);
+        const tarballName = path.basename(tarballPath);
+        const pkgPath = path.join(workspaceDir, "package.json");
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
+        pkg.dependencies.deepsec = `file:./${tarballName}`;
+        fs.writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
+
+        // 3. Drop the stub plugin + register it. Same shape as
         // pipeline.test.ts — the plugin file ships into the sandbox
         // via the `.deepsec/` tarball, so the worker imports it
         // alongside `deepsec.config.ts`.

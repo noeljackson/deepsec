@@ -194,7 +194,11 @@ export function buildWorkerNetworkPolicy(
 
   const allow: Record<string, NetworkPolicyRule[]> = {
     [aiHost]: injectToken
-      ? [{ transform: [{ headers: { authorization: `Bearer ${injectToken}` } }] }]
+      ? [
+          {
+            transform: [{ headers: { authorization: `Bearer ${injectToken}` } }],
+          },
+        ]
       : [],
   };
   for (const h of extraAllow) {
@@ -215,6 +219,16 @@ interface BootstrapOptions {
   mode: DeepsecMode;
   bundle: UploadBundle;
   onLog: (msg: string) => void;
+}
+
+function getNonOidcCreds() {
+  if (process.env.VERCEL_TEAM_ID && process.env.VERCEL_PROJECT_ID && process.env.VERCEL_TOKEN) {
+    return {
+      teamId: process.env.VERCEL_TEAM_ID,
+      projectId: process.env.VERCEL_PROJECT_ID,
+      token: process.env.VERCEL_TOKEN,
+    };
+  }
 }
 
 /**
@@ -239,6 +253,7 @@ export async function createBootstrapSnapshot(opts: BootstrapOptions): Promise<s
       env: sandboxEnv,
       resources: { vcpus: opts.vcpus },
       timeout: opts.timeout,
+      ...getNonOidcCreds(),
     });
   } catch (err: any) {
     throw new Error(`Sandbox.create failed: ${err?.message ?? String(err)}`);
@@ -363,6 +378,7 @@ export async function spawnFromSnapshot(opts: SpawnOptions): Promise<Sandbox> {
       resources: { vcpus: opts.vcpus },
       timeout: opts.timeout,
       networkPolicy,
+      ...getNonOidcCreds(),
     });
   } catch (err: any) {
     const details = [err?.message];

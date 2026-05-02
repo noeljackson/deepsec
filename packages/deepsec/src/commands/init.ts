@@ -89,7 +89,7 @@ export function initCommand(opts: InitOpts) {
   console.log(`  ${DIM}# Set AI_GATEWAY_API_KEY in .env.local${RESET}`);
   console.log();
   console.log(
-    `  ${YELLOW}Paste this into your coding agent${RESET} ${DIM}(Claude Code, Cursor, Codex CLI):${RESET}`,
+    `  ${YELLOW}Paste this into your coding agent${RESET} ${DIM}(Claude Code, Cursor, Codex, OpenCode, Pi, etc.):${RESET}`,
   );
   console.log();
   printAgentPrompt(registered.id, registered.targetRel);

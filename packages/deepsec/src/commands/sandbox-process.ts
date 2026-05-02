@@ -1,16 +1,10 @@
 import { BOLD, CYAN, DIM, GREEN, RED, RESET } from "../formatters.js";
+import { assertAgentCredential, assertSandboxCredential } from "../preflight.js";
 import { resolveProjectId } from "../resolve-project-id.js";
 import { checkStatus, collect, launch, orchestrate } from "../sandbox/orchestrator.js";
 import type { SandboxConfig, SandboxSubcommand } from "../sandbox/types.js";
 
-const VALID_COMMANDS: SandboxSubcommand[] = [
-  "process",
-  "revalidate",
-  "triage",
-  "enrich",
-  "scan",
-  "report",
-];
+const VALID_COMMANDS: SandboxSubcommand[] = ["process", "revalidate", "triage", "scan", "report"];
 
 interface SandboxOpts {
   projectId?: string;
@@ -146,6 +140,13 @@ export async function sandboxCommand(subcommand: string, opts: SandboxOpts) {
 
   const projectId = resolveProjectId(opts.projectId);
   const config = buildConfig(subcommand as SandboxSubcommand, projectId, opts);
+
+  // Preflight: fail fast with an actionable message before we spend ~30s
+  // on a doomed bootstrap sandbox. The credential brokering path needs
+  // both a Vercel auth token (to create the sandbox) and an AI token (to
+  // inject into the firewall transform).
+  assertSandboxCredential();
+  assertAgentCredential(config.agentType);
 
   console.log(
     `${BOLD}Sandbox${RESET} — ${CYAN}${config.command}${RESET} — ${BOLD}${config.projectId}${RESET}`,

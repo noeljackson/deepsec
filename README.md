@@ -94,14 +94,16 @@ Both agent backends route through Vercel AI Gateway by default, but you can prov
 your own API keys, of course. The AI Gateway has default quotas suitable for highly concurrent research.
 
 ```
-ANTHROPIC_AUTH_TOKEN=vck_...
-ANTHROPIC_BASE_URL=https://ai-gateway.vercel.sh
-OPENAI_BASE_URL=https://ai-gateway.vercel.sh/v1
+AI_GATEWAY_API_KEY=vck_...
 ```
 
-See [docs/vercel-setup.md](docs/vercel-setup.md) for getting a key
-and for the Vercel Sandbox setup. To bypass the gateway, define
-`ANTHROPIC_BASE_URL` or `OPENAI_API_KEY` with their respective provider values.
+That single key covers both Claude and Codex; deepsec expands it into
+the `ANTHROPIC_AUTH_TOKEN` / `OPENAI_API_KEY` / `*_BASE_URL` quartet
+the SDKs read. See [docs/vercel-setup.md](docs/vercel-setup.md) for
+getting a key and for the Vercel Sandbox setup. To bypass the
+gateway, set `ANTHROPIC_AUTH_TOKEN` + `ANTHROPIC_BASE_URL` (or the
+OpenAI pair) explicitly — explicit values always win over the
+`AI_GATEWAY_API_KEY` expansion.
 
 ## Severity levels
 
@@ -147,6 +149,17 @@ Needs a Vercel account. The local working tree is tarballed and
 uploaded; `.git` is excluded. Both OIDC tokens (local) and access
 tokens (CI) are supported — see
 [docs/vercel-setup.md](docs/vercel-setup.md).
+
+## Security model of deepsec itself
+
+Treat `deepsec` like a coding agent with full shell access on the enviroment that it is
+running on. It is designed to run on trusted inputs (your source code) but you may still
+be concerned about prompt injection due to external dependencies or vendored code.
+
+Running on a sandbox (see above) does limit the potential exposure substantially:
+
+- The API keys for the coding agents are injected outside of the sandbox and hence cannot be exfiltrated
+- For the worker sandboxes, network egress from the sandbox is limited to coding agent hosts (Egress is allowed during the bootstrap process, but this does not run the coding agent)
 
 ## Workflow reference
 

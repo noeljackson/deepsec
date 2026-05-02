@@ -181,6 +181,17 @@ function runBundleCapture(args: string[], cwd: string, timeoutMs: number, tmp: s
   };
 }
 
+/**
+ * Truncate a credential to its first 4 chars (or shorter) for log
+ * lines. Lets us assert in CI logs that the right secret made it
+ * through without leaking the rest. Returns "<unset>" when missing
+ * so a typo in secret naming surfaces visibly.
+ */
+function fingerprint(value: string | undefined): string {
+  if (!value) return "<unset>";
+  return `${value.slice(0, 4)}…`;
+}
+
 describe.skipIf(!SHOULD_RUN)("pipeline e2e — live sandbox", () => {
   beforeAll(() => {
     const realBundle = path.join(ROOT, "packages/deepsec/dist/cli.mjs");
@@ -190,6 +201,14 @@ describe.skipIf(!SHOULD_RUN)("pipeline e2e — live sandbox", () => {
     if (LIVE && !HAS_SANDBOX_KEY) {
       console.warn("DEEPSEC_E2E_LIVE_SANDBOX=1 but no Vercel Sandbox key — skipping.");
     }
+    // Fingerprint the Vercel creds so CI logs confirm we got the
+    // right secrets without exposing them. First 4 chars only.
+    console.log(
+      `[live-sandbox] creds: teamId=${fingerprint(process.env.VERCEL_TEAM_ID)} ` +
+        `projectId=${fingerprint(process.env.VERCEL_PROJECT_ID)} ` +
+        `token=${fingerprint(process.env.VERCEL_TOKEN)} ` +
+        `oidc=${fingerprint(process.env.VERCEL_OIDC_TOKEN)}`,
+    );
   });
 
   it(

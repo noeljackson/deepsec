@@ -11,36 +11,18 @@ where it left off.
 
 ## Get started
 
-deepsec is polyglot (TS, Go, Python, Lua, Terraform, …). It lives in
-a `.deepsec/` directory at the root of the codebase you scan —
-checked into the same git repo, so the config, project context
-(auth shape, threat model), and per-project setup prompts travel
-with the code. Generated scan output (findings, run metadata) stays
-gitignored.
-
-From the root of the codebase you want to scan:
+Navigate to the root of the repository that you want to scan, then:
 
 ```bash
 npx deepsec init       # creates .deepsec/ with this repo as the first project
 cd .deepsec
 pnpm install           # installs deepsec from npm
+
+# Proceed as instructed by `init` output
 ```
 
-The scaffold is minimal: `deepsec.config.ts` (one `projects[]` entry
-pointing at `..`), `data/<id>/INFO.md` (template — repo context that
-gets injected into every AI prompt), `data/<id>/SETUP.md` (per-project
-agent setup prompt), `package.json`, `AGENTS.md`, `.env.local`,
-`.gitignore`. No custom matchers by default — add them later when a
-real finding suggests one.
-
-Two things to do before scanning:
-
-**1. Paste your AI Gateway, Anthropic, or OpenAI token into `.env.local`.** See
-[docs/vercel-setup.md](docs/vercel-setup.md) for how to get started.
-
-**2. Have your coding agent fill in `data/<id>/INFO.md`.** Open the
-codebase in Claude Code / Cursor / Codex CLI / etc., then paste this
-prompt (replace `<id>` with the project id `init` printed):
+Now have your coding agent bootstrap your installation. Open the agent of choice
+and prompt:
 
 > Read `.deepsec/node_modules/deepsec/SKILL.md` to understand the
 > tool. Then read `.deepsec/data/<id>/SETUP.md` and follow it:
@@ -59,20 +41,10 @@ Then scan from inside `.deepsec/`:
 
 ```bash
 pnpm deepsec scan
-pnpm deepsec process     --concurrency 5
-pnpm deepsec revalidate  --concurrency 5                       # optional, cuts FP rate
-pnpm deepsec export      --format md-dir --out ./findings
+pnpm deepsec process    
+pnpm deepsec revalidate # optional, cuts FP rate
+pnpm deepsec export --format md-dir --out ./findings
 ```
-
-(`--project-id` is auto-resolved when the config has one project. Pass
-`--project-id <id>` once you've registered more.)
-
-`scan` is free (regex only). `process` is the expensive AI stage
-(≈$0.30/file on Opus by default — see
-[docs/models.md](docs/models.md) to pick a cheaper model). Run state
-goes to `.deepsec/data/<id>/`; everything except curated
-`INFO.md`/`SETUP.md` is gitignored. Schema in
-[docs/data-layout.md](docs/data-layout.md).
 
 ## Docs
 
@@ -101,51 +73,11 @@ concurrent research.
 AI_GATEWAY_API_KEY=vck_...
 ```
 
-That single key covers both Claude and Codex; deepsec expands it into
-the `ANTHROPIC_AUTH_TOKEN` / `OPENAI_API_KEY` / `*_BASE_URL` quartet
-the SDKs read. See [docs/vercel-setup.md](docs/vercel-setup.md) for
-getting a key and for the Vercel Sandbox setup. To bypass the
-gateway, set `ANTHROPIC_AUTH_TOKEN` + `ANTHROPIC_BASE_URL` (or the
-OpenAI pair) explicitly — explicit values always win over the
-`AI_GATEWAY_API_KEY` expansion.
-
-For local-only runs (`process` / `revalidate` / `triage`, not
-`sandbox …`), deepsec also picks up an existing Claude Code or Codex
-subscription on the laptop — `claude login` / `codex login` is enough,
-no API key required. See [docs/vercel-setup.md § Use your Claude Code
-or Codex subscription](docs/vercel-setup.md#use-your-claude-code-or-codex-subscription-non-sandbox-only).
-
-## Severity levels
-
-| Severity   | Meaning                                                 |
-|------------|---------------------------------------------------------|
-| `CRITICAL` | Immediate exploit / data exposure                       |
-| `HIGH`     | Exploitable, real-world impact                          |
-| `HIGH_BUG` | Major non-security bug (data loss, corruption, outage)  |
-| `MEDIUM`   | Medium-severity security vulnerability                  |
-| `BUG`      | Notable non-security bug (logic error, race, leak)      |
-| `LOW`      | Minor / informational                                   |
-
-## Plugins
-
-Five extension slots: `matchers`, `notifiers`, `ownership`, `people`,
-`executor`. A plugin can be inline or imported from a separate npm
-package.
-
-```ts
-// deepsec.config.ts
-import { defineConfig } from "deepsec/config";
-import myPlugin from "@my-org/deepsec-plugin-foo";
-
-export default defineConfig({
-  projects: [{ id: "my-app", root: "../my-app" }],
-  plugins: [myPlugin()],
-});
-```
-
-See [docs/plugins.md](docs/plugins.md). For a worked inline plugin
-with two custom matchers, see
-[`samples/webapp/deepsec.config.ts`](samples/webapp/deepsec.config.ts).
+That single key covers both Claude and Codex. See 
+[docs/vercel-setup.md](docs/vercel-setup.md) for getting a key and for 
+the Vercel Sandbox setup. To bypass the gateway, set `ANTHROPIC_AUTH_TOKEN` 
++ `ANTHROPIC_BASE_URL` (or the OpenAI pair) explicitly. Explicit values 
+always win over the `AI_GATEWAY_API_KEY` expansion.
 
 ## Distributed execution (optional)
 

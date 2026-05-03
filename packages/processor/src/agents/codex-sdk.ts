@@ -65,6 +65,48 @@ function makeCodexHome(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), "codex-home-"));
 }
 
+/**
+ * Locate a usable `~/.codex/auth.json` for subscription-mode auth (the user
+ * has run `codex login` on the laptop and we want to reuse that session
+ * instead of forcing them to set OPENAI_API_KEY).
+ *
+ * Returns the parent dir (the "user codex home"), or null if no auth file
+ * is present. Honors `CODEX_HOME` for users who run codex with a
+ * non-default data dir; we look for auth.json in that override before
+ * falling back to `$HOME/.codex`.
+ */
+function findCodexSubscriptionAuth(): string | null {
+  const candidates: string[] = [];
+  if (process.env.CODEX_HOME) candidates.push(process.env.CODEX_HOME);
+  candidates.push(path.join(os.homedir(), ".codex"));
+  for (const dir of candidates) {
+    if (fs.existsSync(path.join(dir, "auth.json"))) return dir;
+  }
+  return null;
+}
+
+/**
+ * Mirror the user's auth.json into our per-invocation CODEX_HOME so the
+ * codex CLI sees their subscription credentials while still writing
+ * sessions/* into the isolated tempdir. We prefer a symlink so token
+ * refresh writes propagate back to the user's real auth.json — only fall
+ * back to copy on platforms/filesystems that can't symlink (e.g. some
+ * Windows configurations).
+ *
+ * config.toml is intentionally NOT mirrored: a user-supplied
+ * `model_provider = "..."` could conflict with our defaults, and we
+ * specifically want the built-in `openai` provider in subscription mode.
+ */
+function mirrorCodexAuthJson(userCodexHome: string, codexHome: string): void {
+  const src = path.join(userCodexHome, "auth.json");
+  const dst = path.join(codexHome, "auth.json");
+  try {
+    fs.symlinkSync(src, dst);
+  } catch {
+    fs.copyFileSync(src, dst);
+  }
+}
+
 // Create the stderr log atomically with O_EXCL + 0600 so a pre-created
 // symlink at the chosen path causes failure rather than redirecting our
 // writes through it. The 16-byte CSPRNG suffix replaces Math.random(),
@@ -143,8 +185,58 @@ interface CodexInvocation {
 }
 
 function buildCodexInvocation(): CodexInvocation {
-  // AI Gateway exposes an OpenAI-compatible endpoint. Both vars are honored;
-  // OPENAI_BASE_URL takes precedence when both are set.
+  // Decide between gateway mode (orchestrator has an API token, we route
+  // through Vercel AI Gateway via a custom provider) and subscription mode
+  // (no token but the user has run `codex login` on this machine — let
+  // codex use its default openai provider against their session). Sandbox
+  // workers always go gateway; the preflight ensures a token is present
+  // before we ever get here in that path.
+  const haveApiToken = !!(process.env.OPENAI_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
+  const subscriptionHome = haveApiToken ? null : findCodexSubscriptionAuth();
+
+  const codexHome = makeCodexHome();
+  if (subscriptionHome) {
+    mirrorCodexAuthJson(subscriptionHome, codexHome);
+  }
+
+  const extras: Record<string, string> = { CODEX_HOME: codexHome };
+
+  // Wrap codex with our stderr-capturing shim so we can diagnose silent
+  // failures (codex CLI exits clean with empty turns and the SDK swallows
+  // stderr on exit=0). Only enables if the wrapper resolves cleanly.
+  let stderrLog: string | null = null;
+  let codexPathOverride: string | undefined;
+  const paths = resolveCodexPaths();
+  if (paths) {
+    stderrLog = makeStderrLog();
+    extras.CODEX_REAL_BIN = paths.realBin;
+    extras.CODEX_STDERR_LOG = stderrLog;
+    codexPathOverride = paths.wrapper;
+    // RUST_LOG turns on tracing in the codex Rust binary so the captured
+    // stderr actually contains useful info (HTTP status, retry attempts).
+    if (!process.env.RUST_LOG) extras.RUST_LOG = "info";
+  }
+
+  if (subscriptionHome) {
+    const env = buildCodexEnv(extras);
+    // Strip gateway-routing env so the built-in openai provider talks to
+    // api.openai.com using the auth.json we just mirrored — a stray
+    // OPENAI_BASE_URL or token from .env.local would otherwise override
+    // the subscription session and either 401 or route through the
+    // gateway with a missing key.
+    delete env.OPENAI_BASE_URL;
+    delete env.ANTHROPIC_BASE_URL;
+    delete env.OPENAI_API_KEY;
+    delete env.ANTHROPIC_AUTH_TOKEN;
+
+    const options: CodexOptions = { env };
+    if (codexPathOverride) options.codexPathOverride = codexPathOverride;
+    return { options, stderrLog, codexHome };
+  }
+
+  // Gateway mode (default): AI Gateway exposes an OpenAI-compatible
+  // endpoint. Both vars are honored; OPENAI_BASE_URL takes precedence
+  // when both are set.
   const baseUrl = process.env.OPENAI_BASE_URL ?? process.env.ANTHROPIC_BASE_URL ?? undefined;
   const apiKey = process.env.OPENAI_API_KEY ?? process.env.ANTHROPIC_AUTH_TOKEN ?? undefined;
 
@@ -168,25 +260,6 @@ function buildCodexInvocation(): CodexInvocation {
       [CUSTOM_PROVIDER_ID]: providerConfig,
     },
   };
-
-  const codexHome = makeCodexHome();
-  const extras: Record<string, string> = { CODEX_HOME: codexHome };
-
-  // Wrap codex with our stderr-capturing shim so we can diagnose silent
-  // failures (codex CLI exits clean with empty turns and the SDK swallows
-  // stderr on exit=0). Only enables if the wrapper resolves cleanly.
-  let stderrLog: string | null = null;
-  let codexPathOverride: string | undefined;
-  const paths = resolveCodexPaths();
-  if (paths) {
-    stderrLog = makeStderrLog();
-    extras.CODEX_REAL_BIN = paths.realBin;
-    extras.CODEX_STDERR_LOG = stderrLog;
-    codexPathOverride = paths.wrapper;
-    // RUST_LOG turns on tracing in the codex Rust binary so the captured
-    // stderr actually contains useful info (HTTP status, retry attempts).
-    if (!process.env.RUST_LOG) extras.RUST_LOG = "info";
-  }
 
   // Don't pass baseUrl as an SDK option — that would emit
   // `openai_base_url=...` which only affects the built-in openai provider

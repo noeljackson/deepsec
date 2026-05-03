@@ -126,5 +126,6 @@ vars (access token).
 |---|---|
 | `401` from `process` / `revalidate` | `AI_GATEWAY_API_KEY` (or `ANTHROPIC_AUTH_TOKEN`) not loaded — confirm `.env.local` is in the cwd deepsec runs from. |
 | Sandbox spawn fails with auth error | OIDC token expired (12 h) — re-run `vercel env pull`. Or fall back to access-token mode. |
-| `Missing AI credentials for --agent codex` | Set `AI_GATEWAY_API_KEY` (covers both backends) or `OPENAI_API_KEY` directly. |
+| `Missing AI credentials for --agent claude-agent-sdk` | Set `AI_GATEWAY_API_KEY` / `ANTHROPIC_AUTH_TOKEN` in `.env.local`, or `claude login` for non-sandbox subscription auth. |
+| `Missing AI credentials for --agent codex` | Set `AI_GATEWAY_API_KEY` / `OPENAI_API_KEY` in `.env.local`, or `codex login` for non-sandbox subscription auth. |
 | Findings missing cost in the log | Pricing entry missing for a non-default Codex model. See [models.md](models.md#future-models-eg-anthropic-mythos). |

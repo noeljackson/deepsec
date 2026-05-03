@@ -78,6 +78,9 @@ ANTHROPIC_AUTH_TOKEN=vck_...
 ANTHROPIC_BASE_URL=https://ai-gateway.vercel.sh
 ```
 
+If `claude` or `codex` is already logged in on this machine, non-sandbox
+runs reuse that subscription — no API key needed.
+
 See [vercel-setup.md](vercel-setup.md) for how to get a gateway key
 and how to wire up Vercel Sandbox auth (OIDC or access token).
 

@@ -90,7 +90,7 @@ export async function sandboxAllCommand(
 
   // Same preflight as sandbox-process — fail fast before fanning out.
   assertSandboxCredential();
-  assertAgentCredential(agentType);
+  assertAgentCredential(agentType, { inSandbox: true });
 
   console.log(`${BOLD}Sandbox All${RESET} — ${CYAN}${command}${RESET}`);
   console.log(`  Total sandboxes: ${totalSandboxes}`);

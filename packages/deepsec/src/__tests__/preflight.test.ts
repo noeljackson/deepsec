@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   applyAiGatewayDefaults,
@@ -7,19 +10,38 @@ import {
 
 describe("assertAgentCredential", () => {
   let saved: Record<string, string | undefined>;
+  let emptyClaudeHome: string;
+  let emptyCodexHome: string;
+  let emptyPathDir: string;
   beforeEach(() => {
     saved = {
       ANTHROPIC_AUTH_TOKEN: process.env.ANTHROPIC_AUTH_TOKEN,
       OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+      CLAUDE_HOME: process.env.CLAUDE_HOME,
+      CODEX_HOME: process.env.CODEX_HOME,
+      PATH: process.env.PATH,
     };
     delete process.env.ANTHROPIC_AUTH_TOKEN;
     delete process.env.OPENAI_API_KEY;
+    // Point CLAUDE_HOME / CODEX_HOME and PATH at empty tmp dirs so the
+    // suite is hermetic — the dev running tests may have a real
+    // ~/.codex/auth.json or `claude` on $PATH, which would cause
+    // "no token" tests to incorrectly pass.
+    emptyClaudeHome = mkdtempSync(join(tmpdir(), "deepsec-claude-home-"));
+    emptyCodexHome = mkdtempSync(join(tmpdir(), "deepsec-codex-home-"));
+    emptyPathDir = mkdtempSync(join(tmpdir(), "deepsec-empty-path-"));
+    process.env.CLAUDE_HOME = emptyClaudeHome;
+    process.env.CODEX_HOME = emptyCodexHome;
+    process.env.PATH = emptyPathDir;
   });
   afterEach(() => {
     for (const [k, v] of Object.entries(saved)) {
       if (v === undefined) delete process.env[k];
       else process.env[k] = v;
     }
+    rmSync(emptyClaudeHome, { recursive: true, force: true });
+    rmSync(emptyCodexHome, { recursive: true, force: true });
+    rmSync(emptyPathDir, { recursive: true, force: true });
   });
 
   it("passes for claude-agent-sdk when ANTHROPIC_AUTH_TOKEN is set", () => {
@@ -27,12 +49,23 @@ describe("assertAgentCredential", () => {
     expect(() => assertAgentCredential("claude-agent-sdk")).not.toThrow();
   });
 
-  it("throws actionable message for claude-agent-sdk when no token", () => {
+  it("throws actionable message for claude-agent-sdk when no token and no claude CLI", () => {
     expect(() => assertAgentCredential("claude-agent-sdk")).toThrow(/ANTHROPIC_AUTH_TOKEN/);
-    expect(() => assertAgentCredential("claude-agent-sdk")).toThrow(/\.env\.local/);
     expect(() => assertAgentCredential("claude-agent-sdk")).toThrow(/AI_GATEWAY_API_KEY/);
     expect(() => assertAgentCredential("claude-agent-sdk")).toThrow(
       /https:\/\/github\.com\/vercel-labs\/deepsec\/blob\/main\/docs\/vercel-setup\.md/,
+    );
+  });
+
+  it("passes for claude-agent-sdk when `claude` is on PATH (subscription mode)", () => {
+    writeFileSync(join(emptyPathDir, "claude"), "#!/bin/sh\n", { mode: 0o755 });
+    expect(() => assertAgentCredential("claude-agent-sdk")).not.toThrow();
+  });
+
+  it("ignores claude subscription auth in sandbox mode", () => {
+    writeFileSync(join(emptyPathDir, "claude"), "#!/bin/sh\n", { mode: 0o755 });
+    expect(() => assertAgentCredential("claude-agent-sdk", { inSandbox: true })).toThrow(
+      /AI_GATEWAY_API_KEY/,
     );
   });
 
@@ -46,12 +79,23 @@ describe("assertAgentCredential", () => {
     expect(() => assertAgentCredential("codex")).not.toThrow();
   });
 
-  it("throws for codex when no token", () => {
+  it("passes for codex when ~/.codex/auth.json exists (subscription mode)", () => {
+    writeFileSync(join(emptyCodexHome, "auth.json"), "{}");
+    expect(() => assertAgentCredential("codex")).not.toThrow();
+  });
+
+  it("ignores codex subscription auth in sandbox mode", () => {
+    writeFileSync(join(emptyCodexHome, "auth.json"), "{}");
+    // With auth.json present, non-sandbox passes — sandbox still throws.
+    expect(() => assertAgentCredential("codex")).not.toThrow();
+    expect(() => assertAgentCredential("codex", { inSandbox: true })).toThrow(/OPENAI_API_KEY/);
+  });
+
+  it("does not let claude subscription unlock codex", () => {
+    writeFileSync(join(emptyPathDir, "claude"), "#!/bin/sh\n", { mode: 0o755 });
+    // No codex auth.json → still throws.
     expect(() => assertAgentCredential("codex")).toThrow(/OPENAI_API_KEY/);
     expect(() => assertAgentCredential("codex")).toThrow(/AI_GATEWAY_API_KEY/);
-    expect(() => assertAgentCredential("codex")).toThrow(
-      /https:\/\/github\.com\/vercel-labs\/deepsec\/blob\/main\/docs\/vercel-setup\.md/,
-    );
   });
 
   it("skips the credential check for custom plugin agents", () => {

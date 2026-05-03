@@ -30,7 +30,9 @@ Open `.env.local` and fill in `AI_GATEWAY_API_KEY`. Get one from
 [Vercel AI Gateway](https://vercel.com/ai-gateway) — one token covers
 both Claude and Codex. Prefer Anthropic directly? Set
 `ANTHROPIC_AUTH_TOKEN=sk-ant-…` and `ANTHROPIC_BASE_URL=https://api.anthropic.com`
-instead. See [vercel-setup.md](vercel-setup.md).
+instead. If `claude` or `codex` is already logged in on this machine,
+non-sandbox runs (`process` / `revalidate` / `triage`) skip the token
+and reuse the subscription. See [vercel-setup.md](vercel-setup.md).
 
 To scan a *different* codebase from the same `.deepsec/`, run
 `pnpm deepsec init-project <path>` — relative paths resolve against

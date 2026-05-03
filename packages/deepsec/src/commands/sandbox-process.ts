@@ -146,7 +146,7 @@ export async function sandboxCommand(subcommand: string, opts: SandboxOpts) {
   // both a Vercel auth token (to create the sandbox) and an AI token (to
   // inject into the firewall transform).
   assertSandboxCredential();
-  assertAgentCredential(config.agentType);
+  assertAgentCredential(config.agentType, { inSandbox: true });
 
   console.log(
     `${BOLD}Sandbox${RESET} — ${CYAN}${config.command}${RESET} — ${BOLD}${config.projectId}${RESET}`,

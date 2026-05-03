@@ -8,6 +8,10 @@
 // from upstream as if it were a model issue. Each variant has cost the
 // human time before, so we trade ~20 lines for a clear message up front.
 
+import { existsSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+
 // Linkable URL — printed in error messages so users can paste the
 // URL into a browser instead of hunting through the repo. Points at
 // the rendered `main` version on github.com so it works whether the
@@ -46,6 +50,59 @@ function isCodex(agentType: string | undefined): boolean {
   return agentType === "codex";
 }
 
+/**
+ * Walk `$PATH` looking for a binary. Used as a positive signal that an
+ * agent CLI (`claude`, `codex`) is set up on this host — if it's
+ * installed, the user almost certainly logged in too, and the SDK will
+ * use whatever auth that CLI manages (Keychain on macOS, file on Linux,
+ * OAuth token env var, etc.). If they happen to be installed but not
+ * logged in, the SDK errors clearly at first call — better than us
+ * pre-blocking with a verbose pile of options.
+ *
+ * Synchronous PATH walk is cheap enough for preflight; using `execSync`
+ * would also work but adds a fork.
+ */
+function whichSync(bin: string): boolean {
+  const pathEnv = process.env.PATH || "";
+  const sep = process.platform === "win32" ? ";" : ":";
+  for (const dir of pathEnv.split(sep)) {
+    if (!dir) continue;
+    if (existsSync(join(dir, bin))) return true;
+    if (process.platform === "win32") {
+      if (existsSync(join(dir, `${bin}.exe`))) return true;
+      if (existsSync(join(dir, `${bin}.cmd`))) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * "Likely to just work" signal for the Claude subscription path. The
+ * Claude Agent SDK spawns the `claude` CLI as a subprocess; if that
+ * binary is on PATH the SDK can use whatever auth it manages (Keychain
+ * on macOS, ~/.claude/.credentials.json on Linux, CLAUDE_CODE_OAUTH_TOKEN
+ * env var). We don't try to verify the user is actually logged in — if
+ * not, the SDK's own error at first call is clearer than ours.
+ *
+ * Only consulted in non-sandbox runs. The sandbox worker VM has no
+ * claude binary, so this helper is irrelevant there.
+ */
+function hasLocalClaudeAgent(): boolean {
+  return whichSync("claude");
+}
+
+/**
+ * Same idea for Codex, but stricter: codex-sdk.ts mirrors the user's
+ * `auth.json` into a per-invocation tempdir, so we need that file to
+ * actually exist. `which codex` alone isn't enough — a logged-out
+ * codex CLI would fall through to gateway mode without an API key and
+ * 401. Honors `CODEX_HOME`.
+ */
+function hasLocalCodexAgent(): boolean {
+  const codexHome = process.env.CODEX_HOME || join(homedir(), ".codex");
+  return existsSync(join(codexHome, "auth.json"));
+}
+
 // Built-in backends we know how to credential-check. Agents registered
 // via plugins (deepsec.config.ts → plugins: [{ agents: [...] }]) handle
 // their own credential resolution, so we skip the check for anything
@@ -58,11 +115,19 @@ const KNOWN_BACKENDS = new Set<string>(["claude-agent-sdk", "codex"]);
  * sandbox path brokers credentials via firewall header injection, but
  * that only works if the orchestrator actually has a token to inject.
  *
+ * Pass `inSandbox: true` from sandbox commands. Subscription auth (a
+ * local `claude login`) is only honored when this is false — the
+ * sandbox worker has no `claude` CLI and no Keychain, so it must ship a
+ * real API token through the firewall header rewrite.
+ *
  * Skipped for plugin-supplied agents (`agentType` not in `KNOWN_BACKENDS`):
  * those backends own their credential story. Tests use this to plug in a
  * stub agent without setting fake env vars.
  */
-export function assertAgentCredential(agentType: string | undefined): void {
+export function assertAgentCredential(
+  agentType: string | undefined,
+  options: { inSandbox?: boolean } = {},
+): void {
   if (agentType !== undefined && !KNOWN_BACKENDS.has(agentType)) return;
 
   const anthropic = process.env.ANTHROPIC_AUTH_TOKEN;
@@ -72,30 +137,22 @@ export function assertAgentCredential(agentType: string | undefined): void {
     // Codex prefers OPENAI_API_KEY; AI Gateway issues a single token that
     // authenticates both backends, so an ANTHROPIC token is also accepted.
     if (openai || anthropic) return;
+    if (!options.inSandbox && hasLocalCodexAgent()) return;
     throw new Error(
       `Missing AI credentials for --agent codex.\n` +
         `\n` +
-        `  Quickest fix — get a Vercel AI Gateway key (covers both Claude\n` +
-        `  and Codex with one token) and add it to .env.local:\n` +
-        `\n` +
-        `      AI_GATEWAY_API_KEY=vck_…\n` +
-        `\n` +
-        `  Or set OPENAI_API_KEY directly. Full setup:\n` +
-        `      ${SETUP_DOC_URL}`,
+        `  Add to .env.local:    AI_GATEWAY_API_KEY=vck_…   (or OPENAI_API_KEY=…)\n` +
+        `  Setup: ${SETUP_DOC_URL}`,
     );
   }
 
   if (anthropic) return;
+  if (!options.inSandbox && hasLocalClaudeAgent()) return;
   throw new Error(
     `Missing AI credentials for --agent ${agentType ?? "claude-agent-sdk"}.\n` +
       `\n` +
-      `  Quickest fix — get a Vercel AI Gateway key (covers both Claude\n` +
-      `  and Codex with one token) and add it to .env.local:\n` +
-      `\n` +
-      `      AI_GATEWAY_API_KEY=vck_…\n` +
-      `\n` +
-      `  Or set ANTHROPIC_AUTH_TOKEN directly. Full setup:\n` +
-      `      ${SETUP_DOC_URL}`,
+      `  Add to .env.local:    AI_GATEWAY_API_KEY=vck_…   (or ANTHROPIC_AUTH_TOKEN=…)\n` +
+      `  Setup: ${SETUP_DOC_URL}`,
   );
 }
 

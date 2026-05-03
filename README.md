@@ -88,10 +88,14 @@ goes to `.deepsec/data/<id>/`; everything except curated
 - [samples/](samples/) — copy-paste starting points (currently: `webapp/`)
 - [CONTRIBUTING.md](CONTRIBUTING.md) — repo layout, dev workflow
 
-## AI provider — Vercel AI Gateway
+## AI provider
 
-Both agent backends route through Vercel AI Gateway by default, but you can provide
-your own API keys, of course. The AI Gateway has default quotas suitable for highly concurrent research.
+When running locally, `deepsec` attempts to use your existing subscriptions
+when invoking claude or codex.
+
+For scaled usage on large code bases we recommend using Vercel AI Gateway or
+provider API keys. The AI Gateway has default quotas suitable for highly 
+concurrent research.
 
 ```
 AI_GATEWAY_API_KEY=vck_...
@@ -104,6 +108,12 @@ getting a key and for the Vercel Sandbox setup. To bypass the
 gateway, set `ANTHROPIC_AUTH_TOKEN` + `ANTHROPIC_BASE_URL` (or the
 OpenAI pair) explicitly — explicit values always win over the
 `AI_GATEWAY_API_KEY` expansion.
+
+For local-only runs (`process` / `revalidate` / `triage`, not
+`sandbox …`), deepsec also picks up an existing Claude Code or Codex
+subscription on the laptop — `claude login` / `codex login` is enough,
+no API key required. See [docs/vercel-setup.md § Use your Claude Code
+or Codex subscription](docs/vercel-setup.md#use-your-claude-code-or-codex-subscription-non-sandbox-only).
 
 ## Severity levels
 

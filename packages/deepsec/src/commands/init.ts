@@ -86,7 +86,9 @@ export function initCommand(opts: InitOpts) {
   console.log("Next:\n");
   if (wsRel !== ".") console.log(`  cd ${wsRel}`);
   console.log(`  pnpm install                          ${DIM}# installs deepsec${RESET}`);
-  console.log(`  ${DIM}# Set AI_GATEWAY_API_KEY in .env.local${RESET}`);
+  console.log(
+    `  ${DIM}# Set AI_GATEWAY_API_KEY in .env.local (or skip if claude/codex CLI is logged in)${RESET}`,
+  );
   console.log();
   console.log(
     `  ${YELLOW}Paste this into your coding agent${RESET} ${DIM}(Claude Code, Cursor, Codex, OpenCode, Pi, etc.):${RESET}`,
@@ -195,7 +197,11 @@ Currently configured project: \`${id}\` (target: \`${targetRel}\`).
 ## Setup
 
 1. \`pnpm install\` — installs deepsec.
-2. Add your AI Gateway token to \`.env.local\`. See
+2. Add an AI Gateway / Anthropic / OpenAI token to \`.env.local\`. If
+   you already have \`claude\` or \`codex\` CLI logged in on this
+   machine, you can skip the token for non-sandbox runs (\`process\` /
+   \`revalidate\` / \`triage\`); deepsec auto-detects and reuses the
+   subscription. See
    \`node_modules/deepsec/dist/docs/vercel-setup.md\` after install.
 3. Open the parent repo in your coding agent (Claude Code, Cursor, …)
    and have it follow \`data/${id}/SETUP.md\` to fill in
@@ -292,6 +298,8 @@ function envLocal(): string {
   // One-line gateway setup. deepsec expands AI_GATEWAY_API_KEY at startup
   // into ANTHROPIC_AUTH_TOKEN / OPENAI_API_KEY / *_BASE_URL, so a user
   // who only has a gateway key is fully wired with this single line.
+  // Users with claude/codex CLI logged in locally can leave this empty
+  // for non-sandbox runs — deepsec auto-detects.
   return `AI_GATEWAY_API_KEY=
 `;
 }

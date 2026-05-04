@@ -164,9 +164,9 @@ exactly one.)
 
 ## Next
 
-- [docs/writing-matchers.md](writing-matchers.md) — when a TP finding
-  isn't covered by an existing matcher, prompt your coding agent to
-  write one for the pattern.
+- [docs/writing-matchers.md](writing-matchers.md) — prompt your coding
+  agent to compare `data/` matches against the target repo and write
+  matchers that close the entry-point coverage gaps.
 - [docs/configuration.md](configuration.md) — every field on
   `deepsec.config.ts` and `data/<id>/config.json`.
 - [docs/models.md](models.md) — defaults, `--agent` / `--model`,

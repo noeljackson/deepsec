@@ -155,8 +155,9 @@ Yes:
 ## How do I add a matcher for my codebase?
 
 See [docs/writing-matchers.md](writing-matchers.md). Short version: hand
-a confirmed finding to your coding agent with the prompt in that doc and
-it'll write the matcher.
+your `.deepsec/data/` and the target repo to your coding agent with the
+prompt in that doc — it'll spot entry-point coverage gaps the default
+matchers miss and write matchers tailored to your codebase.
 
 ## What if my codebase is in a language deepsec doesn't have matchers for?
 

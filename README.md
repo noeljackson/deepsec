@@ -120,4 +120,4 @@ Running on a sandbox (see above) does limit the potential exposure substantially
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+Apache 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).

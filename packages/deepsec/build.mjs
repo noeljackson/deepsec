@@ -68,10 +68,12 @@ cpSync(
   resolve(distDir, "sandbox/request-proxy.mjs"),
 );
 
-// README.md and LICENSE live at the workspace root for repo browsing.
-// `files` in package.json names them at the package root, so stage them.
+// README.md, LICENSE, and NOTICE live at the workspace root for repo
+// browsing. `files` in package.json names them at the package root, so
+// stage them here.
 cpSync(resolve(repoRoot, "README.md"), resolve(__dirname, "README.md"));
 cpSync(resolve(repoRoot, "LICENSE"), resolve(__dirname, "LICENSE"));
+cpSync(resolve(repoRoot, "NOTICE"), resolve(__dirname, "NOTICE"));
 
 console.log("\nBundle complete:");
 console.log("  dist/cli.mjs");
@@ -81,3 +83,4 @@ console.log("  dist/docs/");
 console.log("  dist/samples/");
 console.log("  README.md");
 console.log("  LICENSE");
+console.log("  NOTICE");

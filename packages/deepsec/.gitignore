@@ -2,3 +2,4 @@
 # `files` field in package.json picks them up at pack/publish time.
 README.md
 LICENSE
+NOTICE

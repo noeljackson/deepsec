@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { BOLD, DIM, GREEN, RESET, YELLOW } from "../formatters.js";
+import { BOLD, CYAN, DIM, GREEN, RESET, YELLOW } from "../formatters.js";
 import { requireExistingDir } from "../require-dir.js";
 import { getDeepsecVersion } from "../version.js";
 import { PROJECTS_INSERT_MARKER, registerProject } from "./init-project.js";
@@ -118,7 +118,7 @@ function printAgentPrompt(id: string, targetRel: string): void {
     `project-specific. INFO.md is injected into every scan batch;`,
     `verbose context dilutes signal.`,
   ];
-  for (const l of lines) console.log(`    ${BOLD}>${RESET} ${l}`);
+  for (const l of lines) console.log(`    ${CYAN}${l}${RESET}`);
 }
 
 function writeFile(dir: string, name: string, content: string) {

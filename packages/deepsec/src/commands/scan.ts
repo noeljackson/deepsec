@@ -78,5 +78,6 @@ export async function scanCommand(opts: { projectId?: string; root?: string; mat
     `${GREEN}Scan complete.${RESET} Run: ${BOLD}${result.runId}${RESET}  Candidates: ${result.candidateCount}`,
   );
   console.log();
-  console.log(`Next: ${DIM}pnpm deepsec process --project-id ${projectId}${RESET}`);
+  console.log(`Next:`);
+  console.log(`${DIM}pnpm deepsec process --project-id ${projectId}${RESET}`);
 }

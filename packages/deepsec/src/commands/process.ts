@@ -151,5 +151,6 @@ export async function processCommand(opts: {
   console.log(`  Analyses: ${result.analysisCount}`);
   console.log(`  Findings: ${result.findingCount}`);
   console.log();
-  console.log(`Next: ${DIM}pnpm deepsec report --project-id ${projectId}${RESET}`);
+  console.log(`Next:`);
+  console.log(`${DIM}pnpm deepsec report --project-id ${projectId}${RESET}`);
 }

@@ -4,6 +4,7 @@ import { revalidate } from "@deepsec/processor";
 import { defaultModelForAgent } from "../agent-defaults.js";
 import { BOLD, CYAN, DIM, GREEN, RED, RESET, YELLOW } from "../formatters.js";
 import { assertAgentCredential } from "../preflight.js";
+import { resolveAgentType } from "../resolve-agent-type.js";
 import { resolveProjectId } from "../resolve-project-id.js";
 
 function logProgress(progress: {
@@ -70,7 +71,7 @@ export async function revalidateCommand(opts: {
 }) {
   const projectId = resolveProjectId(opts.projectId);
   const _project = readProjectConfig(projectId);
-  const agentType = opts.agent ?? "claude-agent-sdk";
+  const agentType = resolveAgentType(opts.agent);
   const model = opts.model ?? defaultModelForAgent(agentType);
   const minSeverity = opts.minSeverity as Severity | undefined;
   const onlySlugs = parseCsv(opts.onlySlugs);

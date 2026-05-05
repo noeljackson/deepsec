@@ -1,5 +1,7 @@
+import { defaultModelForAgent } from "../agent-defaults.js";
 import { BOLD, CYAN, DIM, GREEN, RED, RESET } from "../formatters.js";
 import { assertAgentCredential, assertSandboxCredential } from "../preflight.js";
+import { resolveAgentType } from "../resolve-agent-type.js";
 import { resolveProjectId } from "../resolve-project-id.js";
 import { checkStatus, collect, launch, orchestrate } from "../sandbox/orchestrator.js";
 import type { SandboxConfig, SandboxSubcommand } from "../sandbox/types.js";
@@ -61,6 +63,7 @@ function buildConfig(
   const concurrency = parseInt(extractFlag(args, "--concurrency") ?? "4", 10) || 4;
   // Auto-derive vCPUs from concurrency if not explicitly set (max 8, must be even)
   const vcpus = opts.vcpus ?? Math.min(Math.ceil(concurrency / 2) * 2, 8);
+  const agentType = resolveAgentType(extractFlag(args, "--agent"));
   return {
     projectId,
     command: subcommand,
@@ -70,10 +73,8 @@ function buildConfig(
     limit: parseInt(extractFlag(args, "--limit") ?? "0", 10) || undefined,
     concurrency,
     batchSize: parseInt(extractFlag(args, "--batch-size") ?? "5", 10) || 5,
-    agentType: extractFlag(args, "--agent") ?? "claude-agent-sdk",
-    model:
-      extractFlag(args, "--model") ??
-      (extractFlag(args, "--agent") === "codex" ? "gpt-5.5" : "claude-opus-4-7"),
+    agentType,
+    model: extractFlag(args, "--model") ?? defaultModelForAgent(agentType),
     snapshotId: opts.snapshotId,
     saveSnapshot: opts.saveSnapshot ?? false,
     keepAlive: opts.keepAlive ?? false,

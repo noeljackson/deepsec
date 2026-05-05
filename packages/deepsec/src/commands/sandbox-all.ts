@@ -1,8 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { getDataRoot, readProjectConfig } from "@deepsec/core";
+import { defaultModelForAgent } from "../agent-defaults.js";
 import { BOLD, CYAN, DIM, GREEN, RED, RESET } from "../formatters.js";
 import { assertAgentCredential, assertSandboxCredential } from "../preflight.js";
+import { resolveAgentType } from "../resolve-agent-type.js";
 import { orchestrate } from "../sandbox/orchestrator.js";
 import { partitionFiles } from "../sandbox/partitioner.js";
 import type { SandboxConfig, SandboxSubcommand } from "../sandbox/types.js";
@@ -86,7 +88,7 @@ export async function sandboxAllCommand(
   const concurrency = parseInt(extractFlag(passthrough, "--concurrency") ?? "4", 10) || 4;
   const vcpus = opts.vcpus ?? Math.min(Math.ceil(concurrency / 2) * 2, 8);
   const timeout = opts.timeout ?? 5 * 60 * 60 * 1000;
-  const agentType = extractFlag(passthrough, "--agent") ?? "claude-agent-sdk";
+  const agentType = resolveAgentType(extractFlag(passthrough, "--agent"));
 
   // Same preflight as sandbox-process — fail fast before fanning out.
   assertSandboxCredential();
@@ -178,9 +180,7 @@ export async function sandboxAllCommand(
       concurrency,
       batchSize: parseInt(extractFlag(passthrough, "--batch-size") ?? "5", 10) || 5,
       agentType,
-      model:
-        extractFlag(passthrough, "--model") ??
-        (agentType === "codex" ? "gpt-5.5" : "claude-opus-4-7"),
+      model: extractFlag(passthrough, "--model") ?? defaultModelForAgent(agentType),
       snapshotId: undefined,
       saveSnapshot: false,
       keepAlive: false,

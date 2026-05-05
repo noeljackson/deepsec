@@ -136,7 +136,10 @@ program
     "Project identifier (default: the only project in deepsec.config.ts; required if there are multiple)",
   )
   .option("--run-id <id>", "Resume a specific processing run")
-  .option("--agent <type>", "Agent plugin type (claude-agent-sdk, codex)", "claude-agent-sdk")
+  .option(
+    "--agent <type>",
+    "Agent plugin type: claude-agent-sdk or codex (default: defaultAgent in deepsec.config.ts, else claude-agent-sdk)",
+  )
   .option(
     "--model <model>",
     "Model to use (default: claude-opus-4-7 for claude-agent-sdk, gpt-5.5 for codex)",
@@ -177,7 +180,10 @@ program
     "Project identifier (default: the only project in deepsec.config.ts; required if there are multiple)",
   )
   .option("--run-id <id>", "Resume a specific revalidation run")
-  .option("--agent <type>", "Agent plugin type (claude-agent-sdk, codex)", "claude-agent-sdk")
+  .option(
+    "--agent <type>",
+    "Agent plugin type: claude-agent-sdk or codex (default: defaultAgent in deepsec.config.ts, else claude-agent-sdk)",
+  )
   .option(
     "--model <model>",
     "Model to use (default: claude-opus-4-7 for claude-agent-sdk, gpt-5.5 for codex)",

@@ -106,12 +106,16 @@ export class RegexScannerDriver implements ScannerDriver {
         message: `Globbing pattern ${globsDone}/${uniquePatterns.length}: ${group[0].filePatterns.slice(0, 3).join(", ")}${group[0].filePatterns.length > 3 ? "..." : ""}`,
         matcherSlug: "glob",
       };
-      const files = await glob(group[0].filePatterns, {
+      const rawFiles = await glob(group[0].filePatterns, {
         cwd: root,
         ignore,
         nodir: true,
         absolute: false,
       });
+      // glob returns native separators on Windows ("src\api\foo.ts").
+      // Record paths require POSIX separators (assertSafeFilePath rejects
+      // "\"), so normalize once here before anything reads or writes records.
+      const files = rawFiles.map((f) => f.replaceAll("\\", "/"));
       globCache.set(key, files);
       yield {
         type: "matcher_done" as const,
@@ -139,7 +143,14 @@ export class RegexScannerDriver implements ScannerDriver {
         let content = contentCache.get(relPath);
         if (content === undefined) {
           try {
-            content = fs.readFileSync(path.join(root, relPath), "utf-8");
+            // Normalize CRLF → LF so matchers that split on "\n" don't see
+            // a trailing "\r" on every line. Without this, regexes anchored
+            // with `$` silently fail to match on Windows-checked-out files
+            // (and any mixed-EOL repo). Note: byte offsets reported by
+            // matchers are now into the normalized content, not the raw
+            // file on disk — line numbers stay correct, but if a matcher
+            // ever needs raw byte offsets it has to redo the read itself.
+            content = fs.readFileSync(path.join(root, relPath), "utf-8").replaceAll("\r\n", "\n");
             contentCache.set(relPath, content);
           } catch {
             contentCache.set(relPath, "");

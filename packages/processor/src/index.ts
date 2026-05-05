@@ -137,6 +137,8 @@ Beyond missing auth, look for **subtle bypasses** in code that appears to have a
 
 ## Investigation Process
 
+**Static analysis only.** Do NOT attempt to reproduce, exploit, or trigger any vulnerability. Do not run the target code, send requests against any endpoint, or execute proof-of-concept scripts. Review the source code only.
+
 1. Read each target file fully using the Read tool
 2. For flagged patterns AND any other suspicious code, trace data flow: where does input come from? Is it user-controlled?
 3. Check for sanitization, validation, or middleware guards by reading imported modules

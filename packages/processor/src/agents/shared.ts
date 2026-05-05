@@ -239,6 +239,8 @@ export function buildRevalidatePrompt(params: {
 
 **Take your time.** Read every relevant file. Trace every code path. Do not make assumptions — verify.
 
+**Static analysis only.** Do NOT attempt to reproduce, exploit, or trigger any finding. Do not run the target code, send requests against any endpoint, or execute proof-of-concept scripts. Reach your verdict from the source code alone.
+
 ${projectInfo ? `## Project Context\n\n${projectInfo}\n` : ""}
 
 ${fileSections.join("\n---\n\n")}

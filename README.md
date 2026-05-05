@@ -46,6 +46,8 @@ pnpm deepsec revalidate # optional, cuts FP rate
 pnpm deepsec export --format md-dir --out ./findings
 ```
 
+If you feel like the `deepsec` should look at more parts of the code, give it [the writing matchers](docs/writing-matchers.md) doc to find more valuable starting points in your code base.
+
 ## Docs
 
 - [docs/getting-started.md](docs/getting-started.md) — first-scan walkthrough

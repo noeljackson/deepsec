@@ -48,6 +48,9 @@ importers:
       '@openai/codex-sdk':
         specifier: ^0.125.0
         version: 0.125.0
+      '@vercel/oidc':
+        specifier: ^3.4.0
+        version: 3.4.0
       '@vercel/sandbox':
         specifier: ^1.9.0
         version: 1.10.0
@@ -1515,6 +1518,11 @@ packages:
 
   /@vercel/oidc@3.2.0:
     resolution: {integrity: sha512-UycprH3T6n3jH0k44NHMa7pnFHGu/N05MjojYr+Mc6I7obkoLIJujSWwin1pCvdy/eOxrI/l3uDLQsmcrOb4ug==}
+    engines: {node: '>= 20'}
+    dev: false
+
+  /@vercel/oidc@3.4.0:
+    resolution: {integrity: sha512-p0sKfHkfRmMaqqDwNL4tjnX9TgRrLMlEtUjIxfrEns8pOxz1R9ztqOVI+ehqiq93/2/HnfPe/UBZkfAZwnx0UA==}
     engines: {node: '>= 20'}
     dev: false
 

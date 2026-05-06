@@ -4,6 +4,7 @@ import path from "node:path";
 import type { FileRecord, Finding, Severity } from "@deepsec/core";
 import { dataDir, getDataRoot, loadAllFileRecords } from "@deepsec/core";
 import { BOLD, DIM, GREEN, RESET, YELLOW } from "../formatters.js";
+import { resolveAgentType } from "../resolve-agent-type.js";
 
 const SEVERITY_ORDER: Record<Severity, number> = {
   CRITICAL: 0,
@@ -347,6 +348,7 @@ export async function exportCommand(opts: {
   if (onlyMarker !== undefined && !Number.isFinite(onlyMarker)) {
     throw new Error(`--only-marker must be a number, got "${opts.onlyMarker}"`);
   }
+  const onlyAgent = opts.onlyAgent ? resolveAgentType(opts.onlyAgent) : undefined;
   if (opts.onlyAgent) console.log(`  Only agent: ${opts.onlyAgent}`);
   if (onlyMarker !== undefined) console.log(`  Only marker: ${onlyMarker}`);
 
@@ -396,7 +398,7 @@ export async function exportCommand(opts: {
           continue;
 
         const source = findingSource[findingIndex];
-        if (opts.onlyAgent && source?.agentType !== opts.onlyAgent) continue;
+        if (onlyAgent && source?.agentType !== onlyAgent) continue;
         if (onlyMarker !== undefined && source?.reinvestigateMarker !== onlyMarker) continue;
 
         const githubUrl = makeGithubLink(repoUrl, record.filePath, finding.lineNumbers);

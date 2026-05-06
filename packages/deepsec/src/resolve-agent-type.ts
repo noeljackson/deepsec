@@ -6,8 +6,9 @@ import { getConfig } from "@deepsec/core";
  * Precedence:
  *   1. The `--agent` value the user passed (always wins).
  *   2. `defaultAgent` from deepsec.config.ts.
- *   3. `claude-agent-sdk`.
+ *   3. `codex`.
  */
 export function resolveAgentType(provided: string | undefined): string {
-  return provided ?? getConfig()?.defaultAgent ?? "claude-agent-sdk";
+  const resolved = provided ?? getConfig()?.defaultAgent ?? "codex";
+  return resolved === "claude" ? "claude-agent-sdk" : resolved;
 }

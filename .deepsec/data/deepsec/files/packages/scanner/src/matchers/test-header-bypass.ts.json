@@ -1,0 +1,292 @@
+{
+  "filePath": "packages/scanner/src/matchers/test-header-bypass.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        26
+      ],
+      "snippet": "      { regex: /x-internal/i, label: \"x-internal header\" },\n      { regex: /x-bypass/i, label: \"x-bypass header\" },\n      { regex: /x-skip-auth/i, label: \"x-skip-auth header\" },\n      { regex: /x-no-rate-limit/i, label: \"x-no-rate-limit header\" },\n      { regex: /x-admin/i, label: \"x-admin header\" },",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"test-header-bypass\",\n  description: \"Test/debug headers that bypass security checks in production\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "response-header-leak",
+      "lineNumbers": [
+        23,
+        24
+      ],
+      "snippet": "      { regex: /x-automated-test/i, label: \"x-automated-test header\" },\n      { regex: /x-test-/i, label: \"x-test-* header\" },\n      { regex: /x-debug/i, label: \"x-debug header\" },\n      { regex: /x-internal/i, label: \"x-internal header\" },\n      { regex: /x-bypass/i, label: \"x-bypass header\" },",
+      "matchedPattern": "Debug/internal header"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "      { regex: /x-automated-test/i, label: \"x-automated-test header\" },\n      { regex: /x-test-/i, label: \"x-test-* header\" },\n      { regex: /x-debug/i, label: \"x-debug header\" },\n      { regex: /x-internal/i, label: \"x-internal header\" },\n      { regex: /x-bypass/i, label: \"x-bypass header\" },",
+      "matchedPattern": "x-debug header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "      { regex: /x-test-/i, label: \"x-test-* header\" },\n      { regex: /x-debug/i, label: \"x-debug header\" },\n      { regex: /x-internal/i, label: \"x-internal header\" },\n      { regex: /x-bypass/i, label: \"x-bypass header\" },\n      { regex: /x-skip-auth/i, label: \"x-skip-auth header\" },",
+      "matchedPattern": "x-internal header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "      { regex: /x-debug/i, label: \"x-debug header\" },\n      { regex: /x-internal/i, label: \"x-internal header\" },\n      { regex: /x-bypass/i, label: \"x-bypass header\" },\n      { regex: /x-skip-auth/i, label: \"x-skip-auth header\" },\n      { regex: /x-no-rate-limit/i, label: \"x-no-rate-limit header\" },",
+      "matchedPattern": "x-bypass header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        26
+      ],
+      "snippet": "      { regex: /x-internal/i, label: \"x-internal header\" },\n      { regex: /x-bypass/i, label: \"x-bypass header\" },\n      { regex: /x-skip-auth/i, label: \"x-skip-auth header\" },\n      { regex: /x-no-rate-limit/i, label: \"x-no-rate-limit header\" },\n      { regex: /x-admin/i, label: \"x-admin header\" },",
+      "matchedPattern": "x-skip-auth header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        27
+      ],
+      "snippet": "      { regex: /x-bypass/i, label: \"x-bypass header\" },\n      { regex: /x-skip-auth/i, label: \"x-skip-auth header\" },\n      { regex: /x-no-rate-limit/i, label: \"x-no-rate-limit header\" },\n      { regex: /x-admin/i, label: \"x-admin header\" },\n      { regex: /['\"]test['\"].*===.*headers/i, label: \"test value in header check\" },",
+      "matchedPattern": "x-no-rate-limit header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        28
+      ],
+      "snippet": "      { regex: /x-skip-auth/i, label: \"x-skip-auth header\" },\n      { regex: /x-no-rate-limit/i, label: \"x-no-rate-limit header\" },\n      { regex: /x-admin/i, label: \"x-admin header\" },\n      { regex: /['\"]test['\"].*===.*headers/i, label: \"test value in header check\" },\n      { regex: /headers.*['\"]test['\"]/i, label: \"header compared to test\" },",
+      "matchedPattern": "x-admin header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        17,
+        19,
+        38
+      ],
+      "snippet": "    `if (req.headers[\"x-test-bypass\"]) return next();`,\n    `if (headers.get(\"x-debug\")) bypass();`,\n    `if (req.headers[\"x-internal\"]) skipAuth();`,\n    `if (req.headers[\"x-bypass\"]) disable();`,\n    `if (req.headers[\"x-skip-auth\"]) return next();`,",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "response-header-leak",
+      "lineNumbers": [
+        16,
+        17,
+        35,
+        36
+      ],
+      "snippet": "    `if (req.headers[\"x-automated-test\"]) skip();`,\n    `if (req.headers[\"x-test-bypass\"]) return next();`,\n    `if (headers.get(\"x-debug\")) bypass();`,\n    `if (req.headers[\"x-internal\"]) skipAuth();`,\n    `if (req.headers[\"x-bypass\"]) disable();`,",
+      "matchedPattern": "Debug/internal header"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `if (req.headers[\"x-automated-test\"]) skip();`,\n    `if (req.headers[\"x-test-bypass\"]) return next();`,\n    `if (headers.get(\"x-debug\")) bypass();`,",
+      "matchedPattern": "x-automated-test header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "  examples: [\n    `if (req.headers[\"x-automated-test\"]) skip();`,\n    `if (req.headers[\"x-test-bypass\"]) return next();`,\n    `if (headers.get(\"x-debug\")) bypass();`,\n    `if (req.headers[\"x-internal\"]) skipAuth();`,",
+      "matchedPattern": "x-test-* header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "    `if (req.headers[\"x-automated-test\"]) skip();`,\n    `if (req.headers[\"x-test-bypass\"]) return next();`,\n    `if (headers.get(\"x-debug\")) bypass();`,\n    `if (req.headers[\"x-internal\"]) skipAuth();`,\n    `if (req.headers[\"x-bypass\"]) disable();`,",
+      "matchedPattern": "x-debug header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "    `if (req.headers[\"x-test-bypass\"]) return next();`,\n    `if (headers.get(\"x-debug\")) bypass();`,\n    `if (req.headers[\"x-internal\"]) skipAuth();`,\n    `if (req.headers[\"x-bypass\"]) disable();`,\n    `if (req.headers[\"x-skip-auth\"]) return next();`,",
+      "matchedPattern": "x-internal header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "    `if (headers.get(\"x-debug\")) bypass();`,\n    `if (req.headers[\"x-internal\"]) skipAuth();`,\n    `if (req.headers[\"x-bypass\"]) disable();`,\n    `if (req.headers[\"x-skip-auth\"]) return next();`,\n    `if (req.headers[\"x-no-rate-limit\"]) skip();`,",
+      "matchedPattern": "x-bypass header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `if (req.headers[\"x-internal\"]) skipAuth();`,\n    `if (req.headers[\"x-bypass\"]) disable();`,\n    `if (req.headers[\"x-skip-auth\"]) return next();`,\n    `if (req.headers[\"x-no-rate-limit\"]) skip();`,\n    `if (req.headers[\"x-admin\"]) bypass();`,",
+      "matchedPattern": "x-skip-auth header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "    `if (req.headers[\"x-bypass\"]) disable();`,\n    `if (req.headers[\"x-skip-auth\"]) return next();`,\n    `if (req.headers[\"x-no-rate-limit\"]) skip();`,\n    `if (req.headers[\"x-admin\"]) bypass();`,\n    `if (\"test\" === headers[\"x-mode\"]) return true;`,",
+      "matchedPattern": "x-no-rate-limit header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "    `if (req.headers[\"x-skip-auth\"]) return next();`,\n    `if (req.headers[\"x-no-rate-limit\"]) skip();`,\n    `if (req.headers[\"x-admin\"]) bypass();`,\n    `if (\"test\" === headers[\"x-mode\"]) return true;`,\n    `if (headers[\"x-something\"] === \"test\") skip();`,",
+      "matchedPattern": "x-admin header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "    `if (req.headers[\"x-no-rate-limit\"]) skip();`,\n    `if (req.headers[\"x-admin\"]) bypass();`,\n    `if (\"test\" === headers[\"x-mode\"]) return true;`,\n    `if (headers[\"x-something\"] === \"test\") skip();`,\n  ],",
+      "matchedPattern": "test value in header check — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "    `if (req.headers[\"x-admin\"]) bypass();`,\n    `if (\"test\" === headers[\"x-mode\"]) return true;`,\n    `if (headers[\"x-something\"] === \"test\") skip();`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "header compared to test — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        35
+      ],
+      "snippet": "      { regex: /x-automated-test/i, label: \"x-automated-test header\" },\n      { regex: /x-test-/i, label: \"x-test-* header\" },\n      { regex: /x-debug/i, label: \"x-debug header\" },\n      { regex: /x-internal/i, label: \"x-internal header\" },\n      { regex: /x-bypass/i, label: \"x-bypass header\" },",
+      "matchedPattern": "x-debug header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        36
+      ],
+      "snippet": "      { regex: /x-test-/i, label: \"x-test-* header\" },\n      { regex: /x-debug/i, label: \"x-debug header\" },\n      { regex: /x-internal/i, label: \"x-internal header\" },\n      { regex: /x-bypass/i, label: \"x-bypass header\" },\n      { regex: /x-skip-auth/i, label: \"x-skip-auth header\" },",
+      "matchedPattern": "x-internal header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        37
+      ],
+      "snippet": "      { regex: /x-debug/i, label: \"x-debug header\" },\n      { regex: /x-internal/i, label: \"x-internal header\" },\n      { regex: /x-bypass/i, label: \"x-bypass header\" },\n      { regex: /x-skip-auth/i, label: \"x-skip-auth header\" },\n      { regex: /x-no-rate-limit/i, label: \"x-no-rate-limit header\" },",
+      "matchedPattern": "x-bypass header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        38
+      ],
+      "snippet": "      { regex: /x-internal/i, label: \"x-internal header\" },\n      { regex: /x-bypass/i, label: \"x-bypass header\" },\n      { regex: /x-skip-auth/i, label: \"x-skip-auth header\" },\n      { regex: /x-no-rate-limit/i, label: \"x-no-rate-limit header\" },\n      { regex: /x-admin/i, label: \"x-admin header\" },",
+      "matchedPattern": "x-skip-auth header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        39
+      ],
+      "snippet": "      { regex: /x-bypass/i, label: \"x-bypass header\" },\n      { regex: /x-skip-auth/i, label: \"x-skip-auth header\" },\n      { regex: /x-no-rate-limit/i, label: \"x-no-rate-limit header\" },\n      { regex: /x-admin/i, label: \"x-admin header\" },\n      { regex: /['\"]test['\"].{0,40}===.{0,40}headers/i, label: \"test value in header check\" },",
+      "matchedPattern": "x-no-rate-limit header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        40
+      ],
+      "snippet": "      { regex: /x-skip-auth/i, label: \"x-skip-auth header\" },\n      { regex: /x-no-rate-limit/i, label: \"x-no-rate-limit header\" },\n      { regex: /x-admin/i, label: \"x-admin header\" },\n      { regex: /['\"]test['\"].{0,40}===.{0,40}headers/i, label: \"test value in header check\" },\n      { regex: /headers.{0,80}['\"]test['\"]/i, label: \"header compared to test\" },",
+      "matchedPattern": "x-admin header — may bypass security in production"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.741Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "7ac33af58e23dd9275c34999970aba236147793be88b46384391a01d3df3a2da",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:08.761Z",
+      "durationMs": 56042,
+      "durationApiMs": 53510,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "e43a028a-de8a-4dc7-8310-a9d2634f2ad6",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.5421327499999999,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 3782,
+        "cacheReadInputTokens": 236768,
+        "cacheCreationInputTokens": 52663
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215247-d54822996f49bf17",
+      "investigatedAt": "2026-05-06T21:53:44.014Z",
+      "durationMs": 9004,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8e73-7001-b338-b63d694b4240",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0524188,
+      "usage": {
+        "inputTokens": 6665.2,
+        "outputTokens": 373.6,
+        "cacheReadInputTokens": 15769.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:44.017Z"
+  },
+  "status": "analyzed"
+}

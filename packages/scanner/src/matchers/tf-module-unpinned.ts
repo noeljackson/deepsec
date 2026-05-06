@@ -42,17 +42,24 @@ export const tfModuleUnpinnedMatcher: MatcherPlugin = {
         moduleStart = i;
         moduleSource = "";
         moduleHasVersion = false;
-        depth = 1;
-        continue;
+        // Brace counting starts at 0 so the opening `{` on this same line
+        // is counted by the per-character loop below — that lets a
+        // single-line block like `module "x" { source = "..." }` close on
+        // its opening line instead of being silently skipped.
+        depth = 0;
       }
       if (!inModule) continue;
       for (const ch of line) {
         if (ch === "{") depth++;
         else if (ch === "}") depth--;
       }
-      const sm = line.match(/^\s*source\s*=\s*"([^"]+)"/);
-      if (sm) moduleSource = sm[1];
-      if (/^\s*version\s*=\s*"[^"]+"/.test(line)) moduleHasVersion = true;
+      // Match `source = "..."` and `version = "..."` anywhere on the line
+      // (not just `^\s*`-anchored) so a single-line `module "x" { source =
+      // "..." }` is parsed on its opening line. Word-boundary on
+      // source/version keeps us from picking up `data_source` or similar.
+      const sm = line.match(/\bsource\s*=\s*"([^"]+)"/);
+      if (sm && !moduleSource) moduleSource = sm[1];
+      if (/\bversion\s*=\s*"[^"]+"/.test(line)) moduleHasVersion = true;
       if (depth <= 0) {
         // module block closed — evaluate
         const src = moduleSource;

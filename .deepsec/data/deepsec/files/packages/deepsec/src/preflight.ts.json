@@ -1,0 +1,308 @@
+{
+  "filePath": "packages/deepsec/src/preflight.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "env-var-as-bool",
+      "lineNumbers": [
+        32,
+        34,
+        35,
+        51,
+        52,
+        80,
+        83
+      ],
+      "snippet": " */\nexport function applyAiGatewayDefaults(): void {\n  const key = process.env.AI_GATEWAY_API_KEY;\n  if (!key) return;\n  if (!process.env.ANTHROPIC_AUTH_TOKEN) process.env.ANTHROPIC_AUTH_TOKEN = key;",
+      "matchedPattern": "Secret env var used as boolean"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        32
+      ],
+      "snippet": "export function applyAiGatewayDefaults(): void {\n  const key = process.env.AI_GATEWAY_API_KEY;\n  if (!key) return;",
+      "matchedPattern": "process.env.AI_GATEWAY_API_KEY"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        34
+      ],
+      "snippet": "  if (!key) return;\n  if (!process.env.ANTHROPIC_AUTH_TOKEN) process.env.ANTHROPIC_AUTH_TOKEN = key;\n  if (!process.env.OPENAI_API_KEY) process.env.OPENAI_API_KEY = key;",
+      "matchedPattern": "process.env.ANTHROPIC_AUTH_TOKEN"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        35
+      ],
+      "snippet": "  if (!process.env.ANTHROPIC_AUTH_TOKEN) process.env.ANTHROPIC_AUTH_TOKEN = key;\n  if (!process.env.OPENAI_API_KEY) process.env.OPENAI_API_KEY = key;\n  if (!process.env.ANTHROPIC_BASE_URL) process.env.ANTHROPIC_BASE_URL = GATEWAY_ANTHROPIC_BASE_URL;",
+      "matchedPattern": "process.env.OPENAI_API_KEY"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        36
+      ],
+      "snippet": "  if (!process.env.OPENAI_API_KEY) process.env.OPENAI_API_KEY = key;\n  if (!process.env.ANTHROPIC_BASE_URL) process.env.ANTHROPIC_BASE_URL = GATEWAY_ANTHROPIC_BASE_URL;\n  if (!process.env.OPENAI_BASE_URL) process.env.OPENAI_BASE_URL = GATEWAY_OPENAI_BASE_URL;",
+      "matchedPattern": "process.env.ANTHROPIC_BASE_URL"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        37
+      ],
+      "snippet": "  if (!process.env.ANTHROPIC_BASE_URL) process.env.ANTHROPIC_BASE_URL = GATEWAY_ANTHROPIC_BASE_URL;\n  if (!process.env.OPENAI_BASE_URL) process.env.OPENAI_BASE_URL = GATEWAY_OPENAI_BASE_URL;\n}",
+      "matchedPattern": "process.env.OPENAI_BASE_URL"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        51
+      ],
+      "snippet": "export function assertAgentCredential(agentType: string | undefined): void {\n  const anthropic = process.env.ANTHROPIC_AUTH_TOKEN;\n  const openai = process.env.OPENAI_API_KEY;",
+      "matchedPattern": "process.env.ANTHROPIC_AUTH_TOKEN"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        52
+      ],
+      "snippet": "  const anthropic = process.env.ANTHROPIC_AUTH_TOKEN;\n  const openai = process.env.OPENAI_API_KEY;\n",
+      "matchedPattern": "process.env.OPENAI_API_KEY"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        80
+      ],
+      "snippet": "export function assertSandboxCredential(): void {\n  const oidc = process.env.VERCEL_OIDC_TOKEN;\n  if (oidc) return;",
+      "matchedPattern": "process.env.VERCEL_OIDC_TOKEN"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        83
+      ],
+      "snippet": "\n  const token = process.env.VERCEL_TOKEN;\n  const teamId = process.env.VERCEL_TEAM_ID;",
+      "matchedPattern": "process.env.VERCEL_TOKEN"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        84
+      ],
+      "snippet": "  const token = process.env.VERCEL_TOKEN;\n  const teamId = process.env.VERCEL_TEAM_ID;\n  const projectId = process.env.VERCEL_PROJECT_ID;",
+      "matchedPattern": "process.env.VERCEL_TEAM_ID"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        85
+      ],
+      "snippet": "  const teamId = process.env.VERCEL_TEAM_ID;\n  const projectId = process.env.VERCEL_PROJECT_ID;\n  if (token && teamId && projectId) return;",
+      "matchedPattern": "process.env.VERCEL_PROJECT_ID"
+    },
+    {
+      "vulnSlug": "env-var-as-bool",
+      "lineNumbers": [
+        60,
+        62,
+        72,
+        74,
+        75,
+        164,
+        165,
+        199,
+        202
+      ],
+      "snippet": " */\nexport async function applyAiGatewayDefaults(): Promise<void> {\n  if (!process.env.AI_GATEWAY_API_KEY && process.env.VERCEL_OIDC_TOKEN) {\n    try {\n      process.env.AI_GATEWAY_API_KEY = await getVercelOidcToken({",
+      "matchedPattern": "Secret env var used as boolean"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        60
+      ],
+      "snippet": "export async function applyAiGatewayDefaults(): Promise<void> {\n  if (!process.env.AI_GATEWAY_API_KEY && process.env.VERCEL_OIDC_TOKEN) {\n    try {",
+      "matchedPattern": "process.env.AI_GATEWAY_API_KEY"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        62
+      ],
+      "snippet": "    try {\n      process.env.AI_GATEWAY_API_KEY = await getVercelOidcToken({\n        expirationBufferMs: OIDC_EXPIRATION_BUFFER_MS,",
+      "matchedPattern": "process.env.AI_GATEWAY_API_KEY"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        72
+      ],
+      "snippet": "  }\n  const key = process.env.AI_GATEWAY_API_KEY;\n  if (!key) return;",
+      "matchedPattern": "process.env.AI_GATEWAY_API_KEY"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        74
+      ],
+      "snippet": "  if (!key) return;\n  if (!process.env.ANTHROPIC_AUTH_TOKEN) process.env.ANTHROPIC_AUTH_TOKEN = key;\n  if (!process.env.OPENAI_API_KEY) process.env.OPENAI_API_KEY = key;",
+      "matchedPattern": "process.env.ANTHROPIC_AUTH_TOKEN"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        75
+      ],
+      "snippet": "  if (!process.env.ANTHROPIC_AUTH_TOKEN) process.env.ANTHROPIC_AUTH_TOKEN = key;\n  if (!process.env.OPENAI_API_KEY) process.env.OPENAI_API_KEY = key;\n  if (!process.env.ANTHROPIC_BASE_URL) process.env.ANTHROPIC_BASE_URL = GATEWAY_ANTHROPIC_BASE_URL;",
+      "matchedPattern": "process.env.OPENAI_API_KEY"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        76
+      ],
+      "snippet": "  if (!process.env.OPENAI_API_KEY) process.env.OPENAI_API_KEY = key;\n  if (!process.env.ANTHROPIC_BASE_URL) process.env.ANTHROPIC_BASE_URL = GATEWAY_ANTHROPIC_BASE_URL;\n  if (!process.env.OPENAI_BASE_URL) process.env.OPENAI_BASE_URL = GATEWAY_OPENAI_BASE_URL;",
+      "matchedPattern": "process.env.ANTHROPIC_BASE_URL"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        77
+      ],
+      "snippet": "  if (!process.env.ANTHROPIC_BASE_URL) process.env.ANTHROPIC_BASE_URL = GATEWAY_ANTHROPIC_BASE_URL;\n  if (!process.env.OPENAI_BASE_URL) process.env.OPENAI_BASE_URL = GATEWAY_OPENAI_BASE_URL;\n}",
+      "matchedPattern": "process.env.OPENAI_BASE_URL"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        97
+      ],
+      "snippet": "function whichSync(bin: string): boolean {\n  const pathEnv = process.env.PATH || \"\";\n  const sep = process.platform === \"win32\" ? \";\" : \":\";",
+      "matchedPattern": "process.env.PATH"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        133
+      ],
+      "snippet": "function hasLocalCodexAgent(): boolean {\n  const codexHome = process.env.CODEX_HOME || join(homedir(), \".codex\");\n  return existsSync(join(codexHome, \"auth.json\"));",
+      "matchedPattern": "process.env.CODEX_HOME"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        164
+      ],
+      "snippet": "\n  const anthropic = process.env.ANTHROPIC_AUTH_TOKEN;\n  const openai = process.env.OPENAI_API_KEY;",
+      "matchedPattern": "process.env.ANTHROPIC_AUTH_TOKEN"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        165
+      ],
+      "snippet": "  const anthropic = process.env.ANTHROPIC_AUTH_TOKEN;\n  const openai = process.env.OPENAI_API_KEY;\n",
+      "matchedPattern": "process.env.OPENAI_API_KEY"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        199
+      ],
+      "snippet": "export function assertSandboxCredential(): void {\n  const oidc = process.env.VERCEL_OIDC_TOKEN;\n  if (oidc) return;",
+      "matchedPattern": "process.env.VERCEL_OIDC_TOKEN"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        202
+      ],
+      "snippet": "\n  const token = process.env.VERCEL_TOKEN;\n  const teamId = process.env.VERCEL_TEAM_ID;",
+      "matchedPattern": "process.env.VERCEL_TOKEN"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        203
+      ],
+      "snippet": "  const token = process.env.VERCEL_TOKEN;\n  const teamId = process.env.VERCEL_TEAM_ID;\n  const projectId = process.env.VERCEL_PROJECT_ID;",
+      "matchedPattern": "process.env.VERCEL_TEAM_ID"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        204
+      ],
+      "snippet": "  const teamId = process.env.VERCEL_TEAM_ID;\n  const projectId = process.env.VERCEL_PROJECT_ID;\n  if (token && teamId && projectId) return;",
+      "matchedPattern": "process.env.VERCEL_PROJECT_ID"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.679Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "41f53bae9a2131868505df04203b5bd471885dce5500bb4b77d6ab0f9f0d7f9c",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502180937-22fd8a82a4d15018",
+      "investigatedAt": "2026-05-02T18:10:47.221Z",
+      "durationMs": 66421,
+      "durationApiMs": 65377,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "555234d3-a3c0-432c-8d96-e40e3a1091c7",
+      "findingCount": 0,
+      "numTurns": 5,
+      "costUsd": 0.45631025000000003,
+      "usage": {
+        "inputTokens": 10,
+        "outputTokens": 4451,
+        "cacheReadInputTokens": 155008,
+        "cacheCreationInputTokens": 42797
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-d7ae5c7b1506afd5",
+      "investigatedAt": "2026-05-06T21:54:42.651Z",
+      "durationMs": 20765.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8bda-7060-aa31-96333341fed1",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1458454,
+      "usage": {
+        "inputTokens": 18553.8,
+        "outputTokens": 1049,
+        "cacheReadInputTokens": 43212.8,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:54:42.653Z"
+  },
+  "status": "analyzed"
+}

@@ -272,7 +272,14 @@ program
     "Only findings whose most recent analysis was on/after this ISO timestamp",
   )
   .option("--only-true-positive", "Only findings revalidated as true-positive")
-  .option("--exclude-false-positive", "Drop findings revalidated as false-positive")
+  .option(
+    "--include-resolved",
+    "Include findings revalidated as fixed / false-positive / accepted-risk (hidden by default)",
+  )
+  .option(
+    "--exclude-false-positive",
+    "Deprecated — false-positive is now hidden by default; this flag is a no-op",
+  )
   .option("--only-slugs <csv>", "Only export findings with these vulnSlugs")
   .option("--skip-slugs <csv>", "Drop findings with these vulnSlugs")
   .option("--require-owner", "Drop findings that have no ownership data (no assignee, no teams)")

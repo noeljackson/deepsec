@@ -1,0 +1,70 @@
+{
+  "filePath": "packages/scanner/src/matchers/tf-public-ingress.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"tf-public-ingress\",\n  description:\n    \"Terraform security-group / NACL / EKS ingress allowing 0.0.0.0/0 on non-HTTPS ports\",\n  filePatterns: [\"**/*.tf\", \"**/*.tf.json\", \"**/*.hcl\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "framework-image-optimizer",
+      "lineNumbers": [
+        6,
+        16,
+        24,
+        77
+      ],
+      "snippet": "/**\n * Terraform `aws_security_group_rule` / inline `ingress {}` blocks /\n * `aws_network_acl_rule` with `cidr_blocks = [\"0.0.0.0/0\"]` (or `::/0`)\n * and a port other than 443 (HTTPS) or 80 (HTTP redirect).\n *",
+      "matchedPattern": "\\b(?:169\\.254\\.169\\.254|0\\.0\\.0\\.0|127\\."
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.476Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "8ed9e1cb0edcb429d8349ff9ef4be272036f071ada5d55b960aabf2c89d7a9d9",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:00.779Z",
+      "durationMs": 49234,
+      "durationApiMs": 46756,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "138fcf13-e4b7-4a3b-ac41-8724b22e1dfb",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.43548600000000004,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 3473,
+        "cacheReadInputTokens": 43952,
+        "cacheCreationInputTokens": 52264
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [
+      {
+        "name": "Malte Ubl",
+        "email": "malte@vercel.com",
+        "date": "2026-04-30T10:49:41-07:00"
+      }
+    ],
+    "enrichedAt": "2026-05-02T16:09:00.810Z"
+  },
+  "status": "analyzed",
+  "lockedByRunId": "20260506215246-46b46eb6e55984c8",
+  "lockedAt": "2026-05-06T21:52:46.776Z"
+}

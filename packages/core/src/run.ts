@@ -3,7 +3,14 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { fileRecordPath, filesDir, projectConfigPath, runMetaPath, runsDir } from "./paths.js";
+import {
+  dataDir,
+  fileRecordPath,
+  filesDir,
+  projectConfigPath,
+  runMetaPath,
+  runsDir,
+} from "./paths.js";
 import { fileRecordSchema, projectConfigSchema, runMetaSchema } from "./schemas.js";
 import type { FileRecord, ProjectConfig, RunMeta } from "./types.js";
 
@@ -166,6 +173,95 @@ export function writeFileRecord(record: FileRecord): void {
   const p = fileRecordPath(record.projectId, record.filePath);
   fs.mkdirSync(path.dirname(p), { recursive: true });
   fs.writeFileSync(p, JSON.stringify(record, null, 2) + "\n");
+}
+
+// --- Per-project process lock ---
+//
+// Mutex for the SELECTION + CLAIM phase of `process()`. Without it, two
+// CLI invocations against the same project both load the same FileRecords,
+// both filter to "pending", both write status="processing" with their own
+// runId — the loser's lock + future analysisHistory writes get clobbered.
+//
+// Lock primitive: atomic `mkdir`. POSIX + Windows both make `mkdir` fail
+// with EEXIST when the target exists, so the kernel does the
+// mutual-exclusion for us. The lock holder writes a small `owner` file
+// inside the dir so stale-lock detection can read who/when.
+//
+// Scope: only held during the few seconds of disk I/O it takes to choose
+// + lock files. Real processing runs OUTSIDE the lock and in parallel
+// with other concurrent runs on disjoint file sets.
+const PROCESS_LOCK_DIR_NAME = ".process.lock";
+const PROCESS_LOCK_STALE_MS = 60 * 60 * 1000; // 1h, matches per-file STALE_LOCK_MS
+
+function processLockPath(projectId: string): string {
+  return path.join(dataDir(projectId), PROCESS_LOCK_DIR_NAME);
+}
+
+/**
+ * Acquire the per-project process lock. Polls every 200ms up to
+ * `timeoutMs`. Returns a release function on success; throws on timeout.
+ *
+ * If we observe a lock dir older than 1h, we treat it as abandoned (the
+ * holder crashed or got `kill -9`'d) and reclaim it. Same cutoff as the
+ * per-file `STALE_LOCK_MS` so the two layers agree.
+ */
+export async function acquireProcessLock(
+  projectId: string,
+  ownerRunId: string,
+  timeoutMs = 30_000,
+): Promise<() => void> {
+  const lockDir = processLockPath(projectId);
+  fs.mkdirSync(path.dirname(lockDir), { recursive: true });
+  const ownerFile = path.join(lockDir, "owner");
+  const deadline = Date.now() + timeoutMs;
+  while (true) {
+    try {
+      fs.mkdirSync(lockDir);
+      try {
+        fs.writeFileSync(
+          ownerFile,
+          JSON.stringify({ runId: ownerRunId, acquiredAt: new Date().toISOString() }),
+        );
+      } catch {
+        // owner file is informational; lock works without it.
+      }
+      let released = false;
+      return () => {
+        if (released) return;
+        released = true;
+        try {
+          fs.rmSync(lockDir, { recursive: true, force: true });
+        } catch {}
+      };
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== "EEXIST") throw err;
+      // Held by someone else — check if it's stale.
+      let mtime = 0;
+      try {
+        mtime = fs.statSync(ownerFile).mtimeMs;
+      } catch {
+        try {
+          mtime = fs.statSync(lockDir).mtimeMs;
+        } catch {
+          // Lock vanished between mkdir EEXIST and stat — retry the mkdir.
+          continue;
+        }
+      }
+      if (Date.now() - mtime > PROCESS_LOCK_STALE_MS) {
+        try {
+          fs.rmSync(lockDir, { recursive: true, force: true });
+        } catch {}
+        continue;
+      }
+      if (Date.now() >= deadline) {
+        throw new Error(
+          `Timed out after ${timeoutMs}ms waiting for the process lock on project ${JSON.stringify(projectId)}. ` +
+            `Another \`deepsec process\` is mid-claim. If no run is active, remove ${lockDir} manually.`,
+        );
+      }
+      await new Promise((r) => setTimeout(r, 200));
+    }
+  }
 }
 
 export function loadAllFileRecords(projectId: string): FileRecord[] {

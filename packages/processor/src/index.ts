@@ -2,12 +2,14 @@ import fs from "node:fs";
 import path from "node:path";
 import type { FileRecord, Severity } from "@deepsec/core";
 import {
+  acquireProcessLock,
   completeRun,
   createRunMeta,
   dataDir,
   defaultConcurrency,
   getRegistry,
   loadAllFileRecords,
+  readFileRecord,
   readProjectConfig,
   readRunMeta,
   writeFileRecord,
@@ -428,13 +430,64 @@ export async function process(params: {
     toProcess = toProcess.slice(0, params.limit);
   }
 
-  // Lock files for this run
+  // Atomic claim under a per-project mutex. Without serializing this
+  // section, two `process()` invocations against the same project both
+  // see the same pending records, both write status="processing" with
+  // their own runId, and the loser's lock + later writes get clobbered.
+  // The lock is held only for the few seconds of disk I/O it takes to
+  // re-read each record and write a fresh lock — the real work runs
+  // outside it, so concurrent runs against disjoint file sets don't
+  // block each other. See acquireProcessLock for the mkdir-based atomic
+  // primitive and the 1h stale-lock cutoff.
   const lockedAt = new Date().toISOString();
-  for (const record of toProcess) {
-    record.status = "processing";
-    record.lockedByRunId = runId;
-    record.lockedAt = lockedAt;
-    writeFileRecord(record);
+  const claimed: FileRecord[] = [];
+  const inForceMode = !!reinvestigate || params.filePaths !== undefined;
+  const releaseProcessLock = await acquireProcessLock(projectId, runId);
+  try {
+    for (const record of toProcess) {
+      let current: FileRecord;
+      try {
+        const fresh = readFileRecord(projectId, record.filePath);
+        if (!fresh) continue;
+        current = fresh;
+      } catch {
+        continue;
+      }
+
+      const isOurs = current.lockedByRunId === runId;
+      const isFreelyClaimable =
+        current.status === "pending" ||
+        current.status === "error" ||
+        (current.status === "processing" &&
+          current.lockedByRunId !== runId &&
+          isReclaimableLock(current));
+      if (!isOurs && !isFreelyClaimable && !inForceMode) {
+        continue;
+      }
+
+      current.status = "processing";
+      current.lockedByRunId = runId;
+      current.lockedAt = lockedAt;
+      writeFileRecord(current);
+
+      // Mutate the in-memory snapshot we'll process from so downstream code
+      // sees the same lock state.
+      record.status = current.status;
+      record.lockedByRunId = current.lockedByRunId;
+      record.lockedAt = current.lockedAt;
+      claimed.push(record);
+    }
+  } finally {
+    releaseProcessLock();
+  }
+  toProcess = claimed;
+  if (toProcess.length === 0) {
+    emitProgress({
+      type: "all_complete",
+      message: "Nothing to claim — another run owned every candidate file.",
+    });
+    completeRun(projectId, runId, "done", { filesProcessed: 0 });
+    return { runId, analysisCount: 0, findingCount: 0, errorBatchCount: 0 };
   }
 
   const batches = batchCandidates(toProcess, params.batchSize);

@@ -21,11 +21,6 @@
       "entry": ["src/config.ts", "src/sandbox/request-proxy.mjs!", "src/__tests__/**/*.test.ts"]
     }
   },
-  "ignore": ["fixtures/vulnerable-app/**", "samples/**"],
-  "ignoreDependencies": [
-    "@anthropic-ai/claude-agent-sdk",
-    "@openai/codex",
-    "@openai/codex-sdk",
-    "deepsec"
-  ]
+  "ignore": ["fixtures/vulnerable-app/**", "samples/**", ".deepsec/**"],
+  "ignoreDependencies": ["@anthropic-ai/claude-agent-sdk", "@openai/codex", "@openai/codex-sdk"]
 }

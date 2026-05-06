@@ -261,7 +261,7 @@ describe("snapshotFileRecords + mergeAfterExtract", () => {
       ),
     );
 
-    const merged = mergeAfterExtract(dir, snap);
+    const merged = mergeAfterExtract(dir, snap, "p");
     expect(merged).toBe(1);
 
     const fooAfter = JSON.parse(fs.readFileSync(recPath, "utf-8"));

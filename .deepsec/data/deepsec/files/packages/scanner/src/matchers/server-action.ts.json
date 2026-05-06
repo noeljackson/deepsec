@@ -1,0 +1,86 @@
+{
+  "filePath": "packages/scanner/src/matchers/server-action.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"server-action\",\n  description: \"Next.js Server Actions — every export is a publicly callable POST endpoint\",\n  filePatterns: [\n    \"**/app/**/actions.{ts,tsx}\",",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "framework-server-action",
+      "lineNumbers": [
+        1
+      ],
+      "snippet": "import type { CandidateMatch } from \"@deepsec/core\";\nimport type { MatcherPlugin } from \"../types.js\";\n\n/**\n * 100% server action coverage. Every exported function from a 'use server'",
+      "matchedPattern": "action handler file (path)"
+    }
+  ],
+  "lastScannedAt": "2026-05-02T17:54:41.736Z",
+  "lastScannedRunId": "20260502175440-05201b02576fe6c2",
+  "fileHash": "be36c90825779973718bf6f6f6281c86a827e8e88d97243bf5d9540265763eb7",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:18.883Z",
+      "durationMs": 67597,
+      "durationApiMs": 64537,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "37282d6b-6ed8-480e-afa8-0a64dc85a965",
+      "findingCount": 0,
+      "numTurns": 7,
+      "costUsd": 0.55530475,
+      "usage": {
+        "inputTokens": 12,
+        "outputTokens": 4133,
+        "cacheReadInputTokens": 277877,
+        "cacheCreationInputTokens": 50077
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-df891dab3f17f60a",
+      "investigatedAt": "2026-05-06T21:54:06.923Z",
+      "durationMs": 17002,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c27-71a2-a797-7acb236cb9a9",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.091324,
+      "usage": {
+        "inputTokens": 9490.5,
+        "outputTokens": 820.25,
+        "cacheReadInputTokens": 38528,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:54:06.925Z"
+  },
+  "status": "analyzed"
+}

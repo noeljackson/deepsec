@@ -1,0 +1,168 @@
+{
+  "filePath": "packages/scanner/src/matchers/rce.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "        { regex: /\\bspawnSync\\s*\\(/, label: \"spawnSync\" },\n        { regex: /\\beval\\s*\\(/, label: \"eval\" },\n        { regex: /new\\s+Function\\s*\\(/, label: \"new Function()\" },\n        { regex: /require\\s*\\(\\s*['\"]child_process['\"]/, label: \"child_process import\" },\n        { regex: /from\\s+['\"]child_process['\"]/, label: \"child_process import\" },",
+      "matchedPattern": "new Function()"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"rce\",\n  description: \"exec, spawn, eval, Function constructor with potential user input\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  match(content, _filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "framework-edge-sandbox",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "        { regex: /\\bspawnSync\\s*\\(/, label: \"spawnSync\" },\n        { regex: /\\beval\\s*\\(/, label: \"eval\" },\n        { regex: /new\\s+Function\\s*\\(/, label: \"new Function()\" },\n        { regex: /require\\s*\\(\\s*['\"]child_process['\"]/, label: \"child_process import\" },\n        { regex: /from\\s+['\"]child_process['\"]/, label: \"child_process import\" },",
+      "matchedPattern": "\\bnew\\s+Function\\s*\\("
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        10
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `child_process.exec(cmd);`,\n    `exec(\\`ls \\${dir}\\`);`,\n    `execSync(\"whoami\");`,",
+      "matchedPattern": "child_process exec"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "    `child_process.exec(cmd);`,\n    `exec(\\`ls \\${dir}\\`);`,\n    `execSync(\"whoami\");`,\n    `spawn(\"sh\", [\"-c\", cmd]);`,\n    `spawnSync(\"git\", [\"status\"]);`,",
+      "matchedPattern": "execSync"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    `exec(\\`ls \\${dir}\\`);`,\n    `execSync(\"whoami\");`,\n    `spawn(\"sh\", [\"-c\", cmd]);`,\n    `spawnSync(\"git\", [\"status\"]);`,\n    `eval(userInput);`,",
+      "matchedPattern": "spawn"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    `execSync(\"whoami\");`,\n    `spawn(\"sh\", [\"-c\", cmd]);`,\n    `spawnSync(\"git\", [\"status\"]);`,\n    `eval(userInput);`,\n    `new Function(\"return \" + body)();`,",
+      "matchedPattern": "spawnSync"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "    `spawn(\"sh\", [\"-c\", cmd]);`,\n    `spawnSync(\"git\", [\"status\"]);`,\n    `eval(userInput);`,\n    `new Function(\"return \" + body)();`,\n    `const cp = require(\"child_process\");`,",
+      "matchedPattern": "eval"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        16,
+        32
+      ],
+      "snippet": "    `spawnSync(\"git\", [\"status\"]);`,\n    `eval(userInput);`,\n    `new Function(\"return \" + body)();`,\n    `const cp = require(\"child_process\");`,\n    `import { exec } from \"child_process\";`,",
+      "matchedPattern": "new Function()"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "    `eval(userInput);`,\n    `new Function(\"return \" + body)();`,\n    `const cp = require(\"child_process\");`,\n    `import { exec } from \"child_process\";`,\n    `vm.runInNewContext(code, ctx);`,",
+      "matchedPattern": "child_process import"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "    `new Function(\"return \" + body)();`,\n    `const cp = require(\"child_process\");`,\n    `import { exec } from \"child_process\";`,\n    `vm.runInNewContext(code, ctx);`,\n    `vm.runInThisContext(snippet);`,",
+      "matchedPattern": "child_process import"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        19,
+        20
+      ],
+      "snippet": "    `const cp = require(\"child_process\");`,\n    `import { exec } from \"child_process\";`,\n    `vm.runInNewContext(code, ctx);`,\n    `vm.runInThisContext(snippet);`,\n  ],",
+      "matchedPattern": "vm context execution"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.480Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "78f530d72d35d5dc597eef2a0efbcdee04a39f404c1a299d54333e677aedcee9",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:52.263Z",
+      "durationMs": 39999,
+      "durationApiMs": 37583,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "6e1bc416-d19e-4cf0-9899-296107ff9cc4",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.4026835,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2725,
+        "cacheReadInputTokens": 43672,
+        "cacheCreationInputTokens": 50030
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-1595aabe27b888ba",
+      "investigatedAt": "2026-05-06T21:53:45.521Z",
+      "durationMs": 9426.2,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b5a-79c1-8782-d679e7129e7b",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.05059860000000001,
+      "usage": {
+        "inputTokens": 5234.2,
+        "outputTokens": 467.8,
+        "cacheReadInputTokens": 20787.2,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:45.522Z"
+  },
+  "status": "analyzed"
+}

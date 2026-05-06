@@ -1,0 +1,167 @@
+{
+  "filePath": "packages/scanner/src/matchers/security-behind-flag.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"security-behind-flag\",\n  description: \"Security-critical code gated by feature flags — fails open when flag is off\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx,lua,go}\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        11,
+        30
+      ],
+      "snippet": "  examples: [\n    `if (featureFlag(\"strict-auth\")) {\n  await verifyToken(req);\n}`,\n    `if (feature_flag.is_enabled(\"waf\")) {",
+      "matchedPattern": "auth verification call"
+    },
+    {
+      "vulnSlug": "security-behind-flag",
+      "lineNumbers": [
+        10
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx,lua,go}\"],\n  examples: [\n    `if (featureFlag(\"strict-auth\")) {\n  await verifyToken(req);\n}`,",
+      "matchedPattern": "Security operation gated by feature flag — verify fail-safe when flag is off"
+    },
+    {
+      "vulnSlug": "security-behind-flag",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "  await verifyToken(req);\n}`,\n    `if (feature_flag.is_enabled(\"waf\")) {\n  await firewallCheck(req);\n}`,",
+      "matchedPattern": "Security operation gated by feature flag — verify fail-safe when flag is off"
+    },
+    {
+      "vulnSlug": "security-behind-flag",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "  await firewallCheck(req);\n}`,\n    `if (LaunchDarkly.variation(\"rate-limit\", false)) {\n  throttle(req);\n}`,",
+      "matchedPattern": "Security operation gated by feature flag — verify fail-safe when flag is off"
+    },
+    {
+      "vulnSlug": "security-behind-flag",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "  throttle(req);\n}`,\n    `const variant = client.variation(\"csrf-check\");\nif (variant) {\n  validateCsrf(req);",
+      "matchedPattern": "Security operation gated by feature flag — verify fail-safe when flag is off"
+    },
+    {
+      "vulnSlug": "security-behind-flag",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "  validateCsrf(req);\n}`,\n    `if (statsig.checkGate(\"strip-headers\")) {\n  sanitize(req.headers);\n}`,",
+      "matchedPattern": "Security operation gated by feature flag — verify fail-safe when flag is off"
+    },
+    {
+      "vulnSlug": "security-behind-flag",
+      "lineNumbers": [
+        26
+      ],
+      "snippet": "  sanitize(req.headers);\n}`,\n    `if (flag_enabled(\"encryption\")) {\n  encrypt(payload);\n}`,",
+      "matchedPattern": "Security operation gated by feature flag — verify fail-safe when flag is off"
+    },
+    {
+      "vulnSlug": "security-behind-flag",
+      "lineNumbers": [
+        29
+      ],
+      "snippet": "  encrypt(payload);\n}`,\n    `if (isEnabled(\"auth-required\")) {\n  await verifyToken(req);\n}`,",
+      "matchedPattern": "Security operation gated by feature flag — verify fail-safe when flag is off"
+    },
+    {
+      "vulnSlug": "security-behind-flag",
+      "lineNumbers": [
+        32
+      ],
+      "snippet": "  await verifyToken(req);\n}`,\n    `if (isFeatureEnabled(\"rate-limit\")) {\n  throttle(req);\n}`,",
+      "matchedPattern": "Security operation gated by feature flag — verify fail-safe when flag is off"
+    },
+    {
+      "vulnSlug": "security-behind-flag",
+      "lineNumbers": [
+        35
+      ],
+      "snippet": "  throttle(req);\n}`,\n    `const flag = experiment(\"hmac-check\");\nif (flag) {\n  hmac(secret, body);",
+      "matchedPattern": "Security operation gated by feature flag — verify fail-safe when flag is off"
+    },
+    {
+      "vulnSlug": "security-behind-flag",
+      "lineNumbers": [
+        39
+      ],
+      "snippet": "  hmac(secret, body);\n}`,\n    `if (getFlag(\"strict-cors\")) {\n  applyCors(req);\n}`,",
+      "matchedPattern": "Security operation gated by feature flag — verify fail-safe when flag is off"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.599Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "4798192125c918426b0a30ddbb8361aacbed277ef934cf09e5a2d41bf8286574",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:48.669Z",
+      "durationMs": 36079,
+      "durationApiMs": 35436,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "69ed0493-8625-4abd-8306-37c866228f23",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.21502700000000002,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2774,
+        "cacheReadInputTokens": 74534,
+        "cacheCreationInputTokens": 17340
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-1595aabe27b888ba",
+      "investigatedAt": "2026-05-06T21:53:45.522Z",
+      "durationMs": 9426.2,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b5a-79c1-8782-d679e7129e7b",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.05059860000000001,
+      "usage": {
+        "inputTokens": 5234.2,
+        "outputTokens": 467.8,
+        "cacheReadInputTokens": 20787.2,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:45.524Z"
+  },
+  "status": "analyzed"
+}

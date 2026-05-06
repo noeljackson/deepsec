@@ -1,0 +1,131 @@
+{
+  "filePath": "packages/deepsec/src/commands/metrics.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        88
+      ],
+      "snippet": "        const stripped = c.replace(/\\x1b\\[[0-9;]*m/g, \"\");\n        const pad = widths[i] - stripped.length;\n        if (alignRight.includes(i)) return \" \".repeat(Math.max(0, pad)) + c;\n        return c + \" \".repeat(Math.max(0, pad));\n      })",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        199
+      ],
+      "snippet": "      .map((c, i) => {\n        const pad = widths[i] - visibleLength(c);\n        if (alignRight.includes(i)) return \" \".repeat(Math.max(0, pad)) + c;\n        return c + \" \".repeat(Math.max(0, pad));\n      })",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.501Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "a27772aa19fef621a1f86d0b3e8c979b71e7bf05d9567c5caa1f779f557d3554",
+  "findings": [
+    {
+      "severity": "BUG",
+      "vulnSlug": "other-env-var-ignored",
+      "title": "discoverProjects() ignores DEEPSEC_DATA_ROOT environment variable",
+      "description": "Line 28 uses `path.resolve(\"data\")` directly instead of `getDataRoot()` from `packages/core/src/paths.ts` (which honors `process.env.DEEPSEC_DATA_ROOT`). When the env var is set, `dataDir(id)` reads/writes records under the configured root, but `discoverProjects()` still enumerates `./data`. Running `pnpm deepsec metrics` without `--project-id` returns no projects (or the wrong projects from a stale `./data/` directory) instead of the projects actually being managed. Same bug as `export.ts:223`, `data-commit.ts:4`, and `sandbox-all.ts:23`.",
+      "lineNumbers": [
+        28
+      ],
+      "recommendation": "Replace `path.resolve(\"data\")` with a call to a shared root accessor that respects `DEEPSEC_DATA_ROOT` (e.g., expose `dataRoot()` from `packages/core/src/paths.ts`). Or factor a `listAllProjectIds()` helper into core and use it from both `metrics.ts` and `export.ts`.",
+      "confidence": "high",
+      "revalidation": {
+        "verdict": "fixed",
+        "reasoning": "The current metrics.ts no longer uses path.resolve(\"data\") in discoverProjects. I read the full file and confirmed it imports getDataRoot from @deepsec/core, then discoverProjects resolves path.resolve(getDataRoot()) before enumerating project directories. I traced getDataRoot in packages/core/src/paths.ts, where it returns process.env.DEEPSEC_DATA_ROOT || \"data\", so the environment override is honored when metrics is run without --project-id. I also traced getMetrics through loadAllFileRecords in packages/core/src/run.ts; loadAllFileRecords uses filesDir(projectId), which uses dataDir(projectId), which also uses getDataRoot(), so discovery and record loading now point at the same configured root. The command path metricsCommand chooses opts.projectId when provided, otherwise discoverProjects(), so the affected no-project-id case is covered by the patched helper. Related current files export.ts and sandbox-all.ts also call getDataRoot in their project discovery helpers, which supports that this class of bug has been addressed beyond metrics.ts. I could not cite an exact commit because the provided workspace is not a git repository, but the current code implements the recommended behavior directly.",
+        "revalidatedAt": "2026-05-06T22:53:16.349Z",
+        "runId": "20260506225212-fd8cf882d414a1ea",
+        "model": "gpt-5.5"
+      }
+    }
+  ],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:16:38.715Z",
+      "durationMs": 404873,
+      "durationApiMs": 403181,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "88ed0b7c-a3fd-4046-8aac-ec8125710cdf",
+      "findingCount": 1,
+      "numTurns": 19,
+      "costUsd": 1.8812119999999997,
+      "usage": {
+        "inputTokens": 24,
+        "outputTokens": 28083,
+        "cacheReadInputTokens": 1375409,
+        "cacheCreationInputTokens": 78610
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-f808d3de8281a89b",
+      "investigatedAt": "2026-05-06T21:54:08.174Z",
+      "durationMs": 17398.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b7e-7fc1-9515-b35b5e5c7706",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.110869,
+      "usage": {
+        "inputTokens": 12309.5,
+        "outputTokens": 831.25,
+        "cacheReadInputTokens": 48768,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    },
+    {
+      "runId": "20260506225212-fd8cf882d414a1ea",
+      "investigatedAt": "2026-05-06T22:53:16.349Z",
+      "durationMs": 26282.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff7d-f306-77b1-8b94-829bb88dfdef",
+      "findingCount": 1,
+      "numTurns": 0.5,
+      "phase": "revalidate",
+      "costUsd": 0.1317885,
+      "usage": {
+        "inputTokens": 14068.5,
+        "outputTokens": 1421,
+        "cacheReadInputTokens": 37632,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T22:53:16.354Z"
+  },
+  "status": "analyzed"
+}

@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { getDataRoot, readProjectConfig } from "@deepsec/core";
 import { defaultModelForAgent } from "../agent-defaults.js";
-import { BOLD, CYAN, DIM, GREEN, RED, RESET } from "../formatters.js";
+import { BOLD, CYAN, DIM, GREEN, RED, RESET, YELLOW } from "../formatters.js";
 import { assertAgentCredential, assertSandboxCredential } from "../preflight.js";
 import { resolveAgentType } from "../resolve-agent-type.js";
 import { orchestrate } from "../sandbox/orchestrator.js";
@@ -126,7 +126,28 @@ export async function sandboxAllCommand(
     return;
   }
 
-  // Allocate sandboxes proportionally by file count (min 1 per project)
+  // Sandbox runs are billed; "give every eligible project one sandbox" must
+  // never push us past the user-supplied budget. If there are more eligible
+  // projects than `--sandboxes`, take the top-N by file count and tell the
+  // user what we dropped.
+  if (projectFiles.length > totalSandboxes) {
+    projectFiles.sort((a, b) => b.files - a.files);
+    const kept = projectFiles.slice(0, totalSandboxes);
+    const dropped = projectFiles.slice(totalSandboxes);
+    console.log(
+      `\n${YELLOW}Budget ${totalSandboxes} < ${projectFiles.length} eligible projects — dropping ${dropped.length}:${RESET}`,
+    );
+    for (const d of dropped) {
+      console.log(`  ${DIM}${d.projectId}: ${d.files} files (skipped — raise --sandboxes)${RESET}`);
+    }
+    projectFiles.length = 0;
+    projectFiles.push(...kept);
+  }
+
+  // Allocate sandboxes proportionally by file count (min 1 per project).
+  // Invariant: sum(allocations[].sandboxes) === totalSandboxes; the
+  // first-pass loop now consumes at most totalSandboxes seats because the
+  // length cap above guarantees projectFiles.length <= totalSandboxes.
   const allocations: { projectId: string; sandboxes: number; files: number }[] = [];
   let remaining = totalSandboxes;
 

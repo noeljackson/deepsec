@@ -1,0 +1,143 @@
+{
+  "filePath": "packages/deepsec/src/sandbox/state.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "crypto-usage",
+      "lineNumbers": [
+        1,
+        19
+      ],
+      "snippet": "import crypto from \"node:crypto\";\nimport fs from \"node:fs\";\nimport path from \"node:path\";",
+      "matchedPattern": "Node crypto import, Node randomBytes"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        26,
+        29,
+        31
+      ],
+      "snippet": "  const dir = runsDir(state.projectId);\n  fs.mkdirSync(dir, { recursive: true });\n  const dest = runPath(state.projectId, state.runId);\n  // saveRunState is called once per run today (orchestrator.ts:335). With\n  // a fresh 64-bit suffix collisions are vanishingly unlikely — but if it",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.793Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "e5971c11edbe9e1ae4b59dbada1c21aa1861c077a8f9fa2714c85d6aa7aafc46",
+  "findings": [
+    {
+      "severity": "BUG",
+      "vulnSlug": "other-id-collision",
+      "title": "generateRunId has only ~16 bits of entropy in its random suffix",
+      "description": "Line 19: `crypto.randomBytes(2).toString('hex')` produces a 4-character hex suffix (16 bits, ~65k space). Combined with a second-precision timestamp (line 18), two run-state writes within the same wall-clock second have a non-trivial collision probability (birthday-style: ~1% at ~36 concurrent runs). On collision, `saveRunState` (line 26) overwrites without checking, silently destroying the prior run's state. Not a security issue — runIds are not used for authentication or authorization, and `crypto.randomBytes` is fine for non-security uses — but it is a data-loss bug if a user fans out many sandboxes.",
+      "lineNumbers": [
+        17,
+        18,
+        19,
+        20,
+        21,
+        23,
+        24,
+        25,
+        26,
+        27
+      ],
+      "recommendation": "Use 4–6 random bytes (8–12 hex chars) for the suffix and/or check existence before write; fail loudly on collision instead of overwriting.",
+      "confidence": "high",
+      "revalidation": {
+        "verdict": "fixed",
+        "reasoning": "I read state.ts fully and checked the detached-run call path in sandbox/orchestrator.ts where generateRunId and saveRunState are used. The current code no longer matches the finding: generateRunId uses `crypto.randomBytes(8).toString(\"hex\")`, giving a 16-character hex suffix with 64 bits of entropy, not the reported 2 random bytes / 16 bits. saveRunState has also been hardened to use `fs.openSync(dest, \"wx\")`, so even an unexpected runId collision fails loudly instead of silently overwriting an existing state file. runsDir still goes through dataDir(projectId), which validates the projectId segment in @deepsec/core paths.ts. I could not inspect git history because this checkout is not a git repository, but the current source contains both recommended mitigations: substantially more entropy and exclusive file creation. The original data-loss bug is therefore patched in the current code.",
+        "revalidatedAt": "2026-05-06T22:53:16.997Z",
+        "runId": "20260506225212-3c52c571c30e899b",
+        "model": "gpt-5.5"
+      }
+    }
+  ],
+  "analysisHistory": [
+    {
+      "runId": "20260502162558-8060",
+      "investigatedAt": "2026-05-02T16:32:33.413Z",
+      "durationMs": 387976,
+      "durationApiMs": 385675,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "059cbbb1-9116-45a3-8bac-62f003332c03",
+      "findingCount": 1,
+      "numTurns": 11,
+      "costUsd": 2.7404805000000003,
+      "usage": {
+        "inputTokens": 21,
+        "outputTokens": 13776,
+        "cacheReadInputTokens": 671446,
+        "cacheCreationInputTokens": 47980
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-221dec17f8912bb2",
+      "investigatedAt": "2026-05-06T21:55:04.231Z",
+      "durationMs": 25095.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8ae8-7ba0-9eb4-7132564b7e9c",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1313282,
+      "usage": {
+        "inputTokens": 14444.6,
+        "outputTokens": 1132.2,
+        "cacheReadInputTokens": 50278.4,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    },
+    {
+      "runId": "20260506225212-3c52c571c30e899b",
+      "investigatedAt": "2026-05-06T22:53:16.997Z",
+      "durationMs": 26411.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff7d-f2d9-7190-9845-8674057e5117",
+      "findingCount": 1,
+      "numTurns": 0.5,
+      "phase": "revalidate",
+      "costUsd": 0.147932,
+      "usage": {
+        "inputTokens": 16385,
+        "outputTokens": 1436.5,
+        "cacheReadInputTokens": 45824,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T22:53:17.002Z"
+  },
+  "status": "analyzed"
+}

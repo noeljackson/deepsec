@@ -12,6 +12,28 @@ import { DATA_DIR } from "./setup.js";
 // sandbox legitimately needs to return a new file type, add it here.
 const ALLOWED_EXTENSIONS = new Set([".json", ".md", ".csv"]);
 
+// Namespace allowlist applied to every entry path inside the per-project
+// tarball. The sandbox is the explicit trust boundary — even if someone
+// tampered with the archive, the extracted files can only land in these
+// known shapes. Critically, this rejects a top-level `project.json` (whose
+// `rootPath` field would otherwise be trusted by the next CLI run and steer
+// later sandbox uploads at attacker-chosen host paths). See the
+// "archive-extraction-untrusted" finding in .deepsec/findings.
+const ALLOWED_ENTRY_PATTERNS: RegExp[] = [
+  /^\.?\/?files\/(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+\.json$/,
+  /^\.?\/?runs\/[A-Za-z0-9._-]+\.json$/,
+  /^\.?\/?reports\/report[A-Za-z0-9._-]*\.(?:json|md|csv)$/,
+];
+
+// Belt-and-suspenders caps on a sandbox-supplied tarball. The numbers err
+// generous — a real-world per-project results dump for the largest project
+// we've shipped is ~30 MB uncompressed, ~5k entries — but they fence off
+// decompression bombs and silly entry counts.
+const MAX_TARBALL_BYTES = 256 * 1024 * 1024; // 256 MiB compressed
+const MAX_UNCOMPRESSED_BYTES = 1024 * 1024 * 1024; // 1 GiB total
+const MAX_ENTRIES = 50_000;
+const MAX_PER_FILE_BYTES = 32 * 1024 * 1024; // 32 MiB per record
+
 const SETUP_MARKER = "/tmp/deepsec-setup-done";
 
 /**
@@ -102,6 +124,14 @@ export async function downloadResults(
   log(
     `[sandbox-${sandboxIndex}] Downloaded ${mb}MB in ${((Date.now() - started) / 1000).toFixed(1)}s`,
   );
+  if (size > MAX_TARBALL_BYTES) {
+    try {
+      fs.unlinkSync(localTarPath);
+    } catch {}
+    throw new Error(
+      `Refusing sandbox results tarball: ${mb}MB compressed exceeds ${(MAX_TARBALL_BYTES / 1024 / 1024).toFixed(0)}MB cap.`,
+    );
+  }
 
   // Extract locally into data/<projectId>/
   const localProjectDir = dataDir(projectId);
@@ -137,6 +167,7 @@ export async function extractTarballLocally(tarPath: string, destDir: string): P
   // the archive is clean by then.
   const violations: string[] = [];
   let fileCount = 0;
+  let totalUncompressed = 0;
   await tar.list({
     file: tarPath,
     strict: true,
@@ -151,14 +182,35 @@ export async function extractTarballLocally(tarPath: string, destDir: string): P
         violations.push(`"${entry.path}" has extension ${ext || "(none)"}`);
         return;
       }
+      const norm = entry.path.replace(/^\.\//, "");
+      if (!ALLOWED_ENTRY_PATTERNS.some((re) => re.test(norm))) {
+        violations.push(`"${entry.path}" is outside files/, runs/, reports/`);
+        return;
+      }
+      const sz = (entry as unknown as { size?: number }).size ?? 0;
+      if (sz > MAX_PER_FILE_BYTES) {
+        violations.push(
+          `"${entry.path}" is ${(sz / 1024 / 1024).toFixed(1)}MB > per-file cap ${(MAX_PER_FILE_BYTES / 1024 / 1024).toFixed(0)}MB`,
+        );
+        return;
+      }
+      totalUncompressed += sz;
       fileCount++;
+      if (fileCount > MAX_ENTRIES) {
+        violations.push(`entry count exceeds cap of ${MAX_ENTRIES}`);
+      }
+      if (totalUncompressed > MAX_UNCOMPRESSED_BYTES) {
+        violations.push(
+          `uncompressed size exceeds cap of ${(MAX_UNCOMPRESSED_BYTES / 1024 / 1024).toFixed(0)}MB`,
+        );
+      }
     },
   });
   if (violations.length > 0) {
     const preview = violations.slice(0, 5).join("\n  ");
     const more = violations.length > 5 ? `\n  …and ${violations.length - 5} more` : "";
     throw new Error(
-      `Refusing sandbox results tarball: ${violations.length} disallowed entr${violations.length === 1 ? "y" : "ies"}:\n  ${preview}${more}\nAllowed: regular files with extensions ${[...ALLOWED_EXTENSIONS].sort().join(", ")}.`,
+      `Refusing sandbox results tarball: ${violations.length} disallowed entr${violations.length === 1 ? "y" : "ies"}:\n  ${preview}${more}\nAllowed: regular ${[...ALLOWED_EXTENSIONS].sort().join("/")} files under files/, runs/, or reports/; ≤${MAX_ENTRIES} entries, ≤${(MAX_UNCOMPRESSED_BYTES / 1024 / 1024).toFixed(0)}MB total.`,
     );
   }
 
@@ -169,6 +221,6 @@ export async function extractTarballLocally(tarPath: string, destDir: string): P
   // view of the same file. We re-merge after extract.
   const hostSnapshot = snapshotFileRecords(destDir);
   await tar.extract({ file: tarPath, cwd: destDir });
-  mergeAfterExtract(destDir, hostSnapshot);
+  mergeAfterExtract(destDir, hostSnapshot, path.basename(destDir));
   return fileCount;
 }

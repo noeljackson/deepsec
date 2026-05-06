@@ -1,0 +1,102 @@
+{
+  "filePath": "packages/scanner/src/matchers/missing-auth.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    if (/\\.(test|spec)\\./i.test(filePath)) return [];\n\n    // Skip files that use backend framework auth wrappers (these are properly protected)\n    // Note: Next.js middleware.ts is NOT considered sufficient — only direct handler wrappers count\n    const hasBackendAuth = [",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "      /withSchema\\s*\\(/,\n      /withAuthentication\\s*\\(/,\n      /authMiddleware/,\n      /withAuth\\s*\\(/,\n      /requireAuth/,",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"missing-auth\",\n  description: \"All HTTP request entry points — flagged as weak candidates for auth review\",\n  filePatterns: [\n    \"**/api/**/*.{ts,tsx,js,jsx}\",",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        34
+      ],
+      "snippet": "      /withSchema\\s*\\(/,\n      /withAuthentication\\s*\\(/,\n      /authMiddleware/,\n      /withAuth\\s*\\(/,\n      /requireAuth/,",
+      "matchedPattern": "auth middleware"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.483Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "cf4fe134c3d62fe7a9cf45de3a15d89ee6f2211c098fc2e4eab7313c2a0ebe65",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:01.411Z",
+      "durationMs": 47741,
+      "durationApiMs": 45235,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "cd084360-af75-4dd9-a59d-04e0c819a753",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.4970532499999999,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 3107,
+        "cacheReadInputTokens": 226559,
+        "cacheCreationInputTokens": 48967
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215247-339bb41812196c7b",
+      "investigatedAt": "2026-05-06T21:53:41.474Z",
+      "durationMs": 10341.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8dbb-7630-af10-8fa4a4cb0268",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.06273675,
+      "usage": {
+        "inputTokens": 7705.75,
+        "outputTokens": 440,
+        "cacheReadInputTokens": 22016,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:41.476Z"
+  },
+  "status": "analyzed"
+}

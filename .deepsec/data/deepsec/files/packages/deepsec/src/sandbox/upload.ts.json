@@ -1,0 +1,209 @@
+{
+  "filePath": "packages/deepsec/src/sandbox/upload.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        87
+      ],
+      "snippet": "      // locally without committing), so we filter by fs.existsSync before\n      // handing the list to tar — otherwise tar errors on the missing files.\n      const raw = execSync(\"git ls-files --cached --others --exclude-standard -z\", {\n        cwd: sourceDir,\n        maxBuffer: 512 * 1024 * 1024,",
+      "matchedPattern": "execSync"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        99,
+        109
+      ],
+      "snippet": "      const filtered = Buffer.from(existing.join(\"\\0\") + \"\\0\");\n\n      const tar = spawn(\"tar\", [\"-czf\", \"-\", \"--null\", \"-T\", \"-\", \"-C\", sourceDir], {\n        stdio: [\"pipe\", \"pipe\", \"pipe\"],\n      });",
+      "matchedPattern": "spawn"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7,
+        20,
+        22,
+        53,
+        84,
+        109,
+        139,
+        144,
+        147,
+        150,
+        153,
+        157
+      ],
+      "snippet": "import type { Sandbox } from \"@vercel/sandbox\";\n\nexport const TARGET_EXCLUDES = [\n  \"--exclude=node_modules\",\n  \"--exclude=.next\",",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "crypto-usage",
+      "lineNumbers": [
+        2,
+        75
+      ],
+      "snippet": "import { execSync, spawn } from \"node:child_process\";\nimport crypto from \"node:crypto\";\nimport fs from \"node:fs\";\nimport path from \"node:path\";",
+      "matchedPattern": "Node crypto import, Node crypto.create*"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        120
+      ],
+      "snippet": "    // sandbox as a dangling pointer; harmless but a needless surprise\n    // for matchers, and not something the user expects to upload).\n    const raw = execSync(\"git ls-files --cached --others --exclude-standard -z\", {\n      cwd: absSourceDir,\n      maxBuffer: 512 * 1024 * 1024,",
+      "matchedPattern": "execSync"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        162,
+        181
+      ],
+      "snippet": "    // double-apply (spawn cwd resolves `data/x` against process.cwd\n    // → relative `-C data/x` would then chdir again).\n    tar = spawn(\"tar\", [\"-czf\", \"-\", \"-C\", absSourceDir, \"--null\", \"-T\", \"-\"], {\n      cwd: absSourceDir,\n      stdio: [\"pipe\", \"pipe\", \"pipe\"],",
+      "matchedPattern": "spawn"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        10,
+        23,
+        25,
+        73,
+        181,
+        246,
+        283,
+        288,
+        291,
+        294,
+        297,
+        301
+      ],
+      "snippet": "import type { Sandbox } from \"@vercel/sandbox\";\n\nexport const TARGET_EXCLUDES = [\n  \"--exclude=node_modules\",\n  \"--exclude=.next\",",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "crypto-usage",
+      "lineNumbers": [
+        2,
+        90,
+        101
+      ],
+      "snippet": "import { execSync, spawn } from \"node:child_process\";\nimport crypto from \"node:crypto\";\nimport fs from \"node:fs\";\nimport os from \"node:os\";",
+      "matchedPattern": "Node crypto import, Node randomBytes, Node crypto.create*"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.792Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "84b8333e18d8d9e9f3d1f30f54fbe99029b42c687be4397ad195785491df36cb",
+  "findings": [
+    {
+      "severity": "BUG",
+      "vulnSlug": "path-traversal",
+      "title": "Sandbox-side `tar -xzf` of host-uploaded archive uses default extraction (mirror of download.ts issue, lower impact)",
+      "description": "`extractTarballOnSandbox` (lines 141–167) extracts the host-supplied tarball into the sandbox with `tar -xzf <tar> -C <destDir>` and no path-traversal flags. This is the inverse of the download.ts issue: the sandbox extracts content uploaded from the host, so the immediate trust direction (host trusts itself) makes this less severe. However, the helper is exported and the same destDir/path patterns are used to mirror data. If a future caller passes a tarball assembled from third-party data (e.g. a data tarball for a project where `rootPath` is a directory that contains untrusted files), those files' relative paths could include traversal sequences. Concretely, `makeTarball` on line 99 uses `git ls-files` which outputs only repo-tracked relative paths (safe), and on line 109 uses `tar -czf … -C sourceDir .` which emits relative paths under sourceDir (safe assuming sourceDir is under the user's control). So today's invocation is fine, but the helper should harden in case future call sites pass less-trusted inputs.",
+      "lineNumbers": [
+        141,
+        155,
+        156,
+        157
+      ],
+      "recommendation": "Add `--no-overwrite-dir --no-same-owner -P` (and consider `--anchored`) to the sandbox-side `tar -xzf` arguments, or replace with a path-validating extractor. Document that callers must ensure the archive comes from a trusted source.",
+      "confidence": "medium",
+      "revalidation": {
+        "verdict": "false-positive",
+        "reasoning": "I read upload.ts fully and traced its only production call path through sandbox/setup.ts and sandbox/orchestrator.ts. extractTarballOnSandbox does run `tar -xzf <tar> -C <destDir>` without extra validation, but the archives passed to it are created locally in the same run by makeTarball from appRoot, the configured target root, and data/<projectId>. That data flow is host-to-sandbox, and the project context explicitly treats host CLI inputs, project config, local source files, and data directories as trusted developer-controlled inputs, not attacker-controlled inputs. The only production callers are the three setup.ts bootstrap extractions, and there is no current call site that accepts a tarball returned by the adversarial sandbox or any third-party archive. makeTarball also creates normal relative tar entries via `git ls-files ... -z` plus `tar -T -` for git repos, or via `tar -C <sourceDir> .` for non-git directories, so today's path does not provide a concrete way for an attacker to choose traversal entry names. A malicious developer could place unusual files in their own workspace, but that is outside the trust boundary and only affects their own sandbox VM. The finding itself describes a future-risk hardening scenario rather than a currently exploitable vulnerability, so it is not a true positive under this review's verdict criteria.",
+        "revalidatedAt": "2026-05-06T22:53:16.997Z",
+        "runId": "20260506225212-3c52c571c30e899b",
+        "model": "gpt-5.5"
+      }
+    }
+  ],
+  "analysisHistory": [
+    {
+      "runId": "20260502162558-8060",
+      "investigatedAt": "2026-05-02T16:32:33.222Z",
+      "durationMs": 387976,
+      "durationApiMs": 385675,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "059cbbb1-9116-45a3-8bac-62f003332c03",
+      "findingCount": 1,
+      "numTurns": 11,
+      "costUsd": 2.7404805000000003,
+      "usage": {
+        "inputTokens": 21,
+        "outputTokens": 13776,
+        "cacheReadInputTokens": 671446,
+        "cacheCreationInputTokens": 47980
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-221dec17f8912bb2",
+      "investigatedAt": "2026-05-06T21:55:04.224Z",
+      "durationMs": 25095.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8ae8-7ba0-9eb4-7132564b7e9c",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1313282,
+      "usage": {
+        "inputTokens": 14444.6,
+        "outputTokens": 1132.2,
+        "cacheReadInputTokens": 50278.4,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    },
+    {
+      "runId": "20260506225212-3c52c571c30e899b",
+      "investigatedAt": "2026-05-06T22:53:16.997Z",
+      "durationMs": 26411.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff7d-f2d9-7190-9845-8674057e5117",
+      "findingCount": 1,
+      "numTurns": 0.5,
+      "phase": "revalidate",
+      "costUsd": 0.147932,
+      "usage": {
+        "inputTokens": 16385,
+        "outputTokens": 1436.5,
+        "cacheReadInputTokens": 45824,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T22:53:17.000Z"
+  },
+  "status": "analyzed"
+}

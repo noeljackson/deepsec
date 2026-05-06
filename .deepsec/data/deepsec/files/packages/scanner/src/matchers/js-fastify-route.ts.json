@@ -1,0 +1,86 @@
+{
+  "filePath": "packages/scanner/src/matchers/js-fastify-route.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    `fastify.get(\"/\", async () => \"ok\");`,\n    `fastify.post('/users', handler)`,\n    `app.put(\"/items/:id\", async (req, reply) => {});`,\n    `instance.register(authPlugin);`,\n    `server.route({ method: \"POST\", url: \"/x\", handler })`,",
+      "matchedPattern": "HTTP entry point: app method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"js-fastify-route\",\n  description: \"Fastify route registrations — entry points (weak candidate, gated on Fastify)\",\n  filePatterns: [\"**/*.{ts,js,mjs,cjs}\"],\n  requires: { tech: [\"fastify\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.486Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "ee2c6402b07c7958a1fa717b7a0335ab3bcce73fee2a44b459c3150a394aa9b6",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-ab6562fec23cf37d",
+      "investigatedAt": "2026-05-06T21:49:57.250Z",
+      "durationMs": 9008.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-2f98-7592-a79c-829b1c2c5e44",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.06295575,
+      "usage": {
+        "inputTokens": 8035.25,
+        "outputTokens": 422.25,
+        "cacheReadInputTokens": 20224,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-6c96b5768e32f822",
+      "investigatedAt": "2026-05-06T21:53:43.210Z",
+      "durationMs": 8913.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c2d-7cd2-bdcc-8d9ecc3879fc",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.051097199999999995,
+      "usage": {
+        "inputTokens": 5948,
+        "outputTokens": 428.6,
+        "cacheReadInputTokens": 16998.4,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:43.213Z"
+  },
+  "status": "analyzed"
+}

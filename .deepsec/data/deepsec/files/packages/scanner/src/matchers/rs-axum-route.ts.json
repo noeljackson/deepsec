@@ -1,0 +1,110 @@
+{
+  "filePath": "packages/scanner/src/matchers/rs-axum-route.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  examples: [\n    `let app = Router::new();`,\n    `Router::new().route(\"/users\", get(list_users))`,\n    `app.route(\"/login\", post(login_handler))`,\n    `.route(\"/items/:id\", patch(update_item))`,",
+      "matchedPattern": "HTTP entry point: route definition (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    `let app = Router::new();`,\n    `Router::new().route(\"/users\", get(list_users))`,\n    `app.route(\"/login\", post(login_handler))`,\n    `.route(\"/items/:id\", patch(update_item))`,\n    `.nest(\"/api\", api_router)`,",
+      "matchedPattern": "HTTP entry point: route definition (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    `Router::new().route(\"/users\", get(list_users))`,\n    `app.route(\"/login\", post(login_handler))`,\n    `.route(\"/items/:id\", patch(update_item))`,\n    `.nest(\"/api\", api_router)`,\n    `.merge(admin_routes)`,",
+      "matchedPattern": "HTTP entry point: route definition (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        34
+      ],
+      "snippet": "        {\n          regex: /\\.route\\s*\\(\\s*\"[^\"]+\"\\s*,\\s*(?:get|post|put|patch|delete|any|on)\\s*\\(/,\n          label: \".route('/path', get(handler))\",\n        },\n        { regex: /\\.nest\\s*\\(\\s*\"[^\"]+\"/, label: \".nest() subroute\" },",
+      "matchedPattern": "HTTP entry point: route definition (weak candidate)"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"rs-axum-route\",\n  description: \"Axum router declarations (gated on Axum)\",\n  filePatterns: [\"**/*.rs\"],\n  requires: { tech: [\"axum\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.480Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "23d6091486a2a844f5b5fab19fadf229b3df2de9ef29ce7f4c10bd05109520dd",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-df24f2705e085bee",
+      "investigatedAt": "2026-05-06T21:49:55.092Z",
+      "durationMs": 9051.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-307a-7390-99a3-9d5ad05b5428",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0688055,
+      "usage": {
+        "inputTokens": 8643.5,
+        "outputTokens": 454,
+        "cacheReadInputTokens": 23936,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215247-339bb41812196c7b",
+      "investigatedAt": "2026-05-06T21:53:42.612Z",
+      "durationMs": 8625.6,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8dbb-7fb1-8d2a-e3566e1d1ef2",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.063703,
+      "usage": {
+        "inputTokens": 8334.6,
+        "outputTokens": 444.2,
+        "cacheReadInputTokens": 17408,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:42.614Z"
+  },
+  "status": "analyzed"
+}

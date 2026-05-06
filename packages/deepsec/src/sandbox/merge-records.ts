@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { AnalysisEntry, FileRecord, Finding } from "@deepsec/core";
+import { type AnalysisEntry, type FileRecord, type Finding, fileRecordSchema } from "@deepsec/core";
 
 /**
  * Tarball extraction is `cwd=dataDir(projectId)`, so file records live
@@ -134,17 +134,34 @@ function mergeFinding(host: Finding, incoming: Finding): Finding {
  * After tar extraction, walk `<destDir>/files/**.json` and re-write any
  * record that also existed in `hostSnapshot` with a merged version.
  *
- * Files that didn't exist on the host before extraction are left
- * untouched (they're the sandbox's contribution). Files that existed on
- * the host but are missing from the tarball are also untouched (the
- * sandbox didn't change them this poll).
+ * Sandbox output is the trust boundary, so every incoming record must:
+ *   - parse as JSON
+ *   - match `fileRecordSchema` exactly
+ *   - declare the same `projectId` as the destDir's basename
+ *   - declare a `filePath` whose serialized form matches the tarball entry
+ *     path (`files/<filePath>.json`)
+ *
+ * If any of those checks fail on a record that *also* existed on the host,
+ * we restore the host's version on disk — better an out-of-date but valid
+ * record than a corrupted/spoofed one. If the failing record didn't exist
+ * on the host, we delete it (the sandbox didn't have a legitimate need to
+ * write a malformed record there).
+ *
+ * Files that didn't exist on the host before extraction and pass validation
+ * are left untouched (they're the sandbox's contribution). Files that
+ * existed on the host but are missing from the tarball are also untouched
+ * (the sandbox didn't change them this poll).
  *
  * Returns the number of records that were merge-rewritten.
  */
-export function mergeAfterExtract(destDir: string, hostSnapshot: Map<string, FileRecord>): number {
-  if (hostSnapshot.size === 0) return 0;
+export function mergeAfterExtract(
+  destDir: string,
+  hostSnapshot: Map<string, FileRecord>,
+  expectedProjectId?: string,
+): number {
   const filesRoot = path.join(destDir, FILES_SUBDIR);
   if (!fs.existsSync(filesRoot)) return 0;
+  const requireProjectId = expectedProjectId ?? path.basename(destDir);
 
   let merged = 0;
   const stack: string[] = [filesRoot];
@@ -165,18 +182,51 @@ export function mergeAfterExtract(destDir: string, hostSnapshot: Map<string, Fil
       if (!(e.isFile() && e.name.endsWith(".json"))) continue;
       const rel = path.relative(destDir, full);
       const host = hostSnapshot.get(rel);
-      if (!host) continue;
 
-      let incoming: FileRecord;
+      let raw: unknown;
       try {
-        incoming = JSON.parse(fs.readFileSync(full, "utf-8")) as FileRecord;
+        raw = JSON.parse(fs.readFileSync(full, "utf-8"));
       } catch {
+        // Malformed JSON — restore host snapshot if we have one, else drop.
+        restoreOrDrop(full, host);
         continue;
       }
+
+      const parsed = fileRecordSchema.safeParse(raw);
+      if (!parsed.success) {
+        restoreOrDrop(full, host);
+        continue;
+      }
+      const incoming = parsed.data;
+
+      // Sandbox tarball came from `data/<projectId>/`, so every record in
+      // it must claim that same projectId, and the on-disk path must match
+      // its declared filePath.
+      const expectedRel = path
+        .join(FILES_SUBDIR, `${incoming.filePath}.json`)
+        .replaceAll("\\", "/");
+      if (incoming.projectId !== requireProjectId || rel.replaceAll("\\", "/") !== expectedRel) {
+        restoreOrDrop(full, host);
+        continue;
+      }
+
+      if (!host) continue;
       const out = mergeFileRecord(host, incoming);
       fs.writeFileSync(full, JSON.stringify(out, null, 2) + "\n");
       merged++;
     }
   }
   return merged;
+}
+
+function restoreOrDrop(full: string, host: FileRecord | undefined): void {
+  if (host) {
+    try {
+      fs.writeFileSync(full, JSON.stringify(host, null, 2) + "\n");
+    } catch {}
+    return;
+  }
+  try {
+    fs.unlinkSync(full);
+  } catch {}
 }

@@ -8,7 +8,11 @@ export const candidateMatchSchema = z.object({
 });
 
 export const revalidationSchema = z.object({
-  verdict: z.enum(["true-positive", "false-positive", "fixed", "uncertain"]),
+  // "accepted-risk" is a manual marker (the agent never produces it): the
+  // finding is a real true-positive, but the team has consciously chosen to
+  // live with it — see the "accepted risks" section in the project README.
+  // Treated like "false-positive" for PR-comment / report-default filtering.
+  verdict: z.enum(["true-positive", "false-positive", "fixed", "uncertain", "accepted-risk"]),
   reasoning: z.string(),
   adjustedSeverity: z.enum(["CRITICAL", "HIGH", "MEDIUM", "HIGH_BUG", "BUG", "LOW"]).optional(),
   revalidatedAt: z.string(),

@@ -1,0 +1,11 @@
+{
+  "tags": [
+    "github-actions",
+    "node"
+  ],
+  "sentinels": [
+    "package.json"
+  ],
+  "detectedAt": "2026-05-06T21:46:55.759Z",
+  "rootPath": "/Users/malteubl/ws/vercel/vibe/vuln-scan/deepsec"
+}

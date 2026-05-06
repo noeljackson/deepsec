@@ -1,0 +1,212 @@
+{
+  "filePath": "packages/processor/src/prompt/highlights.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        171
+      ],
+      "snippet": "    languages: [\"ruby\"],\n    bullets: [\n      \"`skip_before_action :authenticate_user!` on a controller (or specific action) — confirm it's intentional and not on a write endpoint\",\n      \"Strong parameters: `params.require(:x).permit(...)` is the mass-assignment guard; `params[:x]` directly into `Model.update(...)` is the bug\",\n      \"`raw(x)` / `x.html_safe` / `<%== %>` on user input is XSS — note that bare `<%= %>` auto-escapes in Rails ≥ 3 and is safe; flag the explicit unescape forms, not standard ERB output\",",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        64,
+        98,
+        161,
+        185,
+        197,
+        205,
+        215,
+        225,
+        313,
+        345,
+        378,
+        380,
+        455,
+        466,
+        510,
+        586,
+        618,
+        671,
+        792,
+        814,
+        825
+      ],
+      "snippet": "    languages: JS_LANGS,\n    bullets: [\n      \"Each `app.get/post/...` and `router.use` is a public endpoint — confirm auth middleware actually wraps it (order matters; routes mounted before `app.use(authMiddleware)` are unprotected)\",\n      \"`req.query`/`req.params`/`req.body` are user input; concatenation into SQL, shell, paths, or URLs is the usual sink\",\n      \"`express.static` on a user-influenced root, or `res.sendFile(req.params.x)`, is path traversal\",",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        44,
+        54
+      ],
+      "snippet": "      \"Next.js `middleware.ts` runs at the edge and is NOT sufficient auth — too easy to misconfigure or bypass via routes that escape the matcher\",\n      \"Server Actions are publicly callable POST endpoints — every one needs explicit auth + authorization checks\",\n      \"`JSON.stringify()` inside `dangerouslySetInnerHTML` or inline `<script>` tags is XSS unless the output escapes `</` (look for `safeJsonStringify` or `\\\\u003c`)\",\n      \"`searchParams` and dynamic route segments (`[id]`, `[...slug]`) are user-controlled — treat them as untrusted in middleware too\",\n      \"`unstable_cache` / `revalidateTag` on user-supplied keys can leak across tenants\",",
+      "matchedPattern": "dangerouslySetInnerHTML"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        336
+      ],
+      "snippet": "    bullets: [\n      \"`Bun.serve({ fetch })` is a raw HTTP entry — auth/validation lives entirely in the handler, no framework gates\",\n      \"`Bun.spawn(...)` / `Bun.$`...`` shell template — interpolated user input is RCE-shaped\",\n      \"Bun's TLS/HTTP defaults differ from Node; verify rejected-cert handling on outbound `fetch`\",\n    ],",
+      "matchedPattern": "spawn"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        259,
+        421,
+        521,
+        639,
+        681,
+        714,
+        749,
+        794,
+        805
+      ],
+      "snippet": "    bullets: [\n      \"`+server.ts` exports (`GET`/`POST`/...) are public — auth must live IN the handler, not just the page\",\n      \"Form `actions` are server-callable from any client — confirm auth and CSRF (SvelteKit has built-in CSRF but check overrides)\",\n      \"`load` functions in `+page.server.ts` run server-side and can leak via the streamed `data` prop — shape the return\",\n      \"`hooks.server.ts` is the right place for global auth; flag routes that bypass it\",",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        44
+      ],
+      "snippet": "    bullets: [\n      \"Next.js `middleware.ts` runs at the edge and is NOT sufficient auth — too easy to misconfigure or bypass via routes that escape the matcher\",\n      \"Server Actions are publicly callable POST endpoints — every one needs explicit auth + authorization checks\",\n      \"`JSON.stringify()` inside `dangerouslySetInnerHTML` or inline `<script>` tags is XSS unless the output escapes `</` (look for `safeJsonStringify` or `\\\\u003c`)\",\n      \"`searchParams` and dynamic route segments (`[id]`, `[...slug]`) are user-controlled — treat them as untrusted in middleware too\",\n      \"`unstable_cache` / `revalidateTag` on user-supplied keys can leak across tenants\",\n    ],\n  },",
+      "matchedPattern": "dangerouslySetInnerHTML from URL/request params (HIGH RISK)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        54
+      ],
+      "snippet": "    title: \"React\",\n    languages: JS_LANGS,\n    bullets: [\n      \"`dangerouslySetInnerHTML` with any user-influenceable string is XSS — DB values and usernames count as user-controlled\",\n      \"Refs and effects that touch `document.location` / `window.opener` can become open-redirect or tabnabbing sinks\",\n      \"Server-rendered JSON in `<script>` tags must escape `</` to be XSS-safe\",\n    ],\n  },",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "jwt-handling",
+      "lineNumbers": [
+        817
+      ],
+      "snippet": "      '`req.parameters.get(\"x\")` / `req.query` / `req.content.decode(...)` are user input',\n      'Fluent (Vapor\\'s ORM) — raw SQL via `req.db.raw(\"... \\\\(x)\")` is injection; `.where(\\\\.$name == x)` is parameterized',\n      \"Sessions (`req.session.data`) and JWTs (`req.jwt.verify(...)`) — verify signature algorithm pinning\",\n    ],\n  },",
+      "matchedPattern": "JWT verification (verify algorithm pinning)"
+    },
+    {
+      "vulnSlug": "jwt-handling",
+      "lineNumbers": [
+        147,
+        468
+      ],
+      "snippet": "      '`request.args` / `request.form` / `request.json` interpolated into SQL via `db.engine.execute(f\"...\")` is SQL injection',\n      \"`send_from_directory(dir, request.args['file'])` without a basename check is path traversal\",\n      \"`session` cookies use `app.secret_key` — hardcoded keys in source are session forgery\",\n    ],\n  },",
+      "matchedPattern": "Session cookie handling"
+    },
+    {
+      "vulnSlug": "cache-key-poisoning",
+      "lineNumbers": [
+        358
+      ],
+      "snippet": "      \"`env.<BINDING>` exposes KV / R2 / D1 / secrets — review whether bindings are over-permissioned\",\n      \"Workers can't `require('fs')` / `child_process`; common Node patterns are absent (verify imports compile in Workers runtime)\",\n      \"`caches.default` keys include the full URL — query strings poison the cache unless normalized\",\n    ],\n  },",
+      "matchedPattern": "Cache key includes query params"
+    },
+    {
+      "vulnSlug": "algorithm-confusion",
+      "lineNumbers": [
+        817
+      ],
+      "snippet": "      'Fluent (Vapor\\'s ORM) — raw SQL via `req.db.raw(\"... \\\\(x)\")` is injection; `.where(\\\\.$name == x)` is parameterized',\n      \"Sessions (`req.session.data`) and JWTs (`req.jwt.verify(...)`) — verify signature algorithm pinning\",\n    ],\n  },\n  {",
+      "matchedPattern": "JWT verification WITHOUT algorithm pinning — algorithm confusion risk"
+    },
+    {
+      "vulnSlug": "missing-await",
+      "lineNumbers": [
+        145
+      ],
+      "snippet": "      \"`@app.route(...)` without a `@login_required` (or equivalent) decorator is public; check the order of decorators — `@app.route` must be outermost\",\n      \"`render_template_string(user_input)` is server-side template injection (RCE)\",\n      '`request.args` / `request.form` / `request.json` interpolated into SQL via `db.engine.execute(f\"...\")` is SQL injection',\n      \"`send_from_directory(dir, request.args['file'])` without a basename check is path traversal\",\n      \"`session` cookies use `app.secret_key` — hardcoded keys in source are session forgery\",",
+      "matchedPattern": "db call without await"
+    },
+    {
+      "vulnSlug": "crypto-usage",
+      "lineNumbers": [
+        817
+      ],
+      "snippet": "      '`req.parameters.get(\"x\")` / `req.query` / `req.content.decode(...)` are user input',\n      'Fluent (Vapor\\'s ORM) — raw SQL via `req.db.raw(\"... \\\\(x)\")` is injection; `.where(\\\\.$name == x)` is parameterized',\n      \"Sessions (`req.session.data`) and JWTs (`req.jwt.verify(...)`) — verify signature algorithm pinning\",\n    ],\n  },",
+      "matchedPattern": "JWT sign/verify"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        838
+      ],
+      "snippet": "      \"`without sharing` classes BYPASS row-level security — confirm every `without sharing` is intentional and that the methods can't be invoked by unprivileged users\",\n      \"`@AuraEnabled` methods are reachable from Lightning components without extra auth — same surface as REST\",\n      \"`Database.query('SELECT ... WHERE ... = \\\\'' + userInput + '\\\\'')` is SOQL injection; `[SELECT ... WHERE id = :userInput]` is bound and safe\",\n      \"FLS / CRUD checks (`Schema.sObjectType.X.isAccessible()`) are NOT automatic — flag DML on sObjects without explicit checks\",\n      \"`@RestResource(urlMapping='...')` exposes the class on `/services/apexrest/` — public to authenticated Salesforce users; confirm the data filter\",",
+      "matchedPattern": "Generic .query('SELECT/INSERT/...') with string concatenation — SQL injection"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.862Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "ea1c8c24c145e4b56a93efe3910e87ff76c114c8e48c06e774557ae189fc53e8",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-056be5ab9843df54",
+      "investigatedAt": "2026-05-06T21:49:53.546Z",
+      "durationMs": 8754.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-309a-7a90-bdf3-7755afe84ae1",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.08156725,
+      "usage": {
+        "inputTokens": 11671.75,
+        "outputTokens": 391.75,
+        "cacheReadInputTokens": 22912,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-bcac2325c8c87b25",
+      "investigatedAt": "2026-05-06T21:55:14.358Z",
+      "durationMs": 27046.6,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b6b-7761-82db-0547b8609d5b",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1292618,
+      "usage": {
+        "inputTokens": 13143.4,
+        "outputTokens": 1258,
+        "cacheReadInputTokens": 51609.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:55:14.360Z"
+  },
+  "status": "analyzed"
+}

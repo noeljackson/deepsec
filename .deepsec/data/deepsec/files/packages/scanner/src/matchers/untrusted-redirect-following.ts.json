@@ -1,0 +1,258 @@
+{
+  "filePath": "packages/scanner/src/matchers/untrusted-redirect-following.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        24,
+        38
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"untrusted-redirect-following\",\n  description: \"Server-side fetch follows redirects — SSRF bypass risk if URL is caller-influenced\",\n  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "open-redirect",
+      "lineNumbers": [
+        38
+      ],
+      "snippet": "    // Variable-name hints suggesting URL came from caller / data\n    const URL_VAR =\n      /\\b(?:url|targetUrl|callbackUrl|redirectUrl|webhookUrl|companyUrl|websiteUrl|domainUrl|imageUrl|fetchUrl|next|return_to|returnTo|destination|location)\\b/;\n\n    const lines = content.split(\"\\n\");",
+      "matchedPattern": "redirect URL parameter"
+    },
+    {
+      "vulnSlug": "framework-image-optimizer",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": " * Server-side fetch following redirects across hosts. Common SSRF bypass:\n *   - Host validation runs against the request URL (\"https://allowed.com/...\")\n *   - The fetch follows a 30x to \"https://169.254.169.254/...\", \"http://localhost:8080/...\"\n *   - Now you've reached cloud metadata or internal services\n *",
+      "matchedPattern": "\\b(?:169\\.254\\.169\\.254|0\\.0\\.0\\.0|127\\."
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        10
+      ],
+      "snippet": " *   - Now you've reached cloud metadata or internal services\n *\n * Default Fetch API behavior is `redirect: 'follow'`. To be safe a\n * server-side fetch of a caller-influenced URL must EITHER:\n *   - Set `redirect: 'manual'` and re-validate the resolved Location, OR",
+      "matchedPattern": "explicit redirect: 'follow' — verify URL is allowlisted"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": " *\n * Flags `fetch(url)` / `axios.get(url)` / `got(url)` calls in server-side\n * files where the URL likely derives from caller input. Also flags\n * explicit `redirect: 'follow'` and absence of `redirect:` setting in",
+      "matchedPattern": "fetch(url) — default redirect: follow + caller-style URL"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": " * Flags `fetch(url)` / `axios.get(url)` / `got(url)` calls in server-side\n * files where the URL likely derives from caller input. Also flags\n * explicit `redirect: 'follow'` and absence of `redirect:` setting in\n * suspicious contexts.\n */",
+      "matchedPattern": "explicit redirect: 'follow' — verify URL is allowlisted"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        53
+      ],
+      "snippet": "          lineNumbers: [i + 1],\n          snippet: lines.slice(start, end).join(\"\\n\"),\n          matchedPattern: \"explicit redirect: 'follow' — verify URL is allowlisted\",\n        });\n        continue;",
+      "matchedPattern": "explicit redirect: 'follow' — verify URL is allowlisted"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        58
+      ],
+      "snippet": "\n      // fetch(url) call where `url` is a caller-style variable\n      const m = line.match(\n        /\\b(?:fetch|axios\\.\\s*(?:get|post|put|delete|head)|got|got\\.\\s*(?:get|post))\\s*\\(\\s*([^,)]+)/,",
+      "matchedPattern": "fetch(url) — default redirect: follow + caller-style URL"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        24,
+        51
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"untrusted-redirect-following\",\n  description: \"Server-side fetch follows redirects — SSRF bypass risk if URL is caller-influenced\",\n  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],\n  examples: [",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "open-redirect",
+      "lineNumbers": [
+        29,
+        37,
+        51
+      ],
+      "snippet": "    `await fetch(targetUrl, { redirect: \"follow\" });`,\n    `await fetch(callbackUrl);`,\n    `const res = await fetch(redirectUrl);`,\n    `const r = await fetch(webhookUrl);`,\n    `await axios.get(companyUrl);`,",
+      "matchedPattern": "redirect URL parameter"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        27
+      ],
+      "snippet": "  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],\n  examples: [\n    `await fetch(targetUrl, { redirect: \"follow\" });`,\n    `await fetch(callbackUrl);`,\n    `const res = await fetch(redirectUrl);`,",
+      "matchedPattern": "explicit redirect: 'follow' — verify URL is allowlisted"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        28
+      ],
+      "snippet": "    `await fetch(targetUrl, { redirect: \"follow\" });`,\n    `await fetch(callbackUrl);`,\n    `const res = await fetch(redirectUrl);`,\n    `const r = await fetch(webhookUrl);`,",
+      "matchedPattern": "fetch(callbackUrl) — default redirect: follow + caller-style URL"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        29
+      ],
+      "snippet": "    `await fetch(callbackUrl);`,\n    `const res = await fetch(redirectUrl);`,\n    `const r = await fetch(webhookUrl);`,\n    `await axios.get(companyUrl);`,",
+      "matchedPattern": "fetch(redirectUrl) — default redirect: follow + caller-style URL"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        30
+      ],
+      "snippet": "    `const res = await fetch(redirectUrl);`,\n    `const r = await fetch(webhookUrl);`,\n    `await axios.get(companyUrl);`,\n    `await axios.post(websiteUrl, payload);`,",
+      "matchedPattern": "fetch(webhookUrl) — default redirect: follow + caller-style URL"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        31
+      ],
+      "snippet": "    `const r = await fetch(webhookUrl);`,\n    `await axios.get(companyUrl);`,\n    `await axios.post(websiteUrl, payload);`,\n    `await got(domainUrl);`,",
+      "matchedPattern": "fetch(companyUrl) — default redirect: follow + caller-style URL"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        32
+      ],
+      "snippet": "    `await axios.get(companyUrl);`,\n    `await axios.post(websiteUrl, payload);`,\n    `await got(domainUrl);`,\n    `await got(imageUrl);",
+      "matchedPattern": "fetch(websiteUrl) — default redirect: follow + caller-style URL"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        33
+      ],
+      "snippet": "    `await axios.post(websiteUrl, payload);`,\n    `await got(domainUrl);`,\n    `await got(imageUrl);\ngot.get(imageUrl);`,",
+      "matchedPattern": "fetch(domainUrl) — default redirect: follow + caller-style URL"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        34
+      ],
+      "snippet": "    `await got(domainUrl);`,\n    `await got(imageUrl);\ngot.get(imageUrl);`,\n    `await fetch(fetchUrl, { method: \"GET\" });`,",
+      "matchedPattern": "fetch(imageUrl) — default redirect: follow + caller-style URL"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        35
+      ],
+      "snippet": "    `await got(imageUrl);\ngot.get(imageUrl);`,\n    `await fetch(fetchUrl, { method: \"GET\" });`,\n    `await fetch(returnTo, { method: \"GET\" });`,",
+      "matchedPattern": "fetch(imageUrl) — default redirect: follow + caller-style URL"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        36
+      ],
+      "snippet": "got.get(imageUrl);`,\n    `await fetch(fetchUrl, { method: \"GET\" });`,\n    `await fetch(returnTo, { method: \"GET\" });`,\n  ],",
+      "matchedPattern": "fetch(fetchUrl) — default redirect: follow + caller-style URL"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        37
+      ],
+      "snippet": "    `await fetch(fetchUrl, { method: \"GET\" });`,\n    `await fetch(returnTo, { method: \"GET\" });`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "fetch(returnTo) — default redirect: follow + caller-style URL"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        66
+      ],
+      "snippet": "          lineNumbers: [i + 1],\n          snippet: lines.slice(start, end).join(\"\\n\"),\n          matchedPattern: \"explicit redirect: 'follow' — verify URL is allowlisted\",\n        });\n        continue;",
+      "matchedPattern": "explicit redirect: 'follow' — verify URL is allowlisted"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        71
+      ],
+      "snippet": "\n      // fetch(url) call where `url` is a caller-style variable\n      const m = line.match(\n        /\\b(?:fetch|axios\\.\\s*(?:get|post|put|delete|head)|got|got\\.\\s*(?:get|post))\\s*\\(\\s*([^,)]+)/,",
+      "matchedPattern": "fetch(url) — default redirect: follow + caller-style URL"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.827Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "084c9af084cc63d5d8341c2e133304cc7d0988d1a8314cbe6d828609b027bc74",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:08.859Z",
+      "durationMs": 56042,
+      "durationApiMs": 53510,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "e43a028a-de8a-4dc7-8310-a9d2634f2ad6",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.5421327499999999,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 3782,
+        "cacheReadInputTokens": 236768,
+        "cacheCreationInputTokens": 52663
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215247-d54822996f49bf17",
+      "investigatedAt": "2026-05-06T21:53:37.955Z",
+      "durationMs": 9526.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8e73-7dd3-b6a8-093f2eb1e172",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.06494775,
+      "usage": {
+        "inputTokens": 8802.75,
+        "outputTokens": 429,
+        "cacheReadInputTokens": 16128,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:37.957Z"
+  },
+  "status": "analyzed"
+}

@@ -119,6 +119,15 @@ export function buildSandboxEnv(
   // CODEX_HOME by createBootstrapSnapshot and baked into the snapshot.
   env["CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC"] = "1";
 
+  // Signal to the agent SDK code that the orchestrator is running inside a
+  // Vercel Sandbox microVM. The agents disable their built-in OS-level
+  // sandboxes (Codex's read-only/workspace-write modes, Claude's
+  // bubblewrap/seatbelt sandbox) when this is set, because the VM is the
+  // real boundary and nested sandboxes have caused command-rejection
+  // failures (Codex read-only + never-approve rejects ~7% of cat/sed/rg
+  // calls). When this var is absent, agents enable their own sandboxes.
+  env["DEEPSEC_INSIDE_SANDBOX"] = "1";
+
   // Claude SDK traffic goes through a local proxy that strips
   // `eager_input_streaming` from tool schemas (Bedrock rejects it).
   //

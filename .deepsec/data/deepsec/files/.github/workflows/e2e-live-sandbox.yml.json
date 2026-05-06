@@ -1,0 +1,80 @@
+{
+  "filePath": ".github/workflows/e2e-live-sandbox.yml",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "github-workflow-security",
+      "lineNumbers": [
+        39,
+        40,
+        41
+      ],
+      "snippet": "        env:\n          DEEPSEC_E2E_LIVE_SANDBOX: \"1\"\n          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}\n          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}\n          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}",
+      "matchedPattern": "secret reference"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.811Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "c2af6f479498ec033f6718d72cad9dc6cd572ebd9d7e3744b676ddb9f4abe10e",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214907-30539638cba8a282",
+      "investigatedAt": "2026-05-06T21:50:37.799Z",
+      "durationMs": 26005.666666666668,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3195-7c11-aa21-12b8534cf7ce",
+      "findingCount": 0,
+      "numTurns": 0.3333333333333333,
+      "phase": "process",
+      "costUsd": 0.15579266666666666,
+      "usage": {
+        "inputTokens": 17230,
+        "outputTokens": 1317.3333333333333,
+        "cacheReadInputTokens": 60245.333333333336,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-3a3061e5bb87dbb9",
+      "investigatedAt": "2026-05-06T21:56:18.402Z",
+      "durationMs": 39887.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c3c-7b43-b419-c899fb7eac8f",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1639258,
+      "usage": {
+        "inputTokens": 12793.8,
+        "outputTokens": 1900,
+        "cacheReadInputTokens": 85913.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:56:18.404Z"
+  },
+  "status": "analyzed"
+}

@@ -1,0 +1,69 @@
+{
+  "filePath": "packages/scanner/src/matchers/dockerfile-from-mutable-tag.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        12,
+        29
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"dockerfile-from-mutable-tag\",\n  description: \"FROM line uses a mutable tag (no @sha256 digest pin)\",\n  filePatterns: [\"**/Dockerfile\", \"**/Dockerfile.*\", \"**/*.Dockerfile\"],\n  match(content) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        12,
+        38
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"dockerfile-from-mutable-tag\",\n  description: \"FROM line uses a mutable tag (no @sha256 digest pin)\",\n  filePatterns: [\"**/Dockerfile\", \"**/Dockerfile.*\", \"**/*.Dockerfile\"],\n  requires: { tech: [\"docker\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.491Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "7fabe63f86c8623e114d4eec5ab899fb03be5033a5c0b04485f201853d7ec730",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:36.209Z",
+      "durationMs": 35945,
+      "durationApiMs": 35212,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "7044606c-acf1-4534-96c0-8271cb1ede3d",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.215787,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2588,
+        "cacheReadInputTokens": 74554,
+        "cacheCreationInputTokens": 18204
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [
+      {
+        "name": "Malte Ubl",
+        "email": "malte@vercel.com",
+        "date": "2026-04-30T10:49:41-07:00"
+      }
+    ],
+    "enrichedAt": "2026-05-02T16:09:36.259Z"
+  },
+  "status": "analyzed",
+  "lockedByRunId": "20260506215246-3d7d4ec5e83fddc1",
+  "lockedAt": "2026-05-06T21:52:46.998Z"
+}

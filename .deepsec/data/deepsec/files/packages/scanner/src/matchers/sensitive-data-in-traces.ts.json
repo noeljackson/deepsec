@@ -1,0 +1,158 @@
+{
+  "filePath": "packages/scanner/src/matchers/sensitive-data-in-traces.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"sensitive-data-in-traces\",\n  description: \"Sensitive data sent to tracing/observability — check for PII, secrets, tokens\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "env-var-as-bool",
+      "lineNumbers": [
+        33
+      ],
+      "snippet": "Sentry.setExtra(\"credential\", credential);`,\n    `// store secret\nconst secret = process.env.MY_SECRET;\nspan.setAttribute(\"secret\", secret);`,\n    `// payment handler tracing",
+      "matchedPattern": "Secret env var used as boolean"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        33
+      ],
+      "snippet": "    `// store secret\nconst secret = process.env.MY_SECRET;\nspan.setAttribute(\"secret\", secret);`,",
+      "matchedPattern": "process.env.MY_SECRET"
+    },
+    {
+      "vulnSlug": "sensitive-data-in-traces",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "    `// handles password reset\nconst password = req.body.password;\naddTagsToCurrentSpan({ user: req.body });`,\n    `// payment processing\nconst card = req.body.creditCard;",
+      "matchedPattern": "Datadog span tags in file with sensitive data — check what's being traced"
+    },
+    {
+      "vulnSlug": "sensitive-data-in-traces",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `// payment processing\nconst card = req.body.creditCard;\ntracer.trace(\"charge\", () => stripe.charge(card));`,\n    `// holds secret token from env\nconst token = req.body.token;",
+      "matchedPattern": "Datadog tracer in file with sensitive data — check what's being traced"
+    },
+    {
+      "vulnSlug": "sensitive-data-in-traces",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "    `// holds secret token from env\nconst token = req.body.token;\nspan.setTag(\"payload\", req.body);`,\n    `// stores apiKey in trace\nconst apiKey = req.headers[\"x-api-key\"];",
+      "matchedPattern": "Datadog span tag in file with sensitive data — check what's being traced"
+    },
+    {
+      "vulnSlug": "sensitive-data-in-traces",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "    `// stores apiKey in trace\nconst apiKey = req.headers[\"x-api-key\"];\nSentry.captureException(new Error(\"oops\"));`,\n    `// invoice handler\nconst invoice = req.body;",
+      "matchedPattern": "Sentry exception capture in file with sensitive data — check what's being traced"
+    },
+    {
+      "vulnSlug": "sensitive-data-in-traces",
+      "lineNumbers": [
+        28
+      ],
+      "snippet": "    `// invoice handler\nconst invoice = req.body;\nSentry.setContext(\"billing\", invoice);`,\n    `// log credential issues\nconst credential = req.body.credential;",
+      "matchedPattern": "Sentry context in file with sensitive data — check what's being traced"
+    },
+    {
+      "vulnSlug": "sensitive-data-in-traces",
+      "lineNumbers": [
+        31
+      ],
+      "snippet": "    `// log credential issues\nconst credential = req.body.credential;\nSentry.setExtra(\"credential\", credential);`,\n    `// store secret\nconst secret = process.env.MY_SECRET;",
+      "matchedPattern": "Sentry extra data in file with sensitive data — check what's being traced"
+    },
+    {
+      "vulnSlug": "sensitive-data-in-traces",
+      "lineNumbers": [
+        34
+      ],
+      "snippet": "    `// store secret\nconst secret = process.env.MY_SECRET;\nspan.setAttribute(\"secret\", secret);`,\n    `// payment handler tracing\nconst payment = req.body.payment;",
+      "matchedPattern": "OTel span attribute in file with sensitive data — check what's being traced"
+    },
+    {
+      "vulnSlug": "sensitive-data-in-traces",
+      "lineNumbers": [
+        37
+      ],
+      "snippet": "    `// payment handler tracing\nconst payment = req.body.payment;\nspan.addEvent(\"payment.received\", payment);`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "OTel span event in file with sensitive data — check what's being traced"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.703Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "fc96bcc7decfd0f29d54f5e7464ecc170cb53e66d7e716217b9f79b97b3fdf2b",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:48.699Z",
+      "durationMs": 36079,
+      "durationApiMs": 35436,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "69ed0493-8625-4abd-8306-37c866228f23",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.21502700000000002,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2774,
+        "cacheReadInputTokens": 74534,
+        "cacheCreationInputTokens": 17340
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-b34a23093a7f063f",
+      "investigatedAt": "2026-05-06T21:53:49.455Z",
+      "durationMs": 10005.2,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b3e-7863-93e9-93441614ba27",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0592852,
+      "usage": {
+        "inputTokens": 6833.2,
+        "outputTokens": 528.4,
+        "cacheReadInputTokens": 18534.4,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:49.456Z"
+  },
+  "status": "analyzed"
+}

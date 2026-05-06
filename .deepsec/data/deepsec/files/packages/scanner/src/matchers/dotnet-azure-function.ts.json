@@ -1,0 +1,78 @@
+{
+  "filePath": "packages/scanner/src/matchers/dotnet-azure-function.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"dotnet-azure-function\",\n  description: \"Azure Functions C# entry points (gated on Azure Functions)\",\n  filePatterns: [\"**/*.cs\"],\n  requires: { tech: [\"azure-functions\", \"dotnet\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.491Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "02b34c3fa27d191a6491fe4f480267c3223c99d40bbd27a40d791ba2e3adb0f4",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214907-9bb1c259c7c36d77",
+      "investigatedAt": "2026-05-06T21:50:12.279Z",
+      "durationMs": 13174.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-337d-79c3-aaf6-8b60aa1ff4e7",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.07930425,
+      "usage": {
+        "inputTokens": 10102.75,
+        "outputTokens": 624.75,
+        "cacheReadInputTokens": 20096,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      }
+    },
+    {
+      "runId": "20260506215246-236e6e1868d26ee9",
+      "investigatedAt": "2026-05-06T21:53:53.267Z",
+      "durationMs": 13782.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8ac9-7ab2-9937-115560df520c",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.08881325,
+      "usage": {
+        "inputTokens": 10101.25,
+        "outputTokens": 694.5,
+        "cacheReadInputTokens": 34944,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:53.269Z"
+  },
+  "status": "analyzed"
+}

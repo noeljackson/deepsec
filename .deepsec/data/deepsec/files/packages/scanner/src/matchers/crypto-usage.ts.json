@@ -1,0 +1,174 @@
+{
+  "filePath": "packages/scanner/src/matchers/crypto-usage.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        20,
+        104
+      ],
+      "snippet": "  {\n    regex:\n      /\"crypto\\/(?:aes|cipher|des|dsa|ecdh|ecdsa|ed25519|elliptic|hmac|md5|rand|rc4|rsa|sha1|sha256|sha512|subtle|x509|tls)\"/,\n    label: \"Go crypto/* import\",\n  },",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "jwt-handling",
+      "lineNumbers": [
+        77
+      ],
+      "snippet": "  {\n    regex:\n      /\\bjose\\.(SignJWT|jwtVerify|importJWK|importSPKI|importPKCS8|compactSign|compactVerify|flattenedSign|flattenedVerify|generalSign|generalVerify|EncryptJWT|jwtDecrypt|EncryptSHE|compactDecrypt|flattenedDecrypt|generalDecrypt|CompactEncrypt|FlattenedEncrypt|GeneralEncrypt)\\b/,\n    label: \"jose lib\",\n  },",
+      "matchedPattern": "JWT verification (verify algorithm pinning)"
+    },
+    {
+      "vulnSlug": "jwt-handling",
+      "lineNumbers": [
+        77
+      ],
+      "snippet": "  {\n    regex:\n      /\\bjose\\.(SignJWT|jwtVerify|importJWK|importSPKI|importPKCS8|compactSign|compactVerify|flattenedSign|flattenedVerify|generalSign|generalVerify|EncryptJWT|jwtDecrypt|EncryptSHE|compactDecrypt|flattenedDecrypt|generalDecrypt|CompactEncrypt|FlattenedEncrypt|GeneralEncrypt)\\b/,\n    label: \"jose lib\",\n  },",
+      "matchedPattern": "JWT signing (verify key management)"
+    },
+    {
+      "vulnSlug": "jwt-handling",
+      "lineNumbers": [
+        77
+      ],
+      "snippet": "  {\n    regex:\n      /\\bjose\\.(SignJWT|jwtVerify|importJWK|importSPKI|importPKCS8|compactSign|compactVerify|flattenedSign|flattenedVerify|generalSign|generalVerify|EncryptJWT|jwtDecrypt|EncryptSHE|compactDecrypt|flattenedDecrypt|generalDecrypt|CompactEncrypt|FlattenedEncrypt|GeneralEncrypt)\\b/,\n    label: \"jose lib\",\n  },",
+      "matchedPattern": "JWT encryption (verify algorithm)"
+    },
+    {
+      "vulnSlug": "algorithm-confusion",
+      "lineNumbers": [
+        77
+      ],
+      "snippet": "    regex:\n      /\\bjose\\.(SignJWT|jwtVerify|importJWK|importSPKI|importPKCS8|compactSign|compactVerify|flattenedSign|flattenedVerify|generalSign|generalVerify|EncryptJWT|jwtDecrypt|EncryptSHE|compactDecrypt|flattenedDecrypt|generalDecrypt|CompactEncrypt|FlattenedEncrypt|GeneralEncrypt)\\b/,\n    label: \"jose lib\",\n  },\n  // Web Crypto",
+      "matchedPattern": "JWT verification WITHOUT algorithm pinning — algorithm confusion risk"
+    },
+    {
+      "vulnSlug": "jwt-handling",
+      "lineNumbers": [
+        77,
+        134
+      ],
+      "snippet": "  {\n    regex:\n      /\\bjose\\.(SignJWT|jwtVerify|importJWK|importSPKI|importPKCS8|compactSign|compactVerify|flattenedSign|flattenedVerify|generalSign|generalVerify|EncryptJWT|jwtDecrypt|EncryptSHE|compactDecrypt|flattenedDecrypt|generalDecrypt|CompactEncrypt|FlattenedEncrypt|GeneralEncrypt)\\b/,\n    label: \"jose lib\",\n  },",
+      "matchedPattern": "JWT verification (verify algorithm pinning)"
+    },
+    {
+      "vulnSlug": "jwt-handling",
+      "lineNumbers": [
+        77,
+        113,
+        133
+      ],
+      "snippet": "  {\n    regex:\n      /\\bjose\\.(SignJWT|jwtVerify|importJWK|importSPKI|importPKCS8|compactSign|compactVerify|flattenedSign|flattenedVerify|generalSign|generalVerify|EncryptJWT|jwtDecrypt|EncryptSHE|compactDecrypt|flattenedDecrypt|generalDecrypt|CompactEncrypt|FlattenedEncrypt|GeneralEncrypt)\\b/,\n    label: \"jose lib\",\n  },",
+      "matchedPattern": "JWT signing (verify key management)"
+    },
+    {
+      "vulnSlug": "algorithm-confusion",
+      "lineNumbers": [
+        134
+      ],
+      "snippet": "    `const sig = jwt.sign({ id: 1 }, secret);`,\n    `const out = await jose.jwtVerify(token, key);`,\n    `await crypto.subtle.encrypt({ name: \"AES-GCM\", iv }, key, data);`,\n    `import hmac\nmac = hmac.new(key, msg, hashlib.sha256)`,",
+      "matchedPattern": "JWT verification WITHOUT algorithm pinning — algorithm confusion risk"
+    },
+    {
+      "vulnSlug": "crypto-usage",
+      "lineNumbers": [
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133,
+        134,
+        135,
+        137,
+        139,
+        141
+      ],
+      "snippet": "  filePatterns: [\"**/*.go\", \"**/*.{ts,tsx,js,jsx,mjs,cjs}\", \"**/*.py\"],\n  examples: [\n    `import \"crypto/aes\"`,\n    `import \"crypto/sha256\"`,\n    `import \"golang.org/x/crypto/bcrypt\"`,",
+      "matchedPattern": "Go crypto/* import, Go golang.org/x/crypto import, Node crypto import, JS crypto library import, Web Crypto API (crypto.subtle.*)"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.786Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "036f323c8ae92dc02cacd2497550ac650cabbc1569a673256f50d4bf0d9facc8",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:59.873Z",
+      "durationMs": 47743,
+      "durationApiMs": 45238,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "ff7f6164-5dbf-4b41-a0ba-89648fbae13a",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.81450425,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 3047,
+        "cacheReadInputTokens": 184486,
+        "cacheCreationInputTokens": 103365
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-1595aabe27b888ba",
+      "investigatedAt": "2026-05-06T21:53:35.394Z",
+      "durationMs": 9169.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b5a-7f10-a112-112258c4569b",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05889275,
+      "usage": {
+        "inputTokens": 7612.25,
+        "outputTokens": 404.25,
+        "cacheReadInputTokens": 17408,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:35.396Z"
+  },
+  "status": "analyzed"
+}

@@ -1,0 +1,78 @@
+{
+  "filePath": "packages/scanner/src/matchers/jvm-spring-controller.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"jvm-spring-controller\",\n  description: \"Spring controllers, mappings, and security config (gated on Spring)\",\n  filePatterns: [\"**/*.{java,kt}\"],\n  requires: { tech: [\"spring\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.484Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "3dbdefcf6d08743d9b35621fbe256659f7bf9898bbdf16ed24a550bd59efe6b2",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-d6bf4611ec6353bd",
+      "investigatedAt": "2026-05-06T21:49:56.357Z",
+      "durationMs": 9389.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-30d2-7da0-b615-a851dcbf6ff0",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.04133775,
+      "usage": {
+        "inputTokens": 3891.25,
+        "outputTokens": 439.25,
+        "cacheReadInputTokens": 17408,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      }
+    },
+    {
+      "runId": "20260506215246-8074d43eee10dcd5",
+      "investigatedAt": "2026-05-06T21:54:02.449Z",
+      "durationMs": 15846,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b95-7cd1-97cf-09b71f33c008",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.09328425,
+      "usage": {
+        "inputTokens": 10747.25,
+        "outputTokens": 738,
+        "cacheReadInputTokens": 34816,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:54:02.451Z"
+  },
+  "status": "analyzed"
+}

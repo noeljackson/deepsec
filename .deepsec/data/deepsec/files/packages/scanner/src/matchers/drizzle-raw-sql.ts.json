@@ -1,0 +1,154 @@
+{
+  "filePath": "packages/scanner/src/matchers/drizzle-raw-sql.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        9,
+        13,
+        22,
+        41
+      ],
+      "snippet": " * — which DOES parameterize (auto-bind) interpolated expressions, BUT only\n * if you stay inside the helper. Common foot-gun: building a string outside\n * `sql\\`` and then injecting it via `sql.raw(str)` or `sql.unsafe(str)`,\n * which bypasses parameterization entirely.\n *",
+      "matchedPattern": "sql.raw() — raw SQL (verify parameterized)"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        6,
+        14
+      ],
+      "snippet": "/**\n * Drizzle ORM parameterizes column values when you use `eq`, `and`, `.values()`\n * etc. Its escape hatch is the `sql` template tag — `` sql`...${x}...` ``\n * — which DOES parameterize (auto-bind) interpolated expressions, BUT only\n * if you stay inside the helper. Common foot-gun: building a string outside",
+      "matchedPattern": "sql tagged template with interpolation"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"drizzle-raw-sql\",\n  description: \"Drizzle `sql.raw()` / `sql.unsafe()` or risky interpolation — SQL injection bypass\",\n  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        28,
+        29
+      ],
+      "snippet": "    `import { sql } from \"drizzle-orm\";\\nawait db.execute(sql.raw(userQuery));`,\n    `import { sql } from \"drizzle-orm\";\\nawait db.execute(sql.unsafe(userQuery));`,\n    `import { eq } from \"drizzle-orm\";\\nawait db.execute(sql\\`SELECT * FROM users WHERE name = \\${\"a\" + b}\\`);`,\n    `import { sql } from \"drizzle-orm\";\\nconst orderBy = \"name\";\\nawait db.execute(sql\\`SELECT * FROM users ORDER BY \\${\\`\\${orderBy}\\`}\\`);`,\n    `import { db } from \"@repo/db\";\\ndb.execute(sql.raw(\"SELECT * FROM \" + tableName));`,",
+      "matchedPattern": "template literal SELECT with interpolation"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        30
+      ],
+      "snippet": "    `import { eq } from \"drizzle-orm\";\\nawait db.execute(sql\\`SELECT * FROM users WHERE name = \\${\"a\" + b}\\`);`,\n    `import { sql } from \"drizzle-orm\";\\nconst orderBy = \"name\";\\nawait db.execute(sql\\`SELECT * FROM users ORDER BY \\${\\`\\${orderBy}\\`}\\`);`,\n    `import { db } from \"@repo/db\";\\ndb.execute(sql.raw(\"SELECT * FROM \" + tableName));`,\n    `import { drizzle } from \"drizzle-orm/node-postgres\";\\nawait conn.execute(sql.unsafe(\\`DROP TABLE \\${name}\\`));`,\n  ],",
+      "matchedPattern": "string concat SELECT"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        9,
+        13,
+        22,
+        26,
+        30,
+        50
+      ],
+      "snippet": " * — which DOES parameterize (auto-bind) interpolated expressions, BUT only\n * if you stay inside the helper. Common foot-gun: building a string outside\n * `sql\\`` and then injecting it via `sql.raw(str)` or `sql.unsafe(str)`,\n * which bypasses parameterization entirely.\n *",
+      "matchedPattern": "sql.raw() — raw SQL (verify parameterized)"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        9,
+        13,
+        22,
+        26,
+        30,
+        50
+      ],
+      "snippet": " * — which DOES parameterize (auto-bind) interpolated expressions, BUT only\n * if you stay inside the helper. Common foot-gun: building a string outside\n * `sql\\`` and then injecting it via `sql.raw(str)` or `sql.unsafe(str)`,\n * which bypasses parameterization entirely.\n *",
+      "matchedPattern": "Kysely sql.raw — bypasses parameterization, must not include user input"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        9,
+        13,
+        22,
+        27,
+        31,
+        52
+      ],
+      "snippet": " * — which DOES parameterize (auto-bind) interpolated expressions, BUT only\n * if you stay inside the helper. Common foot-gun: building a string outside\n * `sql\\`` and then injecting it via `sql.raw(str)` or `sql.unsafe(str)`,\n * which bypasses parameterization entirely.\n *",
+      "matchedPattern": "postgres.js sql.unsafe — bypasses parameterization, must not include user input"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.860Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "28ef5d78cfea58d4696a7b4067bd2bc94b1e472fb939a31209be2e3d999e13f9",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:52.106Z",
+      "durationMs": 39999,
+      "durationApiMs": 37583,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "6e1bc416-d19e-4cf0-9899-296107ff9cc4",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.4026835,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2725,
+        "cacheReadInputTokens": 43672,
+        "cacheCreationInputTokens": 50030
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-cbb34644b25b760b",
+      "investigatedAt": "2026-05-06T21:53:41.952Z",
+      "durationMs": 10812.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c2a-79d2-bed1-7fab0db59914",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.073648,
+      "usage": {
+        "inputTokens": 8926,
+        "outputTokens": 547,
+        "cacheReadInputTokens": 25216,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:41.955Z"
+  },
+  "status": "analyzed"
+}

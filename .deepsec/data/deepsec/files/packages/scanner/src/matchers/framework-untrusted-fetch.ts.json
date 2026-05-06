@@ -1,0 +1,86 @@
+{
+  "filePath": "packages/scanner/src/matchers/framework-untrusted-fetch.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"framework-untrusted-fetch\",\n  description: \"Framework code calling fetch with a URL derived from request input\",\n  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "open-redirect",
+      "lineNumbers": [
+        38
+      ],
+      "snippet": "    const FETCH_LINE = /\\b(?:globalThis\\.|window\\.)?fetch\\s*\\(/;\n    const TAINT_HINTS =\n      /\\b(?:req\\.(?:url|query|headers|body)|request\\.(?:url|nextUrl|headers|query|body)|searchParams\\.get\\b|new\\s+URL\\s*\\(\\s*req\\b|nextUrl\\.(?:searchParams|pathname)|getRequestMeta\\b|request\\.cookies)/;\n\n    for (let i = 0; i < lines.length; i++) {",
+      "matchedPattern": "redirect URL parameter"
+    }
+  ],
+  "lastScannedAt": "2026-05-02T17:54:41.529Z",
+  "lastScannedRunId": "20260502175440-05201b02576fe6c2",
+  "fileHash": "e39541e01f65e920e4fa7ced6adc2096d0b6d04fa3025d54aec7fb37dc15e0ba",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:50.673Z",
+      "durationMs": 37975,
+      "durationApiMs": 35462,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "d8f6357f-7fc5-4642-9ffb-b41b8741689c",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.39885175000000006,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2743,
+        "cacheReadInputTokens": 43521,
+        "cacheCreationInputTokens": 49357
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-783d04573c7fba34",
+      "investigatedAt": "2026-05-06T21:53:55.072Z",
+      "durationMs": 14103.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8bb4-7aa1-9d3e-b8ebdee91fa5",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.06231675,
+      "usage": {
+        "inputTokens": 6091.25,
+        "outputTokens": 673.75,
+        "cacheReadInputTokens": 23296,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:55.076Z"
+  },
+  "status": "analyzed"
+}

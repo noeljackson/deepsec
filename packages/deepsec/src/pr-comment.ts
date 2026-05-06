@@ -54,9 +54,13 @@ export function renderPrComment(params: {
 
   for (const file of records) {
     for (const f of file.findings ?? []) {
-      if (f.producedByRunId === runId) {
-        findingsForRun.push({ file, finding: f });
-      }
+      if (f.producedByRunId !== runId) continue;
+      // PR comments surface unresolved risk only — drop anything already
+      // resolved (fixed / false-positive / accepted-risk) even if the
+      // resolution was set in the same run that produced the finding.
+      const v = f.revalidation?.verdict;
+      if (v === "accepted-risk" || v === "false-positive" || v === "fixed") continue;
+      findingsForRun.push({ file, finding: f });
     }
   }
 

@@ -1,0 +1,88 @@
+{
+  "filePath": "packages/scanner/src/matchers/py-starlette-route.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        16,
+        17,
+        28
+      ],
+      "snippet": "    `    Mount('/api', routes=api_routes),`,\n    `    WebSocketRoute(\"/ws\", endpoint=ws_endpoint),`,\n    `app.add_middleware(AuthenticationMiddleware, backend=BasicAuthBackend())`,\n    `from starlette.middleware.authentication import AuthenticationMiddleware`,\n  ],",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"py-starlette-route\",\n  description: \"Starlette Route / Mount / WebSocketRoute declarations (gated on Starlette)\",\n  filePatterns: [\"**/*.py\"],\n  requires: { tech: [\"starlette\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.480Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "0735c49c251b7fe04691bcde2f5fab016e2f64b0ab07fc853997cf95b972512d",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-50cdef6ba19e673a",
+      "investigatedAt": "2026-05-06T21:50:07.565Z",
+      "durationMs": 12221.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3080-7a61-95f3-19c3f30cea48",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0695545,
+      "usage": {
+        "inputTokens": 8432.5,
+        "outputTokens": 512,
+        "cacheReadInputTokens": 24064,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-b5432b498c77e52f",
+      "investigatedAt": "2026-05-06T21:53:57.200Z",
+      "durationMs": 11760.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b8b-7480-bd91-dc6d97001c23",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0765332,
+      "usage": {
+        "inputTokens": 8055.6,
+        "outputTokens": 566.8,
+        "cacheReadInputTokens": 38502.4,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:57.202Z"
+  },
+  "status": "analyzed"
+}

@@ -68,30 +68,56 @@ describe("extractTarballLocally — strict allowlist", () => {
     fs.rmSync(destDir, { recursive: true, force: true });
   });
 
-  it("accepts a tarball of allowed extensions", async () => {
+  it("accepts a tarball of allowed extensions in legitimate namespaces", async () => {
     const src = fs.mkdtempSync(path.join(os.tmpdir(), "deepsec-tar-good-"));
-    fs.writeFileSync(path.join(src, "record.json"), '{"v":1}');
-    fs.writeFileSync(path.join(src, "report.md"), "# r");
+    fs.mkdirSync(path.join(src, "files"));
+    fs.mkdirSync(path.join(src, "reports"));
+    // Valid FileRecord — the post-extract merge validates against schema
+    // and would otherwise drop the record as spoofed.
+    fs.writeFileSync(
+      path.join(src, "files", "record.ts.json"),
+      JSON.stringify(validRecord(path.basename(destDir), "record.ts")),
+    );
+    fs.writeFileSync(path.join(src, "reports", "report.md"), "# r");
     const stats = await makeTarball(src, []);
     fs.rmSync(src, { recursive: true, force: true });
 
     const count = await extractTarballLocally(stats.tarPath, destDir);
     fs.unlinkSync(stats.tarPath);
     expect(count).toBe(2);
-    expect(fs.existsSync(path.join(destDir, "record.json"))).toBe(true);
-    expect(fs.existsSync(path.join(destDir, "report.md"))).toBe(true);
+    expect(fs.existsSync(path.join(destDir, "files", "record.ts.json"))).toBe(true);
+    expect(fs.existsSync(path.join(destDir, "reports", "report.md"))).toBe(true);
   });
 
   it("refuses a tarball with a disallowed extension and writes nothing", async () => {
     const src = fs.mkdtempSync(path.join(os.tmpdir(), "deepsec-tar-bad-"));
-    fs.writeFileSync(path.join(src, "record.json"), '{"v":1}');
-    fs.writeFileSync(path.join(src, "secret.txt"), "uh oh");
+    fs.mkdirSync(path.join(src, "files"));
+    fs.writeFileSync(
+      path.join(src, "files", "record.ts.json"),
+      JSON.stringify(validRecord(path.basename(destDir), "record.ts")),
+    );
+    fs.writeFileSync(path.join(src, "files", "secret.txt"), "uh oh");
     const stats = await makeTarball(src, []);
     fs.rmSync(src, { recursive: true, force: true });
 
     await expect(extractTarballLocally(stats.tarPath, destDir)).rejects.toThrow(/extension/);
     fs.unlinkSync(stats.tarPath);
-    // All-or-nothing: even the otherwise-allowed record.json must not land.
+    // All-or-nothing: even the otherwise-allowed record must not land.
+    expect(fs.readdirSync(destDir)).toEqual([]);
+  });
+
+  it("refuses a tarball whose entry sits outside files/ runs/ reports/", async () => {
+    const src = fs.mkdtempSync(path.join(os.tmpdir(), "deepsec-tar-ns-"));
+    // top-level project.json is the canonical attack — overwriting it
+    // poisons rootPath for the next CLI run.
+    fs.writeFileSync(path.join(src, "project.json"), '{"rootPath":"/etc"}');
+    const stats = await makeTarball(src, []);
+    fs.rmSync(src, { recursive: true, force: true });
+
+    await expect(extractTarballLocally(stats.tarPath, destDir)).rejects.toThrow(
+      /outside files\/, runs\/, reports\//,
+    );
+    fs.unlinkSync(stats.tarPath);
     expect(fs.readdirSync(destDir)).toEqual([]);
   });
 
@@ -100,12 +126,13 @@ describe("extractTarballLocally — strict allowlist", () => {
     // includes a symlink — bypassing makeTarball's own filter — so
     // we exercise the download-side strict filter in isolation.
     const src = fs.mkdtempSync(path.join(os.tmpdir(), "deepsec-tar-sym-"));
-    fs.writeFileSync(path.join(src, "record.json"), '{"v":1}');
-    fs.symlinkSync("/etc/passwd", path.join(src, "leak.json"));
+    fs.mkdirSync(path.join(src, "files"));
+    fs.writeFileSync(path.join(src, "files", "record.ts.json"), '{"v":1}');
+    fs.symlinkSync("/etc/passwd", path.join(src, "files", "leak.ts.json"));
     const tarPath = path.join(tarballDir, "in.tgz");
     await tar.create({ gzip: true, cwd: src, file: tarPath, portable: true }, [
-      "record.json",
-      "leak.json",
+      "files/record.ts.json",
+      "files/leak.ts.json",
     ]);
     fs.rmSync(src, { recursive: true, force: true });
 
@@ -122,4 +149,18 @@ async function listTarballEntriesFromFile(
     onentry: (e) => entries.push({ path: e.path, type: e.type as string }),
   });
   return entries;
+}
+
+function validRecord(projectId: string, filePath: string): unknown {
+  return {
+    filePath,
+    projectId,
+    candidates: [],
+    lastScannedAt: "2026-05-06T00:00:00.000Z",
+    lastScannedRunId: "scan1",
+    fileHash: "h",
+    findings: [],
+    analysisHistory: [],
+    status: "pending",
+  };
 }

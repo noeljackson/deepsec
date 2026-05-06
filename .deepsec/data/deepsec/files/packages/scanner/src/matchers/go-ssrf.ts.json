@@ -1,0 +1,126 @@
+{
+  "filePath": "packages/scanner/src/matchers/go-ssrf.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"go-ssrf\",\n  description: \"Go HTTP requests with string-concatenated or formatted URLs — SSRF risk\",\n  filePatterns: [\"**/*.go\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "      [\n        { regex: /http\\.(Get|Post|Head)\\s*\\(.*\\+/, label: \"http.Get/Post with string concat URL\" },\n        {\n          regex: /http\\.NewRequest\\s*\\(.*fmt\\.Sprintf/,",
+      "matchedPattern": "URL validation regex with greedy wildcard (.+ or .*) — may be bypassable"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "        {\n          regex: /http\\.NewRequest\\s*\\(.*fmt\\.Sprintf/,\n          label: \"http.NewRequest with formatted URL\",\n        },",
+      "matchedPattern": "URL validation regex with greedy wildcard (.+ or .*) — may be bypassable"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "        },\n        { regex: /http\\.NewRequest\\s*\\(.*\\+/, label: \"http.NewRequest with concatenated URL\" },\n        { regex: /url\\.Parse\\s*\\(.*\\+/, label: \"url.Parse with concatenated string\" },\n        { regex: /fmt\\.Sprintf\\s*\\(\\s*\"https?:\\/\\//, label: \"URL built via fmt.Sprintf\" },",
+      "matchedPattern": "URL validation regex with greedy wildcard (.+ or .*) — may be bypassable"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "      [\n        { regex: /http\\.(Get|Post|Head)\\s*\\(.*\\+/, label: \"http.Get/Post with string concat URL\" },\n        {\n          regex: /http\\.NewRequest\\s*\\(.*fmt\\.Sprintf/,",
+      "matchedPattern": "URL validation regex with greedy wildcard (.+ or .*) — may be bypassable"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        27
+      ],
+      "snippet": "        {\n          regex: /http\\.NewRequest\\s*\\(.*fmt\\.Sprintf/,\n          label: \"http.NewRequest with formatted URL\",\n        },",
+      "matchedPattern": "URL validation regex with greedy wildcard (.+ or .*) — may be bypassable"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        30
+      ],
+      "snippet": "        },\n        { regex: /http\\.NewRequest\\s*\\(.*\\+/, label: \"http.NewRequest with concatenated URL\" },\n        { regex: /url\\.Parse\\s*\\(.*\\+/, label: \"url.Parse with concatenated string\" },\n        { regex: /fmt\\.Sprintf\\s*\\(\\s*\"https?:\\/\\//, label: \"URL built via fmt.Sprintf\" },",
+      "matchedPattern": "URL validation regex with greedy wildcard (.+ or .*) — may be bypassable"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.550Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "957808e39b2cf623988722c538fc69f83c55a0f11d92eafcaffcb050d80c4589",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:03.644Z",
+      "durationMs": 51567,
+      "durationApiMs": 49033,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "854302a2-95f8-4240-939f-0123848e5eb2",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.464015,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 3754,
+        "cacheReadInputTokens": 43885,
+        "cacheCreationInputTokens": 55710
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-5fb7cdb49fe0bbda",
+      "investigatedAt": "2026-05-06T21:53:44.179Z",
+      "durationMs": 9180.2,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8bc9-7e13-a44f-2c7a5a34e197",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0469084,
+      "usage": {
+        "inputTokens": 5191.2,
+        "outputTokens": 413.4,
+        "cacheReadInputTokens": 17100.8,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:44.181Z"
+  },
+  "status": "analyzed"
+}

@@ -1,0 +1,109 @@
+{
+  "filePath": "packages/scanner/src/matchers/py-sql-raw.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"py-sql-raw\",\n  description:\n    \"Raw SQL across popular Python DB drivers (SQLAlchemy, psycopg, pymysql, sqlite3, asyncpg, Django ORM raw) — f-string / %-format / .format / + interpolation is SQL injection\",\n  filePatterns: [\"**/*.py\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "  examples: [\n    `cursor.execute(f\"SELECT * FROM users WHERE id = {user_id}\")`,\n    `cursor.execute(\"SELECT * FROM users WHERE id = %s\" % user_id)`,\n    `cursor.execute(\"DELETE FROM x WHERE y = '\" + name + \"'\")`,\n    `cursor.execute(\"SELECT * FROM t WHERE col = '{}'\".format(val))`,\n    `engine.execute(text(f\"SELECT * FROM users WHERE name = '{name}'\"))`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        26
+      ],
+      "snippet": "    `cursor.execute(f\"SELECT * FROM users WHERE id = {user_id}\")`,\n    `cursor.execute(\"SELECT * FROM users WHERE id = %s\" % user_id)`,\n    `cursor.execute(\"DELETE FROM x WHERE y = '\" + name + \"'\")`,\n    `cursor.execute(\"SELECT * FROM t WHERE col = '{}'\".format(val))`,\n    `engine.execute(text(f\"SELECT * FROM users WHERE name = '{name}'\"))`,\n    `session.execute(f\"UPDATE users SET role = '{role}'\")`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        28
+      ],
+      "snippet": "    `cursor.execute(\"DELETE FROM x WHERE y = '\" + name + \"'\")`,\n    `cursor.execute(\"SELECT * FROM t WHERE col = '{}'\".format(val))`,\n    `engine.execute(text(f\"SELECT * FROM users WHERE name = '{name}'\"))`,\n    `session.execute(f\"UPDATE users SET role = '{role}'\")`,\n    `text(f\"SELECT id FROM users WHERE email = '{email}'\")`,\n    `User.objects.raw(f\"SELECT * FROM users WHERE name = '{name}'\")`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        29
+      ],
+      "snippet": "    `cursor.execute(\"SELECT * FROM t WHERE col = '{}'\".format(val))`,\n    `engine.execute(text(f\"SELECT * FROM users WHERE name = '{name}'\"))`,\n    `session.execute(f\"UPDATE users SET role = '{role}'\")`,\n    `text(f\"SELECT id FROM users WHERE email = '{email}'\")`,\n    `User.objects.raw(f\"SELECT * FROM users WHERE name = '{name}'\")`,\n    `User.objects.extra(where=[f\"name = '{name}'\"])`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        31
+      ],
+      "snippet": "    `session.execute(f\"UPDATE users SET role = '{role}'\")`,\n    `text(f\"SELECT id FROM users WHERE email = '{email}'\")`,\n    `User.objects.raw(f\"SELECT * FROM users WHERE name = '{name}'\")`,\n    `User.objects.extra(where=[f\"name = '{name}'\"])`,\n    `await conn.execute(f\"DELETE FROM users WHERE id = {user_id}\")`,\n  ],",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        32
+      ],
+      "snippet": "    `text(f\"SELECT id FROM users WHERE email = '{email}'\")`,\n    `User.objects.raw(f\"SELECT * FROM users WHERE name = '{name}'\")`,\n    `User.objects.extra(where=[f\"name = '{name}'\"])`,\n    `await conn.execute(f\"DELETE FROM users WHERE id = {user_id}\")`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        99
+      ],
+      "snippet": "        {\n          regex: /\\bdb\\.execute\\s*\\(\\s*f['\"]\\s*(?:SELECT|INSERT|UPDATE|DELETE)/,\n          label: \"db.execute with f-string SQL — SQL injection\",\n        },\n      ],\n      content,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.732Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "5ccff3d9692e7a8b7fb9564ef577424420dd736c81c6ecc55f7336130909bb2d",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214907-70fbf7924106c870",
+      "investigatedAt": "2026-05-06T21:50:01.274Z",
+      "durationMs": 10135.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-344f-79d3-a7fc-1066aa444326",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0534315,
+      "usage": {
+        "inputTokens": 6426.5,
+        "outputTokens": 462.5,
+        "cacheReadInputTokens": 14848,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:50:01.277Z"
+  },
+  "status": "analyzed",
+  "lockedByRunId": "20260506215246-c6bc3f0a3586feaf",
+  "lockedAt": "2026-05-06T21:52:46.499Z"
+}

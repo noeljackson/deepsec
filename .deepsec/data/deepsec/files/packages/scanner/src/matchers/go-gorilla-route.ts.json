@@ -1,0 +1,78 @@
+{
+  "filePath": "packages/scanner/src/matchers/go-gorilla-route.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"go-gorilla-route\",\n  description: \"Gorilla mux router registrations (gated on gorilla)\",\n  filePatterns: [\"**/*.go\"],\n  requires: { tech: [\"gorilla\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.487Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "ffed61ac60e50470ddd3767daa2901812b16ff49ccabdbb039765aa35e7a7d05",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214907-e8792fbb01849281",
+      "investigatedAt": "2026-05-06T21:49:51.802Z",
+      "durationMs": 7834.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-315e-7e01-8f97-ffa758801519",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0501815,
+      "usage": {
+        "inputTokens": 5599,
+        "outputTokens": 406.75,
+        "cacheReadInputTokens": 19968,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215247-31d278227f55711b",
+      "investigatedAt": "2026-05-06T21:53:39.722Z",
+      "durationMs": 7837.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8f21-7971-854c-5247e3b2f349",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0381228,
+      "usage": {
+        "inputTokens": 3771.2,
+        "outputTokens": 379.4,
+        "cacheReadInputTokens": 15769.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:39.724Z"
+  },
+  "status": "analyzed"
+}

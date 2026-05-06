@@ -1,0 +1,126 @@
+{
+  "filePath": "packages/scanner/src/matchers/rs-sql-raw.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"rs-sql-raw\",\n  description:\n    \"Raw SQL escape hatches in Rust DB crates (sqlx::query with format!, diesel sql_query, sea-orm Statement::from_string) — note that sqlx::query!() macro is compile-time-checked and SAFE\",\n  filePatterns: [\"**/*.rs\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "  // accepts positive cases): the compile-time-checked macro form\n  // `sqlx::query!(\"SELECT * FROM users WHERE id = $1\", id)` is parameterized\n  // at compile time and is NOT a finding. Only the runtime\n  // `sqlx::query(&format!(...))` form below is unsafe.\n  examples: [\n    `sqlx::query(&format!(\"SELECT * FROM users WHERE id = {}\", id)).fetch_one(&pool).await?`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "  examples: [\n    `sqlx::query(&format!(\"SELECT * FROM users WHERE id = {}\", id)).fetch_one(&pool).await?`,\n    `sqlx::query_as::<_, User>(&format!(\"SELECT * FROM users WHERE name = '{}'\", name)).fetch_all(&pool).await?`,\n    `sqlx::query(&format!(\"DELETE FROM users WHERE id = {}\", id)).execute(&pool).await?`,\n    `diesel::sql_query(format!(\"SELECT * FROM users WHERE id = {}\", id)).load(conn)?`,\n    `Statement::from_string(DbBackend::Postgres, format!(\"SELECT * FROM x WHERE y = '{}'\", y))`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "    `sqlx::query(&format!(\"SELECT * FROM users WHERE id = {}\", id)).fetch_one(&pool).await?`,\n    `sqlx::query_as::<_, User>(&format!(\"SELECT * FROM users WHERE name = '{}'\", name)).fetch_all(&pool).await?`,\n    `sqlx::query(&format!(\"DELETE FROM users WHERE id = {}\", id)).execute(&pool).await?`,\n    `diesel::sql_query(format!(\"SELECT * FROM users WHERE id = {}\", id)).load(conn)?`,\n    `Statement::from_string(DbBackend::Postgres, format!(\"SELECT * FROM x WHERE y = '{}'\", y))`,\n    `conn.execute(&format!(\"DELETE FROM users WHERE id = {}\", id), [])?`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "    `sqlx::query(&format!(\"DELETE FROM users WHERE id = {}\", id)).execute(&pool).await?`,\n    `diesel::sql_query(format!(\"SELECT * FROM users WHERE id = {}\", id)).load(conn)?`,\n    `Statement::from_string(DbBackend::Postgres, format!(\"SELECT * FROM x WHERE y = '{}'\", y))`,\n    `conn.execute(&format!(\"DELETE FROM users WHERE id = {}\", id), [])?`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "    `diesel::sql_query(format!(\"SELECT * FROM users WHERE id = {}\", id)).load(conn)?`,\n    `Statement::from_string(DbBackend::Postgres, format!(\"SELECT * FROM x WHERE y = '{}'\", y))`,\n    `conn.execute(&format!(\"DELETE FROM users WHERE id = {}\", id), [])?`,\n  ],\n  match(content, filePath) {\n    if (/\\/(tests|examples)\\//.test(filePath)) return [];",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        72
+      ],
+      "snippet": "        {\n          regex: /format!\\s*\\(\\s*\"\\s*(?:SELECT|INSERT|UPDATE|DELETE)/,\n          label: \"format!() with SQL keyword as first arg\",\n        },\n      ],\n      content,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.732Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "e7517ce3e0f358b47c98fdf1a750487fa50f328e0513a502339f35777d2bf348",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-5ae71a3d1b833445",
+      "investigatedAt": "2026-05-06T21:50:03.250Z",
+      "durationMs": 11145,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-2ffb-7402-b151-ca739f5e7e5f",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.079966,
+      "usage": {
+        "inputTokens": 10780,
+        "outputTokens": 455,
+        "cacheReadInputTokens": 24832,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      }
+    },
+    {
+      "runId": "20260506215246-c6bc3f0a3586feaf",
+      "investigatedAt": "2026-05-06T21:53:32.964Z",
+      "durationMs": 8690.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8ab9-7382-ad35-7c37809e4626",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05982975,
+      "usage": {
+        "inputTokens": 7903.25,
+        "outputTokens": 391.25,
+        "cacheReadInputTokens": 17152,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:32.966Z"
+  },
+  "status": "analyzed"
+}

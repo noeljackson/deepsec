@@ -1,0 +1,219 @@
+{
+  "filePath": "packages/scanner/src/matchers/missing-await.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"missing-await\",\n  description: \"Async calls that may be missing await — race conditions, lost errors\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "unverified-lookup",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "    `redis.set(key, value);`,\n    `prisma.user.findUnique({ where: { id } });`,\n    `prisma.session.delete({ where: { id } });`,\n    `db.users.findOne({ id });`,\n    `db.posts.update({ id });`,",
+      "matchedPattern": "DB lookup by ID without ownership check in next 15 lines"
+    },
+    {
+      "vulnSlug": "missing-await",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `withMutex(() => doStuff());`,\n    `withUserMutex(() => updateUser(id));`,\n    `withLock(key, () => criticalSection());`,",
+      "matchedPattern": "mutex without await"
+    },
+    {
+      "vulnSlug": "missing-await",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "  examples: [\n    `withMutex(() => doStuff());`,\n    `withUserMutex(() => updateUser(id));`,\n    `withLock(key, () => criticalSection());`,\n    `withDistributedLock(key, fn);`,",
+      "matchedPattern": "mutex without await"
+    },
+    {
+      "vulnSlug": "missing-await",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "    `withMutex(() => doStuff());`,\n    `withUserMutex(() => updateUser(id));`,\n    `withLock(key, () => criticalSection());`,\n    `withDistributedLock(key, fn);`,\n    `withTransaction(async (tx) => {",
+      "matchedPattern": "lock without await"
+    },
+    {
+      "vulnSlug": "missing-await",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "    `withUserMutex(() => updateUser(id));`,\n    `withLock(key, () => criticalSection());`,\n    `withDistributedLock(key, fn);`,\n    `withTransaction(async (tx) => {\n  await tx.user.update({ id });",
+      "matchedPattern": "lock without await"
+    },
+    {
+      "vulnSlug": "missing-await",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "    `withLock(key, () => criticalSection());`,\n    `withDistributedLock(key, fn);`,\n    `withTransaction(async (tx) => {\n  await tx.user.update({ id });\n});`,",
+      "matchedPattern": "transaction without await"
+    },
+    {
+      "vulnSlug": "missing-await",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "  await tx.user.update({ id });\n});`,\n    `withDbTransaction(fn);`,\n    `redis.get(\"key\");`,\n    `redis.set(key, value);`,",
+      "matchedPattern": "transaction without await"
+    },
+    {
+      "vulnSlug": "missing-await",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "});`,\n    `withDbTransaction(fn);`,\n    `redis.get(\"key\");`,\n    `redis.set(key, value);`,\n    `prisma.user.findUnique({ where: { id } });`,",
+      "matchedPattern": "redis call without await"
+    },
+    {
+      "vulnSlug": "missing-await",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "    `withDbTransaction(fn);`,\n    `redis.get(\"key\");`,\n    `redis.set(key, value);`,\n    `prisma.user.findUnique({ where: { id } });`,\n    `prisma.session.delete({ where: { id } });`,",
+      "matchedPattern": "redis call without await"
+    },
+    {
+      "vulnSlug": "missing-await",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "    `redis.get(\"key\");`,\n    `redis.set(key, value);`,\n    `prisma.user.findUnique({ where: { id } });`,\n    `prisma.session.delete({ where: { id } });`,\n    `db.users.findOne({ id });`,",
+      "matchedPattern": "prisma call without await"
+    },
+    {
+      "vulnSlug": "missing-await",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "    `redis.set(key, value);`,\n    `prisma.user.findUnique({ where: { id } });`,\n    `prisma.session.delete({ where: { id } });`,\n    `db.users.findOne({ id });`,\n    `db.posts.update({ id });`,",
+      "matchedPattern": "prisma call without await"
+    },
+    {
+      "vulnSlug": "missing-await",
+      "lineNumbers": [
+        26
+      ],
+      "snippet": "    `prisma.user.findUnique({ where: { id } });`,\n    `prisma.session.delete({ where: { id } });`,\n    `db.users.findOne({ id });`,\n    `db.posts.update({ id });`,\n  ],",
+      "matchedPattern": "db call without await"
+    },
+    {
+      "vulnSlug": "missing-await",
+      "lineNumbers": [
+        27
+      ],
+      "snippet": "    `prisma.session.delete({ where: { id } });`,\n    `db.users.findOne({ id });`,\n    `db.posts.update({ id });`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "db call without await"
+    },
+    {
+      "vulnSlug": "cache-key-scope",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "});`,\n    `withDbTransaction(fn);`,\n    `redis.get(\"key\");`,\n    `redis.set(key, value);`,\n    `prisma.user.findUnique({ where: { id } });`,",
+      "matchedPattern": "Redis string key — no user/team scoping visible in key construction"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "    `withDbTransaction(fn);`,\n    `redis.get(\"key\");`,\n    `redis.set(key, value);`,\n    `prisma.user.findUnique({ where: { id } });`,\n    `prisma.session.delete({ where: { id } });`,\n    `db.users.findOne({ id });`,",
+      "matchedPattern": "Redis get-then-delete/set without transaction — TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "    `redis.set(key, value);`,\n    `prisma.user.findUnique({ where: { id } });`,\n    `prisma.session.delete({ where: { id } });`,\n    `db.users.findOne({ id });`,\n    `db.posts.update({ id });`,\n  ],",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        26
+      ],
+      "snippet": "    `prisma.session.delete({ where: { id } });`,\n    `db.users.findOne({ id });`,\n    `db.posts.update({ id });`,\n  ],\n  match(content, filePath) {\n    if (/\\.(test|spec|mock|stub)\\./i.test(filePath)) return [];",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.733Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "23ac1376ecea9a51adefe72e1b600781cdf520e7f1b37386d329fd954dee7456",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:44.211Z",
+      "durationMs": 35112,
+      "durationApiMs": 34471,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "8a02acbe-c232-4126-88c3-6190ee5d52b6",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.21208,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2708,
+        "cacheReadInputTokens": 74540,
+        "cacheCreationInputTokens": 17132
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-409d9e44688f956b",
+      "investigatedAt": "2026-05-06T21:53:52.720Z",
+      "durationMs": 10689.6,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8bbe-7b71-bfea-e098d61e3433",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0442164,
+      "usage": {
+        "inputTokens": 4329.2,
+        "outputTokens": 484.4,
+        "cacheReadInputTokens": 16076.8,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [
+          {
+            "filePath": "packages/scanner/src/matchers/unsafe-json-in-html.ts",
+            "reason": "The exact target path did not exist in the checkout; I analyzed the registered equivalent matcher at packages/scanner/src/matchers/js-react-unsafe-json-in-html.ts instead."
+          }
+        ],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[{\"filePath\":\"packages/scanner/src/matchers/unsafe-json-in-html.ts\",\"reason\":\"The exact target path did not exist in the checkout; I analyzed the registered equivalent matcher at packages/scanner/src/matchers/js-react-unsafe-json-in-html.ts instead.\"}]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:52.722Z"
+  },
+  "status": "analyzed"
+}

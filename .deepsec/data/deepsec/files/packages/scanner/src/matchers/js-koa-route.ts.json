@@ -1,0 +1,86 @@
+{
+  "filePath": "packages/scanner/src/matchers/js-koa-route.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "    `router.put(\"/x\", h)`,\n    `router.del('/y', h)`,\n    `app.use(authMiddleware)`,\n    `import KoaRouter from \"@koa/router\";`,\n    `const r = KoaRouter();`,",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"js-koa-route\",\n  description: \"Koa route registrations and middleware (gated on Koa)\",\n  filePatterns: [\"**/*.{ts,js,mjs,cjs}\"],\n  requires: { tech: [\"koa\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.486Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "4bd05b668e17af16758c7364af4ffcb3bbc28f555b9cea84dfabd59a64e012d5",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-330c60f1817e5e4c",
+      "investigatedAt": "2026-05-06T21:50:05.115Z",
+      "durationMs": 10142.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-303e-7252-9f8e-74d54dc55fd9",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05955575,
+      "usage": {
+        "inputTokens": 8245.75,
+        "outputTokens": 412.5,
+        "cacheReadInputTokens": 11904,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      }
+    },
+    {
+      "runId": "20260506215246-6c96b5768e32f822",
+      "investigatedAt": "2026-05-06T21:53:43.215Z",
+      "durationMs": 8913.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c2d-7cd2-bdcc-8d9ecc3879fc",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.051097199999999995,
+      "usage": {
+        "inputTokens": 5948,
+        "outputTokens": 428.6,
+        "cacheReadInputTokens": 16998.4,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:43.216Z"
+  },
+  "status": "analyzed"
+}

@@ -1,0 +1,157 @@
+{
+  "filePath": "packages/deepsec/src/cli.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        27,
+        45,
+        77,
+        97,
+        125,
+        156,
+        166,
+        195,
+        211,
+        225,
+        234,
+        271,
+        278,
+        305
+      ],
+      "snippet": "program\n  .name(\"deepsec\")\n  .description(\"AI-powered vulnerability scanner for any codebase\")\n  .version(\"0.1.0\")\n  .addHelpText(",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        326
+      ],
+      "snippet": "function printFatal(err: unknown): never {\n  const verbose = process.env.DEEPSEC_DEBUG === \"1\";\n  console.error(`\\n${err instanceof Error ? err.message : err}`);",
+      "matchedPattern": "process.env.DEEPSEC_DEBUG"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        34,
+        52,
+        84,
+        104,
+        132,
+        163,
+        173,
+        202,
+        218,
+        232,
+        241,
+        278,
+        285,
+        312
+      ],
+      "snippet": "program\n  .name(\"deepsec\")\n  .description(\"AI-powered vulnerability scanner for any codebase\")\n  .version(\"0.1.0\")\n  .addHelpText(",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        333
+      ],
+      "snippet": "function printFatal(err: unknown): never {\n  const verbose = process.env.DEEPSEC_DEBUG === \"1\";\n  console.error(`\\n${err instanceof Error ? err.message : err}`);",
+      "matchedPattern": "process.env.DEEPSEC_DEBUG"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        29,
+        47,
+        79,
+        99,
+        127,
+        177,
+        187,
+        219,
+        235,
+        249,
+        258,
+        295,
+        302,
+        329
+      ],
+      "snippet": "program\n  .name(\"deepsec\")\n  .description(\"AI-powered vulnerability scanner for any codebase\")\n  .version(getDeepsecVersion())\n  .addHelpText(",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        350
+      ],
+      "snippet": "function printFatal(err: unknown): never {\n  const verbose = process.env.DEEPSEC_DEBUG === \"1\";\n  console.error(`\\n${err instanceof Error ? err.message : err}`);",
+      "matchedPattern": "process.env.DEEPSEC_DEBUG"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.681Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "3132e16cdc9139034aa50cd16081df121ba6967105847640a67802ff06dcaa99",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:13:41.023Z",
+      "durationMs": 208322,
+      "durationApiMs": 207548,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "b5f12bc1-6638-4dbb-b6a9-fcf123d53d73",
+      "findingCount": 0,
+      "numTurns": 11,
+      "costUsd": 0.721455,
+      "usage": {
+        "inputTokens": 10,
+        "outputTokens": 15055,
+        "cacheReadInputTokens": 244285,
+        "cacheCreationInputTokens": 35662
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215247-19f2b7ae62f3f309",
+      "investigatedAt": "2026-05-06T21:54:28.851Z",
+      "durationMs": 17977.4,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8e1a-7420-b92b-51642164ef5d",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.090545,
+      "usage": {
+        "inputTokens": 8638.2,
+        "outputTokens": 870.2,
+        "cacheReadInputTokens": 42496,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:54:28.853Z"
+  },
+  "status": "analyzed"
+}

@@ -1,0 +1,144 @@
+{
+  "filePath": "packages/scanner/src/matchers/dotnet-sql-raw.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  requires: { tech: [\"dotnet\"] },\n  examples: [\n    `var cmd = new SqlCommand(\"SELECT * FROM users WHERE id = \" + userId, conn);`,\n    `var cmd = new SqlCommand($\"SELECT * FROM users WHERE id = {userId}\", conn);`,\n    `command.CommandText = \"DELETE FROM users WHERE id = \" + id;`,",
+      "matchedPattern": "string concat SELECT"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        14,
+        17,
+        20
+      ],
+      "snippet": "    `var cmd = new SqlCommand(\"SELECT * FROM users WHERE id = \" + userId, conn);`,\n    `var cmd = new SqlCommand($\"SELECT * FROM users WHERE id = {userId}\", conn);`,\n    `command.CommandText = \"DELETE FROM users WHERE id = \" + id;`,\n    `command.CommandText = $\"UPDATE users SET role = '{role}'\";`,\n    `var users = connection.Query<User>($\"SELECT * FROM users WHERE name = '{name}'\");`,",
+      "matchedPattern": "string concat DELETE"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"dotnet-sql-raw\",\n  description:\n    'Raw SQL across .NET DB libraries (ADO.NET SqlCommand, Dapper, EF Core FromSqlRaw) — string concat / interpolation is SQL injection (FromSqlInterpolated parameterizes correctly; only FromSqlRaw with concat or $\"...\" is unsafe)',\n  filePatterns: [\"**/*.cs\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  examples: [\n    `var cmd = new SqlCommand(\"SELECT * FROM users WHERE id = \" + userId, conn);`,\n    `var cmd = new SqlCommand($\"SELECT * FROM users WHERE id = {userId}\", conn);`,\n    `command.CommandText = \"DELETE FROM users WHERE id = \" + id;`,\n    `command.CommandText = $\"UPDATE users SET role = '{role}'\";`,\n    `var users = connection.Query<User>($\"SELECT * FROM users WHERE name = '{name}'\");`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    `var cmd = new SqlCommand(\"SELECT * FROM users WHERE id = \" + userId, conn);`,\n    `var cmd = new SqlCommand($\"SELECT * FROM users WHERE id = {userId}\", conn);`,\n    `command.CommandText = \"DELETE FROM users WHERE id = \" + id;`,\n    `command.CommandText = $\"UPDATE users SET role = '{role}'\";`,\n    `var users = connection.Query<User>($\"SELECT * FROM users WHERE name = '{name}'\");`,\n    `connection.Execute(\"DELETE FROM users WHERE id = \" + id);`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "    `command.CommandText = $\"UPDATE users SET role = '{role}'\";`,\n    `var users = connection.Query<User>($\"SELECT * FROM users WHERE name = '{name}'\");`,\n    `connection.Execute(\"DELETE FROM users WHERE id = \" + id);`,\n    `var rows = connection.QueryAsync<int>($\"SELECT id FROM users WHERE id = {id}\");`,\n    `var blogs = ctx.Blogs.FromSqlRaw($\"SELECT * FROM Blogs WHERE Id = {id}\").ToList();`,\n    `ctx.Database.ExecuteSqlRaw(\"DELETE FROM Users WHERE Id = \" + id);`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "    `connection.Execute(\"DELETE FROM users WHERE id = \" + id);`,\n    `var rows = connection.QueryAsync<int>($\"SELECT id FROM users WHERE id = {id}\");`,\n    `var blogs = ctx.Blogs.FromSqlRaw($\"SELECT * FROM Blogs WHERE Id = {id}\").ToList();`,\n    `ctx.Database.ExecuteSqlRaw(\"DELETE FROM Users WHERE Id = \" + id);`,\n    // SAFE counter-example: FromSqlInterpolated parameterizes correctly\n    `// SAFE: ctx.Blogs.FromSqlInterpolated($\"SELECT * FROM Blogs WHERE Id = {id}\").ToList();`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `var rows = connection.QueryAsync<int>($\"SELECT id FROM users WHERE id = {id}\");`,\n    `var blogs = ctx.Blogs.FromSqlRaw($\"SELECT * FROM Blogs WHERE Id = {id}\").ToList();`,\n    `ctx.Database.ExecuteSqlRaw(\"DELETE FROM Users WHERE Id = \" + id);`,\n    // SAFE counter-example: FromSqlInterpolated parameterizes correctly\n    `// SAFE: ctx.Blogs.FromSqlInterpolated($\"SELECT * FROM Blogs WHERE Id = {id}\").ToList();`,\n  ],",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        77
+      ],
+      "snippet": "        {\n          regex: /\\$\"\\s*(?:SELECT|INSERT|UPDATE|DELETE)[^\"]{0,400}\\{/,\n          label: \"interpolated SQL string with embedded {expr}\",\n        },\n      ],\n      content,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.734Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "a89a8717e9a907e7a52b3112bc2c1b7f7fe0248137c28d57b3dcb60e8ca58909",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-ab77ad581398dd81",
+      "investigatedAt": "2026-05-06T21:49:46.967Z",
+      "durationMs": 7095.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3009-7b10-96bf-3827eb699d84",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.047835,
+      "usage": {
+        "inputTokens": 6867.5,
+        "outputTokens": 311.25,
+        "cacheReadInputTokens": 8320,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-1595aabe27b888ba",
+      "investigatedAt": "2026-05-06T21:53:35.396Z",
+      "durationMs": 9169.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b5a-7f10-a112-112258c4569b",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05889275,
+      "usage": {
+        "inputTokens": 7612.25,
+        "outputTokens": 404.25,
+        "cacheReadInputTokens": 17408,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:35.398Z"
+  },
+  "status": "analyzed"
+}

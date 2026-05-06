@@ -37,6 +37,25 @@ const DEFAULT_MODEL = "gpt-5.5";
 const DEFAULT_EFFORT: ModelReasoningEffort = "xhigh";
 
 /**
+ * Pick a Codex sandbox mode based on whether the orchestrator is already
+ * running inside a Vercel Sandbox microVM (signalled by
+ * DEEPSEC_INSIDE_SANDBOX, set in setup.ts's `buildSandboxEnv`).
+ *
+ * - In-VM: `danger-full-access` — the VM is the boundary, and Codex's
+ *   nested read-only sandbox was rejecting ~7% of cat/sed/rg calls under
+ *   `approvalPolicy: "never"` (no fallback path when an op needs
+ *   escalation).
+ * - Local: `workspace-write` — allows reads anywhere, writes within the
+ *   project, and shell execution without any approval prompts. Combined
+ *   with `networkAccessEnabled: false` the agent's Bash still can't reach
+ *   the network. This is the safety boundary we want when the agent is
+ *   running directly on the user's laptop.
+ */
+function pickSandboxMode(): "danger-full-access" | "workspace-write" {
+  return process.env.DEEPSEC_INSIDE_SANDBOX === "1" ? "danger-full-access" : "workspace-write";
+}
+
+/**
  * Codex CLI's built-in `openai` provider defaults to the WebSocket Responses
  * transport (wss://.../responses). AI Gateway doesn't expose that, so the
  * CLI gets stuck in a reconnect loop on 404. Codex also rejects any attempt
@@ -618,6 +637,16 @@ export class CodexAgentSdkPlugin implements AgentPlugin {
     const basePrompt = buildInvestigatePrompt({ promptTemplate, projectInfo, batch });
     const prompt = `${codexEnvironmentPreamble(projectRoot)}\n\n${basePrompt}`;
     const invocation = buildCodexInvocation();
+    // Idempotent cleanup the finally block runs whether we exit via return,
+    // throw, or generator close. Each helper swallows missing-target errors,
+    // so calling them twice is safe.
+    let cleanedUp = false;
+    const cleanup = (): void => {
+      if (cleanedUp) return;
+      cleanedUp = true;
+      cleanupStderrLog(invocation.stderrLog);
+      cleanupCodexHome(invocation.codexHome);
+    };
     const codex = new Codex(invocation.options);
     const startTime = Date.now();
     let agentMessages: string[] = [];
@@ -627,199 +656,196 @@ export class CodexAgentSdkPlugin implements AgentPlugin {
     let sdkMeta: Partial<BatchMeta> = {};
     let lastError = "";
 
-    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-      if (attempt > 1) {
-        yield {
-          type: "thinking" as const,
-          message: `Retrying batch after transient error (attempt ${attempt}/${MAX_ATTEMPTS}): ${lastError.slice(0, 200)}`,
-        };
-        agentMessages = [];
-        threadId = undefined;
-        turnCount = 0;
-        toolUseCount = 0;
-        sdkMeta = {};
-        lastError = "";
+    try {
+      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        if (attempt > 1) {
+          yield {
+            type: "thinking" as const,
+            message: `Retrying batch after transient error (attempt ${attempt}/${MAX_ATTEMPTS}): ${lastError.slice(0, 200)}`,
+          };
+          agentMessages = [];
+          threadId = undefined;
+          turnCount = 0;
+          toolUseCount = 0;
+          sdkMeta = {};
+          lastError = "";
+        }
+
+        try {
+          const thread = codex.startThread({
+            model,
+            workingDirectory: projectRoot,
+            skipGitRepoCheck: true,
+            // sandboxMode: in-VM uses `danger-full-access` (the VM is the
+            // boundary; the nested read-only sandbox was failing on ~7% of
+            // cat/sed/rg calls under approvalPolicy=never). Local uses
+            // `workspace-write` — reads anywhere, writes inside the project,
+            // shell allowed; networkAccessEnabled stays false either way so
+            // the agent's Bash still can't reach the network.
+            sandboxMode: pickSandboxMode(),
+            approvalPolicy: "never",
+            networkAccessEnabled: false,
+            modelReasoningEffort: effort,
+            webSearchEnabled: false,
+          });
+          const { events } = await thread.runStreamed(prompt);
+
+          for await (const event of events as AsyncGenerator<ThreadEvent>) {
+            switch (event.type) {
+              case "thread.started":
+                threadId = event.thread_id;
+                break;
+
+              case "turn.started":
+                turnCount++;
+                break;
+
+              case "item.completed": {
+                const prog = itemToProgress(event.item);
+                if (prog) {
+                  if (prog.type === "tool_use") toolUseCount++;
+                  yield prog;
+                }
+                if (event.item.type === "agent_message") {
+                  agentMessages.push(event.item.text ?? "");
+                }
+                break;
+              }
+
+              case "turn.completed":
+                if (event.usage) {
+                  sdkMeta.usage = mapUsage(event.usage);
+                  const turnCost = estimateCostUsd(model, event.usage);
+                  if (turnCost !== undefined) {
+                    sdkMeta.costUsd = (sdkMeta.costUsd ?? 0) + turnCost;
+                  }
+                }
+                sdkMeta.numTurns = turnCount;
+                sdkMeta.agentSessionId = threadId ?? thread.id ?? undefined;
+                break;
+
+              case "turn.failed":
+                lastError = event.error?.message ?? "turn.failed";
+                yield {
+                  type: "error" as const,
+                  message: `Codex turn failed: ${lastError.slice(0, 300)}`,
+                };
+                break;
+
+              case "error":
+                lastError = event.message;
+                yield {
+                  type: "error" as const,
+                  message: `Codex stream error: ${lastError.slice(0, 300)}`,
+                };
+                break;
+            }
+          }
+        } catch (sdkErr) {
+          lastError = sdkErr instanceof Error ? sdkErr.message : String(sdkErr);
+          yield {
+            type: "error" as const,
+            message: `Codex SDK error: ${lastError.slice(0, 300)}`,
+          };
+        }
+
+        if (agentMessages.length > 0) break;
+        // Silent-failure retry: gateway returned response.completed with 0
+        // tokens and no agent_message — codex CLI exited clean, but no work
+        // happened. Retry as if it were a transient error.
+        const sawSilentFailure =
+          agentMessages.length === 0 && (sdkMeta.usage?.outputTokens ?? 0) === 0;
+        const shouldRetry =
+          attempt < MAX_ATTEMPTS && (isTransientError(lastError) || sawSilentFailure);
+        if (!shouldRetry) break;
+        if (sawSilentFailure && !lastError) {
+          yield {
+            type: "thinking" as const,
+            message: `Codex returned empty completion (likely gateway soft-fail) — retrying with backoff (attempt ${attempt}/${MAX_ATTEMPTS})`,
+          };
+        }
+        await backoff(attempt);
       }
 
-      try {
-        const thread = codex.startThread({
-          model,
-          workingDirectory: projectRoot,
-          skipGitRepoCheck: true,
-          // Read-only sandbox: agent can read + grep the codebase but cannot patch it
-          // We run Codex inside a Vercel Sandbox microVM — that's the real
-          // security boundary. Codex's own internal "read-only" sandbox was
-          // rejecting ~7% of investigations with "Security review blocked
-          // by command sandbox failure" because cat/sed/rg auto-approval
-          // fails under read-only + never-approve. Disable the nested
-          // sandbox so the agent can read freely; networkAccessEnabled stays
-          // false so the agent still can't exfiltrate.
-          sandboxMode: "danger-full-access",
-          approvalPolicy: "never",
-          networkAccessEnabled: false,
-          modelReasoningEffort: effort,
-          webSearchEnabled: false,
-        });
-        const { events } = await thread.runStreamed(prompt);
+      const resultText = chooseFinalText(agentMessages);
 
-        for await (const event of events as AsyncGenerator<ThreadEvent>) {
-          switch (event.type) {
-            case "thread.started":
-              threadId = event.thread_id;
-              break;
+      if (DEBUG) {
+        const hasJson = /```json/.test(resultText);
+        yield {
+          type: "thinking",
+          message: `[debug] resultText: ${agentMessages.length} agent_message(s), final length=${resultText.length}, hasJson=${hasJson}`,
+        };
+      }
 
-            case "turn.started":
-              turnCount++;
-              break;
+      const durationMs = Date.now() - startTime;
+      const tokensStr = sdkMeta.usage
+        ? ` ${sdkMeta.usage.inputTokens + sdkMeta.usage.outputTokens} tokens`
+        : "";
+      const costStr = sdkMeta.costUsd != null ? ` $${sdkMeta.costUsd.toFixed(3)}` : "";
 
-            case "item.completed": {
-              const prog = itemToProgress(event.item);
-              if (prog) {
-                if (prog.type === "tool_use") toolUseCount++;
-                yield prog;
-              }
-              if (event.item.type === "agent_message") {
-                agentMessages.push(event.item.text ?? "");
-              }
-              break;
-            }
-
-            case "turn.completed":
-              if (event.usage) {
-                sdkMeta.usage = mapUsage(event.usage);
-                const turnCost = estimateCostUsd(model, event.usage);
-                if (turnCost !== undefined) {
-                  sdkMeta.costUsd = (sdkMeta.costUsd ?? 0) + turnCost;
-                }
-              }
-              sdkMeta.numTurns = turnCount;
-              sdkMeta.agentSessionId = threadId ?? thread.id ?? undefined;
-              break;
-
-            case "turn.failed":
-              lastError = event.error?.message ?? "turn.failed";
-              yield {
-                type: "error" as const,
-                message: `Codex turn failed: ${lastError.slice(0, 300)}`,
-              };
-              break;
-
-            case "error":
-              lastError = event.message;
-              yield {
-                type: "error" as const,
-                message: `Codex stream error: ${lastError.slice(0, 300)}`,
-              };
-              break;
-          }
-        }
-      } catch (sdkErr) {
-        lastError = sdkErr instanceof Error ? sdkErr.message : String(sdkErr);
+      // Silent-failure detection: 0 output tokens means codex CLI didn't
+      // produce anything useful. Surface the captured stderr so we can see
+      // why (rate-limit, auth error, network, etc.). Always log the
+      // wrapper-captured output on silent — it's our only diagnostic path.
+      const wasSilent = (sdkMeta.usage?.outputTokens ?? 0) === 0;
+      const stderrTail = wasSilent ? readStderrTail(invocation.stderrLog) : undefined;
+      if (wasSilent && stderrTail) {
         yield {
           type: "error" as const,
-          message: `Codex SDK error: ${lastError.slice(0, 300)}`,
+          message: `Codex silent-exit stderr: ${stderrTail.slice(0, 1500)}`,
         };
+        sdkMeta.codexStderr = stderrTail;
       }
-
-      if (agentMessages.length > 0) break;
-      // Silent-failure retry: gateway returned response.completed with 0
-      // tokens and no agent_message — codex CLI exited clean, but no work
-      // happened. Retry as if it were a transient error.
-      const sawSilentFailure =
-        agentMessages.length === 0 && (sdkMeta.usage?.outputTokens ?? 0) === 0;
-      const shouldRetry =
-        attempt < MAX_ATTEMPTS && (isTransientError(lastError) || sawSilentFailure);
-      if (!shouldRetry) break;
-      if (sawSilentFailure && !lastError) {
+      const refusal = await runRefusalFollowUp(codex, threadId, projectRoot, model);
+      if (refusal?.refused) {
         yield {
           type: "thinking" as const,
-          message: `Codex returned empty completion (likely gateway soft-fail) — retrying with backoff (attempt ${attempt}/${MAX_ATTEMPTS})`,
+          message: `Refusal detected: ${refusal.reason ?? refusal.skipped?.map((s) => s.filePath ?? "?").join(", ") ?? "see raw"}`,
         };
       }
-      await backoff(attempt);
-    }
 
-    const resultText = chooseFinalText(agentMessages);
+      // Empty-result check runs BEFORE parse so a silent failure throws
+      // with the captured stderr instead of crashing inside the parser
+      // with a misleading "no JSON in response" message — and the finally
+      // block below cleans up regardless of which path we exit through.
+      if (!resultText) {
+        const stderrSuffix = sdkMeta.codexStderr
+          ? ` Stderr tail: ${sdkMeta.codexStderr.slice(0, 800)}`
+          : "";
+        throw new Error(
+          `Codex SDK produced no result after ${MAX_ATTEMPTS} attempt(s). ` +
+            `Last error: ${lastError || "(none captured)"}.${stderrSuffix}`,
+        );
+      }
 
-    if (DEBUG) {
-      const hasJson = /```json/.test(resultText);
+      const parsed = parseInvestigateResults(resultText, batch);
+      if (DEBUG) {
+        const matched = parsed.filter((r) => r.findings.length > 0).length;
+        const totalFindings = parsed.reduce((s, r) => s + r.findings.length, 0);
+        yield {
+          type: "thinking",
+          message: `[debug] parsed: ${parsed.length} entries, ${matched} with findings, ${totalFindings} total findings`,
+        };
+      }
+
       yield {
-        type: "thinking",
-        message: `[debug] resultText: ${agentMessages.length} agent_message(s), final length=${resultText.length}, hasJson=${hasJson}`,
+        type: "complete",
+        message: `Investigation complete (${(durationMs / 1000).toFixed(1)}s, ${turnCount} turns, ${toolUseCount} tool calls${costStr}${tokensStr}${refusal?.refused ? " ⚠️  refusal" : ""})`,
       };
-    }
 
-    const durationMs = Date.now() - startTime;
-    const tokensStr = sdkMeta.usage
-      ? ` ${sdkMeta.usage.inputTokens + sdkMeta.usage.outputTokens} tokens`
-      : "";
-    const costStr = sdkMeta.costUsd != null ? ` $${sdkMeta.costUsd.toFixed(3)}` : "";
-
-    // Silent-failure detection: 0 output tokens means codex CLI didn't
-    // produce anything useful. Surface the captured stderr so we can see
-    // why (rate-limit, auth error, network, etc.). Always log the
-    // wrapper-captured output on silent — it's our only diagnostic path.
-    const wasSilent = (sdkMeta.usage?.outputTokens ?? 0) === 0;
-    const stderrTail = wasSilent ? readStderrTail(invocation.stderrLog) : undefined;
-    if (wasSilent && stderrTail) {
-      yield {
-        type: "error" as const,
-        message: `Codex silent-exit stderr: ${stderrTail.slice(0, 1500)}`,
+      return {
+        results: parsed,
+        meta: {
+          durationMs,
+          ...sdkMeta,
+          refusal,
+        },
       };
-      sdkMeta.codexStderr = stderrTail;
+    } finally {
+      // Always release CODEX_HOME / stderr log — the previous flow
+      // skipped cleanup whenever parseInvestigateResults threw.
+      cleanup();
     }
-    cleanupStderrLog(invocation.stderrLog);
-
-    const refusal = await runRefusalFollowUp(codex, threadId, projectRoot, model);
-    if (refusal?.refused) {
-      yield {
-        type: "thinking" as const,
-        message: `Refusal detected: ${refusal.reason ?? refusal.skipped?.map((s) => s.filePath ?? "?").join(", ") ?? "see raw"}`,
-      };
-    }
-
-    const parsed = parseInvestigateResults(resultText, batch);
-    if (DEBUG) {
-      const matched = parsed.filter((r) => r.findings.length > 0).length;
-      const totalFindings = parsed.reduce((s, r) => s + r.findings.length, 0);
-      yield {
-        type: "thinking",
-        message: `[debug] parsed: ${parsed.length} entries, ${matched} with findings, ${totalFindings} total findings`,
-      };
-    }
-
-    yield {
-      type: "complete",
-      message: `Investigation complete (${(durationMs / 1000).toFixed(1)}s, ${turnCount} turns, ${toolUseCount} tool calls${costStr}${tokensStr}${refusal?.refused ? " ⚠️  refusal" : ""})`,
-    };
-
-    // Clean up the per-invocation CODEX_HOME tempdir — done after refusal
-    // follow-up since that uses resumeThread which reads the session DB.
-    cleanupCodexHome(invocation.codexHome);
-
-    // Silent-fail: codex exited clean but did no work (0 output tokens,
-    // empty resultText). Without this throw the empty output falls
-    // through and files get marked "analyzed" with no findings, masking
-    // the actual failure (rate-limit, gateway error, missing binary).
-    // The forensic stderr is included in the error message.
-    if (!resultText) {
-      const stderrSuffix = sdkMeta.codexStderr
-        ? ` Stderr tail: ${sdkMeta.codexStderr.slice(0, 800)}`
-        : "";
-      throw new Error(
-        `Codex SDK produced no result after ${MAX_ATTEMPTS} attempt(s). ` +
-          `Last error: ${lastError || "(none captured)"}.${stderrSuffix}`,
-      );
-    }
-
-    return {
-      results: parsed,
-      meta: {
-        durationMs,
-        ...sdkMeta,
-        refusal,
-      },
-    };
   }
 
   async *revalidate(params: RevalidateParams): AsyncGenerator<AgentProgress, RevalidateOutput> {
@@ -842,6 +868,13 @@ export class CodexAgentSdkPlugin implements AgentPlugin {
     };
 
     const invocation = buildCodexInvocation();
+    let cleanedUp = false;
+    const cleanup = (): void => {
+      if (cleanedUp) return;
+      cleanedUp = true;
+      cleanupStderrLog(invocation.stderrLog);
+      cleanupCodexHome(invocation.codexHome);
+    };
     const codex = new Codex(invocation.options);
     const startTime = Date.now();
     let agentMessages: string[] = [];
@@ -850,164 +883,162 @@ export class CodexAgentSdkPlugin implements AgentPlugin {
     let sdkMeta: Partial<BatchMeta> = {};
     let lastError = "";
 
-    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-      if (attempt > 1) {
-        yield {
-          type: "thinking" as const,
-          message: `Retrying revalidation batch after transient error (attempt ${attempt}/${MAX_ATTEMPTS}): ${lastError.slice(0, 200)}`,
-        };
-        agentMessages = [];
-        threadId = undefined;
-        turnCount = 0;
-        sdkMeta = {};
-        lastError = "";
-      }
-
-      try {
-        const thread = codex.startThread({
-          model,
-          workingDirectory: projectRoot,
-          skipGitRepoCheck: true,
-          // We run Codex inside a Vercel Sandbox microVM — that's the real
-          // security boundary. Codex's own internal "read-only" sandbox was
-          // rejecting ~7% of investigations with "Security review blocked
-          // by command sandbox failure" because cat/sed/rg auto-approval
-          // fails under read-only + never-approve. Disable the nested
-          // sandbox so the agent can read freely; networkAccessEnabled stays
-          // false so the agent still can't exfiltrate.
-          sandboxMode: "danger-full-access",
-          approvalPolicy: "never",
-          networkAccessEnabled: false,
-          modelReasoningEffort: effort,
-          webSearchEnabled: false,
-        });
-        const { events } = await thread.runStreamed(prompt);
-
-        for await (const event of events as AsyncGenerator<ThreadEvent>) {
-          switch (event.type) {
-            case "thread.started":
-              threadId = event.thread_id;
-              break;
-            case "turn.started":
-              turnCount++;
-              break;
-            case "item.completed": {
-              const prog = itemToProgress(event.item);
-              if (prog) yield prog;
-              if (event.item.type === "agent_message") {
-                agentMessages.push(event.item.text ?? "");
-              }
-              break;
-            }
-            case "turn.completed":
-              if (event.usage) {
-                sdkMeta.usage = mapUsage(event.usage);
-                const turnCost = estimateCostUsd(model, event.usage);
-                if (turnCost !== undefined) {
-                  sdkMeta.costUsd = (sdkMeta.costUsd ?? 0) + turnCost;
-                }
-              }
-              sdkMeta.numTurns = turnCount;
-              sdkMeta.agentSessionId = threadId ?? thread.id ?? undefined;
-              break;
-            case "turn.failed":
-              lastError = event.error?.message ?? "turn.failed";
-              yield {
-                type: "error" as const,
-                message: `Codex turn failed: ${lastError.slice(0, 300)}`,
-              };
-              break;
-            case "error":
-              lastError = event.message;
-              yield {
-                type: "error" as const,
-                message: `Codex stream error: ${lastError.slice(0, 300)}`,
-              };
-              break;
-          }
+    try {
+      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        if (attempt > 1) {
+          yield {
+            type: "thinking" as const,
+            message: `Retrying revalidation batch after transient error (attempt ${attempt}/${MAX_ATTEMPTS}): ${lastError.slice(0, 200)}`,
+          };
+          agentMessages = [];
+          threadId = undefined;
+          turnCount = 0;
+          sdkMeta = {};
+          lastError = "";
         }
-      } catch (err) {
-        lastError = err instanceof Error ? err.message : String(err);
-        yield { type: "error" as const, message: `Codex SDK error: ${lastError.slice(0, 300)}` };
+
+        try {
+          const thread = codex.startThread({
+            model,
+            workingDirectory: projectRoot,
+            skipGitRepoCheck: true,
+            // sandboxMode: see investigate() — in-VM uses
+            // `danger-full-access`, local uses `workspace-write`.
+            sandboxMode: pickSandboxMode(),
+            approvalPolicy: "never",
+            networkAccessEnabled: false,
+            modelReasoningEffort: effort,
+            webSearchEnabled: false,
+          });
+          const { events } = await thread.runStreamed(prompt);
+
+          for await (const event of events as AsyncGenerator<ThreadEvent>) {
+            switch (event.type) {
+              case "thread.started":
+                threadId = event.thread_id;
+                break;
+              case "turn.started":
+                turnCount++;
+                break;
+              case "item.completed": {
+                const prog = itemToProgress(event.item);
+                if (prog) yield prog;
+                if (event.item.type === "agent_message") {
+                  agentMessages.push(event.item.text ?? "");
+                }
+                break;
+              }
+              case "turn.completed":
+                if (event.usage) {
+                  sdkMeta.usage = mapUsage(event.usage);
+                  const turnCost = estimateCostUsd(model, event.usage);
+                  if (turnCost !== undefined) {
+                    sdkMeta.costUsd = (sdkMeta.costUsd ?? 0) + turnCost;
+                  }
+                }
+                sdkMeta.numTurns = turnCount;
+                sdkMeta.agentSessionId = threadId ?? thread.id ?? undefined;
+                break;
+              case "turn.failed":
+                lastError = event.error?.message ?? "turn.failed";
+                yield {
+                  type: "error" as const,
+                  message: `Codex turn failed: ${lastError.slice(0, 300)}`,
+                };
+                break;
+              case "error":
+                lastError = event.message;
+                yield {
+                  type: "error" as const,
+                  message: `Codex stream error: ${lastError.slice(0, 300)}`,
+                };
+                break;
+            }
+          }
+        } catch (err) {
+          lastError = err instanceof Error ? err.message : String(err);
+          yield { type: "error" as const, message: `Codex SDK error: ${lastError.slice(0, 300)}` };
+        }
+
+        if (agentMessages.length > 0) break;
+        // Silent-failure retry: gateway returned response.completed with 0
+        // tokens and no agent_message — codex CLI exited clean, but no work
+        // happened. Retry as if it were a transient error.
+        const sawSilentFailure =
+          agentMessages.length === 0 && (sdkMeta.usage?.outputTokens ?? 0) === 0;
+        const shouldRetry =
+          attempt < MAX_ATTEMPTS && (isTransientError(lastError) || sawSilentFailure);
+        if (!shouldRetry) break;
+        if (sawSilentFailure && !lastError) {
+          yield {
+            type: "thinking" as const,
+            message: `Codex returned empty completion (likely gateway soft-fail) — retrying with backoff (attempt ${attempt}/${MAX_ATTEMPTS})`,
+          };
+        }
+        await backoff(attempt);
       }
 
-      if (agentMessages.length > 0) break;
-      // Silent-failure retry: gateway returned response.completed with 0
-      // tokens and no agent_message — codex CLI exited clean, but no work
-      // happened. Retry as if it were a transient error.
-      const sawSilentFailure =
-        agentMessages.length === 0 && (sdkMeta.usage?.outputTokens ?? 0) === 0;
-      const shouldRetry =
-        attempt < MAX_ATTEMPTS && (isTransientError(lastError) || sawSilentFailure);
-      if (!shouldRetry) break;
-      if (sawSilentFailure && !lastError) {
+      const resultText = chooseFinalText(agentMessages);
+      if (DEBUG) {
         yield {
-          type: "thinking" as const,
-          message: `Codex returned empty completion (likely gateway soft-fail) — retrying with backoff (attempt ${attempt}/${MAX_ATTEMPTS})`,
+          type: "thinking",
+          message: `[debug] resultText: ${agentMessages.length} agent_message(s), final length=${resultText.length}, hasJson=${/```json/.test(resultText)}`,
         };
       }
-      await backoff(attempt);
-    }
 
-    const resultText = chooseFinalText(agentMessages);
-    if (DEBUG) {
+      const durationMs = Date.now() - startTime;
+
+      // Same silent-failure capture as investigate.
+      const wasSilent = (sdkMeta.usage?.outputTokens ?? 0) === 0;
+      const stderrTail = wasSilent ? readStderrTail(invocation.stderrLog) : undefined;
+      if (wasSilent && stderrTail) {
+        yield {
+          type: "error" as const,
+          message: `Codex silent-exit stderr: ${stderrTail.slice(0, 1500)}`,
+        };
+        sdkMeta.codexStderr = stderrTail;
+      }
+
+      const refusal = await runRefusalFollowUp(codex, threadId, projectRoot, model);
+      if (refusal?.refused) {
+        yield {
+          type: "thinking" as const,
+          message: `Refusal detected during revalidation: ${refusal.reason ?? "see raw"}`,
+        };
+      }
+
+      // Empty-result throw before parse so silent failures don't crash inside
+      // parseRevalidateVerdicts and bypass the cleanup in finally.
+      if (!resultText) {
+        const stderrSuffix = sdkMeta.codexStderr
+          ? ` Stderr tail: ${sdkMeta.codexStderr.slice(0, 800)}`
+          : "";
+        throw new Error(
+          `Codex SDK produced no revalidation result after ${MAX_ATTEMPTS} attempt(s). ` +
+            `Last error: ${lastError || "(none captured)"}.${stderrSuffix}`,
+        );
+      }
+
+      const verdicts = parseRevalidateVerdicts(resultText);
+      if (DEBUG) {
+        yield {
+          type: "thinking",
+          message: `[debug] parsed ${verdicts.length} verdicts`,
+        };
+      }
+
+      const costStr = sdkMeta.costUsd != null ? ` $${sdkMeta.costUsd.toFixed(3)}` : "";
       yield {
-        type: "thinking",
-        message: `[debug] resultText: ${agentMessages.length} agent_message(s), final length=${resultText.length}, hasJson=${/```json/.test(resultText)}`,
+        type: "complete",
+        message: `Revalidation complete (${(durationMs / 1000).toFixed(1)}s, ${turnCount} turns${costStr}, ${verdicts.length} verdicts${refusal?.refused ? " ⚠️  refusal" : ""})`,
       };
-    }
 
-    const durationMs = Date.now() - startTime;
-    const verdicts = parseRevalidateVerdicts(resultText);
-
-    if (DEBUG) {
-      yield {
-        type: "thinking",
-        message: `[debug] parsed ${verdicts.length} verdicts`,
+      return {
+        verdicts,
+        meta: { durationMs, ...sdkMeta, refusal },
       };
+    } finally {
+      cleanup();
     }
-
-    // Same silent-failure capture as investigate.
-    const wasSilent = (sdkMeta.usage?.outputTokens ?? 0) === 0;
-    const stderrTail = wasSilent ? readStderrTail(invocation.stderrLog) : undefined;
-    if (wasSilent && stderrTail) {
-      yield {
-        type: "error" as const,
-        message: `Codex silent-exit stderr: ${stderrTail.slice(0, 1500)}`,
-      };
-      sdkMeta.codexStderr = stderrTail;
-    }
-    cleanupStderrLog(invocation.stderrLog);
-
-    const refusal = await runRefusalFollowUp(codex, threadId, projectRoot, model);
-    if (refusal?.refused) {
-      yield {
-        type: "thinking" as const,
-        message: `Refusal detected during revalidation: ${refusal.reason ?? "see raw"}`,
-      };
-    }
-
-    const costStr = sdkMeta.costUsd != null ? ` $${sdkMeta.costUsd.toFixed(3)}` : "";
-    yield {
-      type: "complete",
-      message: `Revalidation complete (${(durationMs / 1000).toFixed(1)}s, ${turnCount} turns${costStr}, ${verdicts.length} verdicts${refusal?.refused ? " ⚠️  refusal" : ""})`,
-    };
-
-    cleanupCodexHome(invocation.codexHome);
-
-    if (!resultText) {
-      const stderrSuffix = sdkMeta.codexStderr
-        ? ` Stderr tail: ${sdkMeta.codexStderr.slice(0, 800)}`
-        : "";
-      throw new Error(
-        `Codex SDK produced no revalidation result after ${MAX_ATTEMPTS} attempt(s). ` +
-          `Last error: ${lastError || "(none captured)"}.${stderrSuffix}`,
-      );
-    }
-
-    return {
-      verdicts,
-      meta: { durationMs, ...sdkMeta, refusal },
-    };
   }
 }

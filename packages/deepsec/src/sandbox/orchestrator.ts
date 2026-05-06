@@ -466,9 +466,19 @@ export async function collect(
       try {
         await downloadResults(sandbox, entry.index, projectId, onLog);
       } catch (err) {
-        onLog(
-          `[sandbox-${entry.index}] Download failed: ${err instanceof Error ? err.message : err}`,
-        );
+        // The sandbox is the trust boundary; a download failure means we
+        // either don't have the analysis output or it was rejected. Either
+        // way, this run is NOT a clean success — report failure, leave the
+        // sandbox + run state in place so the user can retry/inspect.
+        const errMsg = err instanceof Error ? err.message : String(err);
+        onLog(`[sandbox-${entry.index}] Download failed: ${errMsg}`);
+        return {
+          sandboxIndex: entry.index,
+          sandboxId: entry.sandboxId,
+          success: false,
+          filesProcessed: 0,
+          error: `Download failed: ${errMsg}`,
+        };
       }
 
       try {
@@ -498,8 +508,19 @@ export async function collect(
 
   const results = await Promise.all(resultPromises);
 
-  deleteRunState(projectId, runId);
-  onLog(`Run ${runId} collected and cleaned up.`);
+  // Only clear run state when every sandbox actually delivered its results.
+  // If anything failed (download, exit code, unreachable), keep the state so
+  // the user can `deepsec sandbox-collect <runId>` again later.
+  const allClean = results.every((r) => r.success);
+  if (allClean) {
+    deleteRunState(projectId, runId);
+    onLog(`Run ${runId} collected and cleaned up.`);
+  } else {
+    const failed = results.filter((r) => !r.success).length;
+    onLog(
+      `Run ${runId}: ${failed}/${results.length} sandbox(es) failed — keeping run state for retry.`,
+    );
+  }
 
   return results;
 }
@@ -542,14 +563,20 @@ export async function orchestrate(
     }
 
     // One final sync to catch whatever the poller may have missed between
-    // its last iteration and the worker exiting.
+    // its last iteration and the worker exiting. The sandbox is the trust
+    // boundary, so a failed download means the host didn't actually receive
+    // the run's output — flip the result to failure rather than masquerading
+    // as a clean run with empty findings.
     if (inst.status !== "error") {
       try {
         await downloadResults(inst.sandbox, inst.index, config.projectId, onLog);
       } catch (err) {
-        onLog(
-          `[sandbox-${inst.index}] Final download failed: ${err instanceof Error ? err.message : String(err)}`,
-        );
+        const errMsg = err instanceof Error ? err.message : String(err);
+        onLog(`[sandbox-${inst.index}] Final download failed: ${errMsg}`);
+        if (result.success) {
+          result.success = false;
+          result.error = `Download failed: ${errMsg}`;
+        }
       }
     }
     const tDownload = Date.now();

@@ -1,0 +1,135 @@
+{
+  "filePath": "packages/scanner/src/matchers/go-sql-raw.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        12,
+        15
+      ],
+      "snippet": "  requires: { tech: [\"go\"] },\n  examples: [\n    `rows, err := db.Query(\"SELECT * FROM users WHERE id = \" + userId)`,\n    `db.QueryRow(fmt.Sprintf(\"SELECT * FROM x WHERE y = '%s'\", name))`,\n    `db.Exec(\"DELETE FROM users WHERE id = \" + id)`,",
+      "matchedPattern": "string concat SELECT"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    `rows, err := db.Query(\"SELECT * FROM users WHERE id = \" + userId)`,\n    `db.QueryRow(fmt.Sprintf(\"SELECT * FROM x WHERE y = '%s'\", name))`,\n    `db.Exec(\"DELETE FROM users WHERE id = \" + id)`,\n    `db.Raw(\"SELECT * FROM users WHERE id = \" + id).Scan(&user)`,\n    `db.Raw(fmt.Sprintf(\"UPDATE users SET role = '%s'\", role)).Exec()`,",
+      "matchedPattern": "string concat DELETE"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"go-sql-raw\",\n  description:\n    \"Raw SQL across Go DB libraries (database/sql, GORM, sqlx, pgx) — fmt.Sprintf or + concatenation into queries is SQL injection\",\n  filePatterns: [\"**/*.go\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  examples: [\n    `rows, err := db.Query(\"SELECT * FROM users WHERE id = \" + userId)`,\n    `db.QueryRow(fmt.Sprintf(\"SELECT * FROM x WHERE y = '%s'\", name))`,\n    `db.Exec(\"DELETE FROM users WHERE id = \" + id)`,\n    `db.Raw(\"SELECT * FROM users WHERE id = \" + id).Scan(&user)`,\n    `db.Raw(fmt.Sprintf(\"UPDATE users SET role = '%s'\", role)).Exec()`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    `rows, err := db.Query(\"SELECT * FROM users WHERE id = \" + userId)`,\n    `db.QueryRow(fmt.Sprintf(\"SELECT * FROM x WHERE y = '%s'\", name))`,\n    `db.Exec(\"DELETE FROM users WHERE id = \" + id)`,\n    `db.Raw(\"SELECT * FROM users WHERE id = \" + id).Scan(&user)`,\n    `db.Raw(fmt.Sprintf(\"UPDATE users SET role = '%s'\", role)).Exec()`,\n    `db.Where(\"name = '\" + name + \"'\").First(&user)`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "    `db.Exec(\"DELETE FROM users WHERE id = \" + id)`,\n    `db.Raw(\"SELECT * FROM users WHERE id = \" + id).Scan(&user)`,\n    `db.Raw(fmt.Sprintf(\"UPDATE users SET role = '%s'\", role)).Exec()`,\n    `db.Where(\"name = '\" + name + \"'\").First(&user)`,\n    `db.Where(fmt.Sprintf(\"id = %d\", id)).First(&u)`,\n    `err := sqlxDb.Select(&users, \"SELECT * FROM users WHERE name = '\" + name + \"'\")`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        85
+      ],
+      "snippet": "        {\n          regex: /\"\\s*(?:SELECT|INSERT|UPDATE|DELETE)[^\"]{0,400}\"\\s*\\+\\s*\\w/,\n          label: \"SQL keyword string literal followed by concat\",\n        },\n      ],\n      content,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  requires: { tech: [\"go\"] },\n  examples: [\n    `rows, err := db.Query(\"SELECT * FROM users WHERE id = \" + userId)`,\n    `db.QueryRow(fmt.Sprintf(\"SELECT * FROM x WHERE y = '%s'\", name))`,\n    `db.Exec(\"DELETE FROM users WHERE id = \" + id)`,",
+      "matchedPattern": "Generic .query('SELECT/INSERT/...') with string concatenation — SQL injection"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.859Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "0dc4c3a0cc47a58e41d51f0d489c0a205b4cb0be5ac77de088dc27e676e58a4c",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-65dc94bca8cbf80e",
+      "investigatedAt": "2026-05-06T21:49:55.679Z",
+      "durationMs": 9301.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3045-7302-8227-b4ee5e620897",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0613255,
+      "usage": {
+        "inputTokens": 8093.5,
+        "outputTokens": 467,
+        "cacheReadInputTokens": 13696,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-cbb34644b25b760b",
+      "investigatedAt": "2026-05-06T21:53:41.955Z",
+      "durationMs": 10812.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c2a-79d2-bed1-7fab0db59914",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.073648,
+      "usage": {
+        "inputTokens": 8926,
+        "outputTokens": 547,
+        "cacheReadInputTokens": 25216,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:41.957Z"
+  },
+  "status": "analyzed"
+}

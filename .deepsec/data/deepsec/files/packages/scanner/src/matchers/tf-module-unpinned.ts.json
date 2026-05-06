@@ -1,0 +1,153 @@
+{
+  "filePath": "packages/scanner/src/matchers/tf-module-unpinned.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"tf-module-unpinned\",\n  description: \"Terraform module references a remote git/github source without a commit-SHA pin\",\n  filePatterns: [\"**/*.tf\"],\n  match(content) {",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.476Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "37768426f0291e33121aff0932b69950f7b34424c6beb321e123a7a37e1a8eb5",
+  "findings": [
+    {
+      "severity": "BUG",
+      "vulnSlug": "other-scanner-false-negative",
+      "title": "Single-line Terraform module blocks are not evaluated",
+      "description": "The matcher enters module-tracking mode when it sees a line like `module \"x\" {`, then immediately continues to the next line. Because it skips parsing the opening line, a single-line block such as `module \"x\" { source = \"github.com/org/mod\" }` never records the source or closing brace and therefore is not evaluated. This can cause the scanner to miss unpinned remote Terraform modules written on one line. This is a scanner correctness bug, not an exploitable vulnerability in deepsec itself.",
+      "lineNumbers": [
+        40,
+        46,
+        53,
+        56
+      ],
+      "recommendation": "Process the module declaration line after entering module mode, or initialize depth by counting braces on the current line and extract `source` from that same line before deciding whether the block has closed.",
+      "confidence": "high",
+      "producedByRunId": "20260506215246-28e846911c045d2f",
+      "revalidation": {
+        "verdict": "fixed",
+        "reasoning": "The current matcher handles the single-line module case described in the finding. When it sees a module declaration, it sets inModule=true and depth=0, but it does not continue to the next line; it immediately processes the same line. The per-character loop counts both the opening and closing braces on that line, so a block like module \"x\" { source = \"github.com/org/mod\" } reaches depth <= 0 during the same iteration and is evaluated. The source extraction regex is also no longer anchored to the beginning of the line; it uses \\bsource\\s*=\\s*\"([^\"]+)\" so it can find source assignments after the opening brace. The version check uses the same anywhere-on-line approach, so single-line registry modules with version are handled too. For an unpinned remote GitHub source on one line, looksRemote is true, isPinned is false, okPinned is false, and the matcher records a hit at the module start line. This is a scanner correctness fix rather than a security boundary issue in deepsec itself, and the current code removes the false negative described.",
+        "revalidatedAt": "2026-05-06T22:53:20.227Z",
+        "runId": "20260506225212-01b88665137ecc8e",
+        "model": "gpt-5.5"
+      }
+    }
+  ],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:10:08.745Z",
+      "durationMs": 38583,
+      "durationApiMs": 37838,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "7abe8ecc-9094-4a7e-8c8c-65cea5f99c9f",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.2399425,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2814,
+        "cacheReadInputTokens": 74540,
+        "cacheCreationInputTokens": 21166
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-28e846911c045d2f",
+      "investigatedAt": "2026-05-06T21:54:17.948Z",
+      "durationMs": 19848,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b52-7633-a7d8-cd5fd8df37ea",
+      "findingCount": 1,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0786615,
+      "usage": {
+        "inputTokens": 6971.5,
+        "outputTokens": 1010,
+        "cacheReadInputTokens": 27008,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    },
+    {
+      "runId": "20260506223949-bd2cf1d45b776494",
+      "investigatedAt": "2026-05-06T22:40:48.234Z",
+      "durationMs": 14013.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff72-8994-71d3-9be2-dbac69e4c2f1",
+      "findingCount": 1,
+      "numTurns": 0.25,
+      "phase": "revalidate",
+      "costUsd": 0.13210575,
+      "usage": {
+        "inputTokens": 13765.25,
+        "outputTokens": 1228.25,
+        "cacheReadInputTokens": 52864,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506225212-01b88665137ecc8e",
+      "investigatedAt": "2026-05-06T22:53:20.227Z",
+      "durationMs": 28131.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff7d-f372-7542-a06a-8f4396a62dd6",
+      "findingCount": 1,
+      "numTurns": 0.5,
+      "phase": "revalidate",
+      "costUsd": 0.161412,
+      "usage": {
+        "inputTokens": 20946,
+        "outputTokens": 1403,
+        "cacheReadInputTokens": 29184,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T22:53:20.231Z"
+  },
+  "status": "analyzed"
+}

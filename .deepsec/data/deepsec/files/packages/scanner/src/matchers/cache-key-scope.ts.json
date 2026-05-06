@@ -1,0 +1,144 @@
+{
+  "filePath": "packages/scanner/src/matchers/cache-key-scope.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        11,
+        35
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"cache-key-scope\",\n  description: \"Cache keys that may lack user/team scoping — cross-tenant risk\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        11,
+        52
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"cache-key-scope\",\n  description: \"Cache keys that may lack user/team scoping — cross-tenant risk\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "cache-key-scope",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `await redis.hset(\\`map:\\${k}\\`, field, value);`,\n    `await redis.setex(\\`token:\\${name}\\`, 60, value);`,\n    `await redis.get(\"global-counter\");`,\n    `await redis.set(\"singleton\", value);`,\n    `await cache.get(\\`feature:\\${flag}\\`);`,",
+      "matchedPattern": "Redis string key — no user/team scoping visible in key construction"
+    },
+    {
+      "vulnSlug": "cache-key-scope",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "    `await redis.setex(\\`token:\\${name}\\`, 60, value);`,\n    `await redis.get(\"global-counter\");`,\n    `await redis.set(\"singleton\", value);`,\n    `await cache.get(\\`feature:\\${flag}\\`);`,\n    `await cache.set(\\`feature:\\${flag}\\`, value);`,",
+      "matchedPattern": "Redis string key — no user/team scoping visible in key construction"
+    },
+    {
+      "vulnSlug": "cache-key-scope",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "    `await cache.set(\\`feature:\\${flag}\\`, value);`,\n    `cache.has(\\`flag:\\${name}\\`);`,\n    `cache.get(\"global-counter\");`,\n    `cache.set(\"singleton\", payload);`,\n    `const cacheKey = \\`feature:\\${name}\\`;`,",
+      "matchedPattern": "cache string key — no user/team scoping visible in key construction"
+    },
+    {
+      "vulnSlug": "cache-key-scope",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "    `cache.has(\\`flag:\\${name}\\`);`,\n    `cache.get(\"global-counter\");`,\n    `cache.set(\"singleton\", payload);`,\n    `const cacheKey = \\`feature:\\${name}\\`;`,\n    `const cache_key = \\`feature:\\${name}\\`;`,",
+      "matchedPattern": "cache string key — no user/team scoping visible in key construction"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "  examples: [\n    `const cached = await redis.get(\\`feature:\\${name}\\`);`,\n    `await redis.set(\\`config:\\${name}\\`, value);`,\n    `await redis.hget(\\`map:\\${k}\\`, field);`,\n    `await redis.hset(\\`map:\\${k}\\`, field, value);`,\n    `await redis.setex(\\`token:\\${name}\\`, 60, value);`,",
+      "matchedPattern": "Redis get-then-delete/set without transaction — TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "    `await redis.set(\\`config:\\${name}\\`, value);`,\n    `await redis.hget(\\`map:\\${k}\\`, field);`,\n    `await redis.hset(\\`map:\\${k}\\`, field, value);`,\n    `await redis.setex(\\`token:\\${name}\\`, 60, value);`,\n    `await redis.get(\"global-counter\");`,\n    `await redis.set(\"singleton\", value);`,",
+      "matchedPattern": "Redis get-then-delete/set without transaction — TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `await redis.setex(\\`token:\\${name}\\`, 60, value);`,\n    `await redis.get(\"global-counter\");`,\n    `await redis.set(\"singleton\", value);`,\n    `await cache.get(\\`feature:\\${flag}\\`);`,\n    `await cache.set(\\`feature:\\${flag}\\`, value);`,\n    `cache.has(\\`flag:\\${name}\\`);`,",
+      "matchedPattern": "Redis get-then-delete/set without transaction — TOCTOU race"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.734Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "45382bb830d9a828a3ad701a233e9acd8e3c45288ab5c9b8743c0d8ff93bd8df",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:26.424Z",
+      "durationMs": 31353,
+      "durationApiMs": 30660,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "cc920989-37b8-404e-ac5e-2186835ffa65",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.2131185,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2332,
+        "cacheReadInputTokens": 74542,
+        "cacheCreationInputTokens": 18802
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-b34a23093a7f063f",
+      "investigatedAt": "2026-05-06T21:53:31.459Z",
+      "durationMs": 8262,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b3e-7931-b009-43059171fba6",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05549425,
+      "usage": {
+        "inputTokens": 7568.25,
+        "outputTokens": 349.5,
+        "cacheReadInputTokens": 14336,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:31.460Z"
+  },
+  "status": "analyzed"
+}

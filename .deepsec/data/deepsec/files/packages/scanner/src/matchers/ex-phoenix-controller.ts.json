@@ -1,0 +1,86 @@
+{
+  "filePath": "packages/scanner/src/matchers/ex-phoenix-controller.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        44
+      ],
+      "snippet": "          label: \"pipeline :name do — auth scope\",\n        },\n        { regex: /\\bplug\\s+:\\w+/, label: \"plug :name (auth/middleware wiring)\" },\n        { regex: /\\bRepo\\.query!?\\s*\\(/, label: \"Repo.query — raw SQL surface\" },\n      ],",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"ex-phoenix-controller\",\n  description: \"Phoenix controllers, routers, and LiveView modules (gated on Phoenix)\",\n  filePatterns: [\"**/*.{ex,exs}\"],\n  requires: { tech: [\"phoenix\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.489Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "445cfecf04b68928d245d0d6e03816f2525fc9bec088f9691b8e22b5bea80c22",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214907-9891f87568394613",
+      "investigatedAt": "2026-05-06T21:50:09.553Z",
+      "durationMs": 12168,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3256-74b1-b5e4-3e09e151f284",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.06127525,
+      "usage": {
+        "inputTokens": 7450.25,
+        "outputTokens": 500,
+        "cacheReadInputTokens": 18048,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-783d04573c7fba34",
+      "investigatedAt": "2026-05-06T21:53:55.060Z",
+      "durationMs": 14103.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8bb4-7aa1-9d3e-b8ebdee91fa5",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.06231675,
+      "usage": {
+        "inputTokens": 6091.25,
+        "outputTokens": 673.75,
+        "cacheReadInputTokens": 23296,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:55.069Z"
+  },
+  "status": "analyzed"
+}

@@ -1,0 +1,78 @@
+{
+  "filePath": "packages/scanner/src/matchers/py-django-view.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"py-django-view\",\n  description: \"Django views, urlpatterns, and CBVs — entry points (gated on Django)\",\n  filePatterns: [\"**/*.py\"],\n  requires: { tech: [\"django\", \"djangorestframework\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.481Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "5dfadf4011ef4706e9f5be9ff38d699b46b4a8eb9de99e99f3ea664b0f3a60c3",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-b22c1c43acdb1288",
+      "investigatedAt": "2026-05-06T21:49:52.118Z",
+      "durationMs": 8492.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3027-79d3-ab12-9490dfec5aa4",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0553055,
+      "usage": {
+        "inputTokens": 6856.5,
+        "outputTokens": 408.5,
+        "cacheReadInputTokens": 17536,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-98cfa0eac2aaa1f1",
+      "investigatedAt": "2026-05-06T21:53:44.402Z",
+      "durationMs": 11097,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b91-7b80-be3e-13913ef2f572",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0511625,
+      "usage": {
+        "inputTokens": 5600.5,
+        "outputTokens": 452,
+        "cacheReadInputTokens": 19200,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:44.404Z"
+  },
+  "status": "analyzed"
+}

@@ -1,0 +1,103 @@
+{
+  "filePath": "packages/scanner/src/matchers/drizzle-mass-assignment.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"drizzle-mass-assignment\",\n  description: \"Drizzle insert/update spreading request body — column-level mass assignment risk\",\n  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "spread-operator-injection",
+      "lineNumbers": [
+        12,
+        13
+      ],
+      "snippet": " * Flags:\n *   - `.values(req.body)` / `.values(body)` / `.values(payload)`\n *   - `.values({ ...req.body })` / `.values({ ...body })` / `.values({ ...input })`\n *   - `.set({ ...req.body })` / `.set(req.body)`\n */",
+      "matchedPattern": "Spread of req.body"
+    },
+    {
+      "vulnSlug": "spread-operator-injection",
+      "lineNumbers": [
+        12,
+        13,
+        23,
+        27
+      ],
+      "snippet": " * Flags:\n *   - `.values(req.body)` / `.values(body)` / `.values(payload)`\n *   - `.values({ ...req.body })` / `.values({ ...body })` / `.values({ ...input })`\n *   - `.set({ ...req.body })` / `.set(req.body)`\n */",
+      "matchedPattern": "Spread of req.body"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.610Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "2a161a6c15f839b80a6affc566f842972224ba0d2347b7a337514bad2c602c40",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:55.971Z",
+      "durationMs": 44252,
+      "durationApiMs": 41662,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "41de6492-d93b-43db-9e1d-4a2babea4197",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.52210075,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 2782,
+        "cacheReadInputTokens": 230479,
+        "cacheCreationInputTokens": 53961
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-028f56683dd5ae6a",
+      "investigatedAt": "2026-05-06T21:53:52.445Z",
+      "durationMs": 13314.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8baa-7842-b44c-83cebf446c82",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.04750175,
+      "usage": {
+        "inputTokens": 4813.25,
+        "outputTokens": 542.25,
+        "cacheReadInputTokens": 14336,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [
+          {
+            "filePath": "packages/scanner/src/matchers/framework-server-action.ts",
+            "reason": "The requested path did not exist; I inspected the matching registered implementation at packages/scanner/src/matchers/js-nextjs-fw-server-action.ts instead."
+          }
+        ],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[{\"filePath\":\"packages/scanner/src/matchers/framework-server-action.ts\",\"reason\":\"The requested path did not exist; I inspected the matching registered implementation at packages/scanner/src/matchers/js-nextjs-fw-server-action.ts instead.\"}]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:52.447Z"
+  },
+  "status": "analyzed"
+}

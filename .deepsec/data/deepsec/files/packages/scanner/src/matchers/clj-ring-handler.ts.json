@@ -1,0 +1,78 @@
+{
+  "filePath": "packages/scanner/src/matchers/clj-ring-handler.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"clj-ring-handler\",\n  description: \"Clojure Ring/Compojure routes and handlers (gated on Clojure)\",\n  filePatterns: [\"**/*.{clj,cljs,cljc}\"],\n  requires: { tech: [\"clojure\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.493Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "70eef98fe0110ec84d1a5e5ed56c7a4b762ad08ba0442087663b8f5562a30f12",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214907-1c6bbf22b99e9913",
+      "investigatedAt": "2026-05-06T21:49:50.052Z",
+      "durationMs": 7816,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-31f7-7a43-b669-ba59721e2fd1",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.08743025,
+      "usage": {
+        "inputTokens": 13047.25,
+        "outputTokens": 471,
+        "cacheReadInputTokens": 16128,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-236e6e1868d26ee9",
+      "investigatedAt": "2026-05-06T21:53:49.059Z",
+      "durationMs": 10048.6,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8ac8-7a42-aea6-c6a3ab35477b",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0799914,
+      "usage": {
+        "inputTokens": 8571.4,
+        "outputTokens": 594.4,
+        "cacheReadInputTokens": 38604.8,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:49.062Z"
+  },
+  "status": "analyzed"
+}

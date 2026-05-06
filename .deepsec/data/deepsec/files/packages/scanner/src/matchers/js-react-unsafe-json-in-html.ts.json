@@ -1,0 +1,184 @@
+{
+  "filePath": "packages/scanner/src/matchers/js-react-unsafe-json-in-html.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        8,
+        12,
+        13,
+        16,
+        17,
+        31,
+        33,
+        38,
+        50,
+        60,
+        61
+      ],
+      "snippet": "  slug: \"unsafe-json-in-html\",\n  description:\n    \"JSON.stringify into dangerouslySetInnerHTML or script tags — </script> injection risk\",\n  filePatterns: [\"**/*.{tsx,jsx,ts,js}\"],\n  requires: { tech: [\"react\"] },",
+      "matchedPattern": "dangerouslySetInnerHTML"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"unsafe-json-in-html\",\n  description:\n    \"JSON.stringify into dangerouslySetInnerHTML or script tags — </script> injection risk\",\n  filePatterns: [\"**/*.{tsx,jsx,ts,js}\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        8
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"unsafe-json-in-html\",\n  description:\n    \"JSON.stringify into dangerouslySetInnerHTML or script tags — </script> injection risk\",\n  filePatterns: [\"**/*.{tsx,jsx,ts,js}\"],\n  requires: { tech: [\"react\"] },\n  examples: [\n    `<div dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />`,",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  filePatterns: [\"**/*.{tsx,jsx,ts,js}\"],\n  requires: { tech: [\"react\"] },\n  examples: [\n    `<div dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />`,\n    `return <script dangerouslySetInnerHTML={{ __html: 'window.__DATA__ = ' + JSON.stringify(state) }} />`,\n    `const html = '<script>window.X = ' + JSON.stringify(payload) + '</script>'`,\n    `return (\\n  <script>\\n    {'window.STATE = ' + JSON.stringify(state)}\\n  </script>\\n)`,\n    `const json = JSON.stringify(props);\\nreturn <div dangerouslySetInnerHTML={{ __html: json }} />`,",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "  requires: { tech: [\"react\"] },\n  examples: [\n    `<div dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />`,\n    `return <script dangerouslySetInnerHTML={{ __html: 'window.__DATA__ = ' + JSON.stringify(state) }} />`,\n    `const html = '<script>window.X = ' + JSON.stringify(payload) + '</script>'`,\n    `return (\\n  <script>\\n    {'window.STATE = ' + JSON.stringify(state)}\\n  </script>\\n)`,\n    `const json = JSON.stringify(props);\\nreturn <div dangerouslySetInnerHTML={{ __html: json }} />`,\n    `import { safeJsonStringify } from './util';\\nconst payload = JSON.stringify(state);\\nreturn <script dangerouslySetInnerHTML={{ __html: 'window.X = ' + payload }} />`,",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "    `return <script dangerouslySetInnerHTML={{ __html: 'window.__DATA__ = ' + JSON.stringify(state) }} />`,\n    `const html = '<script>window.X = ' + JSON.stringify(payload) + '</script>'`,\n    `return (\\n  <script>\\n    {'window.STATE = ' + JSON.stringify(state)}\\n  </script>\\n)`,\n    `const json = JSON.stringify(props);\\nreturn <div dangerouslySetInnerHTML={{ __html: json }} />`,\n    `import { safeJsonStringify } from './util';\\nconst payload = JSON.stringify(state);\\nreturn <script dangerouslySetInnerHTML={{ __html: 'window.X = ' + payload }} />`,\n  ],\n  match(content, filePath) {\n    if (/\\.(test|spec)\\./i.test(filePath)) return [];",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "    `const html = '<script>window.X = ' + JSON.stringify(payload) + '</script>'`,\n    `return (\\n  <script>\\n    {'window.STATE = ' + JSON.stringify(state)}\\n  </script>\\n)`,\n    `const json = JSON.stringify(props);\\nreturn <div dangerouslySetInnerHTML={{ __html: json }} />`,\n    `import { safeJsonStringify } from './util';\\nconst payload = JSON.stringify(state);\\nreturn <script dangerouslySetInnerHTML={{ __html: 'window.X = ' + payload }} />`,\n  ],\n  match(content, filePath) {\n    if (/\\.(test|spec)\\./i.test(filePath)) return [];\n",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        31
+      ],
+      "snippet": "    for (let i = 0; i < lines.length; i++) {\n      const line = lines[i];\n\n      // JSON.stringify near dangerouslySetInnerHTML\n      const hasJsonStringify = /JSON\\.stringify/.test(line);\n      const hasDangerousHtml = /dangerouslySetInnerHTML/.test(line);\n\n      // Check surrounding context (5 lines)",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        33
+      ],
+      "snippet": "\n      // JSON.stringify near dangerouslySetInnerHTML\n      const hasJsonStringify = /JSON\\.stringify/.test(line);\n      const hasDangerousHtml = /dangerouslySetInnerHTML/.test(line);\n\n      // Check surrounding context (5 lines)\n      const context = lines.slice(Math.max(0, i - 3), Math.min(lines.length, i + 3)).join(\"\\n\");\n      const contextHasJson = /JSON\\.stringify/.test(context);",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        38
+      ],
+      "snippet": "      // Check surrounding context (5 lines)\n      const context = lines.slice(Math.max(0, i - 3), Math.min(lines.length, i + 3)).join(\"\\n\");\n      const contextHasJson = /JSON\\.stringify/.test(context);\n      const contextHasDangerous = /dangerouslySetInnerHTML/.test(context);\n      const contextHasScript = /<script/.test(context);\n\n      if (hasJsonStringify && (contextHasDangerous || contextHasScript)) {\n        const start = Math.max(0, i - 2);",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        50
+      ],
+      "snippet": "          snippet: lines.slice(start, end).join(\"\\n\"),\n          matchedPattern: usesSafe\n            ? \"JSON.stringify near HTML injection point (safeJsonStringify in scope — verify usage)\"\n            : \"JSON.stringify into dangerouslySetInnerHTML/script — use safeJsonStringify to escape </script>\",\n        });\n      } else if (hasDangerousHtml && contextHasJson) {\n        const start = Math.max(0, i - 2);\n        const end = Math.min(lines.length, i + 3);",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        60
+      ],
+      "snippet": "          lineNumbers: [i + 1],\n          snippet: lines.slice(start, end).join(\"\\n\"),\n          matchedPattern: usesSafe\n            ? \"dangerouslySetInnerHTML with JSON data (safeJsonStringify in scope)\"\n            : \"dangerouslySetInnerHTML with JSON.stringify — XSS via </script> in data\",\n        });\n      }\n    }",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        61
+      ],
+      "snippet": "          snippet: lines.slice(start, end).join(\"\\n\"),\n          matchedPattern: usesSafe\n            ? \"dangerouslySetInnerHTML with JSON data (safeJsonStringify in scope)\"\n            : \"dangerouslySetInnerHTML with JSON.stringify — XSS via </script> in data\",\n        });\n      }\n    }\n",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.517Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "502e56693c8f55eae2baefc7a49ed3725e442f38cf6bf92b8f466adcd26ce4fd",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-5b833cf1c8aa279e",
+      "investigatedAt": "2026-05-06T21:49:56.514Z",
+      "durationMs": 9501.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-311c-7640-879e-2d8e3b62d7ea",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0941865,
+      "usage": {
+        "inputTokens": 13401.5,
+        "outputTokens": 594.5,
+        "cacheReadInputTokens": 18688,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-46b46eb6e55984c8",
+      "investigatedAt": "2026-05-06T21:53:40.208Z",
+      "durationMs": 10471.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8ba1-7460-ad8b-33c65a58b451",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.073563,
+      "usage": {
+        "inputTokens": 8391.5,
+        "outputTokens": 473.25,
+        "cacheReadInputTokens": 34816,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:40.210Z"
+  },
+  "status": "analyzed"
+}

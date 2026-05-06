@@ -1,0 +1,191 @@
+{
+  "filePath": "packages/scanner/src/matchers/insecure-crypto.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "        { regex: /createHash\\s*\\(\\s*['\"]md5['\"]/, label: \"MD5 hash\" },\n        { regex: /createHash\\s*\\(\\s*['\"]sha1['\"]/, label: \"SHA1 hash\" },\n        { regex: /createCipher\\s*\\(/, label: \"deprecated createCipher (use createCipheriv)\" },\n        { regex: /DES|RC4|Blowfish/i, label: \"weak cipher algorithm\" },\n        { regex: /\\bmd5\\s*\\(/, label: \"MD5 function call\" },",
+      "matchedPattern": "deprecated createCipher (use createCipheriv)"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7,
+        18
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"insecure-crypto\",\n  description: \"Weak cryptographic algorithms and insecure random number generation\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "          label: \"Timing-unsafe HMAC comparison (use timingSafeEqual)\",\n        },\n        { regex: /===?\\s*.*\\bdigest\\b|\\bdigest\\b.*===?/, label: \"Timing-unsafe digest comparison\" },\n        {\n          regex: /===?\\s*.*\\bsignature\\b|\\bsignature\\b.*===?/,",
+      "matchedPattern": "Timing-unsafe digest comparison"
+    },
+    {
+      "vulnSlug": "crypto-usage",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "        { regex: /createHash\\s*\\(\\s*['\"]md5['\"]/, label: \"MD5 hash\" },\n        { regex: /createHash\\s*\\(\\s*['\"]sha1['\"]/, label: \"SHA1 hash\" },\n        { regex: /createCipher\\s*\\(/, label: \"deprecated createCipher (use createCipheriv)\" },\n        { regex: /DES|RC4|Blowfish/i, label: \"weak cipher algorithm\" },\n        { regex: /\\bmd5\\s*\\(/, label: \"MD5 function call\" },",
+      "matchedPattern": "Node crypto.create*"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        10
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `crypto.createHash(\"md5\").update(s).digest();`,\n    `crypto.createHash('sha1').update(s);`,\n    `crypto.createCipher(\"aes\", key);`,",
+      "matchedPattern": "MD5 hash"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  examples: [\n    `crypto.createHash(\"md5\").update(s).digest();`,\n    `crypto.createHash('sha1').update(s);`,\n    `crypto.createCipher(\"aes\", key);`,\n    `const cipher = \"DES\";`,",
+      "matchedPattern": "SHA1 hash"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        12,
+        30
+      ],
+      "snippet": "    `crypto.createHash(\"md5\").update(s).digest();`,\n    `crypto.createHash('sha1').update(s);`,\n    `crypto.createCipher(\"aes\", key);`,\n    `const cipher = \"DES\";`,\n    `const algo = \"RC4\";`,",
+      "matchedPattern": "deprecated createCipher (use createCipheriv)"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7,
+        13,
+        14,
+        15,
+        31
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"insecure-crypto\",\n  description: \"Weak cryptographic algorithms and insecure random number generation\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "    `const algo = \"RC4\";`,\n    `const algo = \"Blowfish\";`,\n    `const h = md5(input);`,\n    `if (computed === hmac) { ok(); }`,\n    `if (digest === expected) { return; }`,",
+      "matchedPattern": "MD5 function call"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "    `const algo = \"Blowfish\";`,\n    `const h = md5(input);`,\n    `if (computed === hmac) { ok(); }`,\n    `if (digest === expected) { return; }`,\n    `if (signature == provided) { return; }`,",
+      "matchedPattern": "Timing-unsafe HMAC comparison (use timingSafeEqual)"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "    `const h = md5(input);`,\n    `if (computed === hmac) { ok(); }`,\n    `if (digest === expected) { return; }`,\n    `if (signature == provided) { return; }`,\n    `const token = Math.random().toString(36);`,",
+      "matchedPattern": "Timing-unsafe digest comparison"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `if (computed === hmac) { ok(); }`,\n    `if (digest === expected) { return; }`,\n    `if (signature == provided) { return; }`,\n    `const token = Math.random().toString(36);`,\n  ],",
+      "matchedPattern": "Timing-unsafe signature comparison"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "    `if (digest === expected) { return; }`,\n    `if (signature == provided) { return; }`,\n    `const token = Math.random().toString(36);`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "Math.random in security context"
+    },
+    {
+      "vulnSlug": "crypto-usage",
+      "lineNumbers": [
+        10,
+        11,
+        12,
+        30
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `crypto.createHash(\"md5\").update(s).digest();`,\n    `crypto.createHash('sha1').update(s);`,\n    `crypto.createCipher(\"aes\", key);`,",
+      "matchedPattern": "Node crypto.create*"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.783Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "4f0edf4db82f57a3b4234bfa2565d52fd1ce3f5bf489740ed6391d1547c93028",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:01.293Z",
+      "durationMs": 47741,
+      "durationApiMs": 45235,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "cd084360-af75-4dd9-a59d-04e0c819a753",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.4970532499999999,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 3107,
+        "cacheReadInputTokens": 226559,
+        "cacheCreationInputTokens": 48967
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-46b46eb6e55984c8",
+      "investigatedAt": "2026-05-06T21:53:40.205Z",
+      "durationMs": 10471.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8ba1-7460-ad8b-33c65a58b451",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.073563,
+      "usage": {
+        "inputTokens": 8391.5,
+        "outputTokens": 473.25,
+        "cacheReadInputTokens": 34816,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:40.206Z"
+  },
+  "status": "analyzed"
+}

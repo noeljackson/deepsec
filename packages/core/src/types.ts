@@ -146,7 +146,15 @@ export interface AnalysisEntry {
 export type Severity = "CRITICAL" | "HIGH" | "MEDIUM" | "HIGH_BUG" | "BUG" | "LOW";
 export type Confidence = "high" | "medium" | "low";
 
-export type RevalidationVerdict = "true-positive" | "false-positive" | "fixed" | "uncertain";
+export type RevalidationVerdict =
+  | "true-positive"
+  | "false-positive"
+  | "fixed"
+  | "uncertain"
+  // Manual marker (the agent never sets this): real true-positive that
+  // the team has consciously chosen to accept. See the schema comment in
+  // `schemas.ts` and the "Accepted risks" section of the project README.
+  | "accepted-risk";
 
 export interface Revalidation {
   verdict: RevalidationVerdict;

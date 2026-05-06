@@ -1,4 +1,4 @@
-import { query } from "@anthropic-ai/claude-agent-sdk";
+import { query, type SandboxSettings } from "@anthropic-ai/claude-agent-sdk";
 import type { RefusalReport } from "@deepsec/core";
 import {
   backoff,
@@ -72,6 +72,32 @@ const CLAUDE_ENV_ALLOWLIST = new Set<string>([
 ]);
 
 /**
+ * Sandbox settings for the local run. The Claude Agent SDK can wrap the
+ * spawned `claude` CLI in an OS-level sandbox (bubblewrap on Linux,
+ * sandbox-exec/Seatbelt on macOS) so the agent's Bash tool can't escape
+ * the host process — defense in depth on top of `permissionMode:
+ * "dontAsk"` and the `allowedTools` allowlist.
+ *
+ * - In-VM (DEEPSEC_INSIDE_SANDBOX=1): no nested sandbox. The Vercel
+ *   Sandbox microVM is the real boundary, and a nested OS sandbox just
+ *   adds failure modes.
+ * - Local: enable, auto-allow Bash without prompting, and degrade
+ *   gracefully if the OS sandbox dependency is missing instead of
+ *   hard-failing the run (`failIfUnavailable: false`). No filesystem or
+ *   network restrictions are layered on top — the agent already only
+ *   gets Read/Glob/Grep/Bash and `permissionMode: "dontAsk"` keeps
+ *   everything quiet.
+ */
+function buildSandbox(): SandboxSettings | undefined {
+  if (process.env.DEEPSEC_INSIDE_SANDBOX === "1") return undefined;
+  return {
+    enabled: true,
+    autoAllowBashIfSandboxed: true,
+    failIfUnavailable: false,
+  };
+}
+
+/**
  * Build the minimal env passed to the Claude Code child process.
  * Allowlist + the credential routing the SDK was about to read off
  * `process.env` itself. Anything else (CI tokens, cloud creds, custom
@@ -125,6 +151,7 @@ async function runRefusalFollowUp(
         effort: "low",
         ...(CLAUDE_CODE_EXECUTABLE ? { pathToClaudeCodeExecutable: CLAUDE_CODE_EXECUTABLE } : {}),
         env: buildClaudeEnv(),
+        sandbox: buildSandbox(),
       },
     })) {
       const msg = message as Record<string, any>;
@@ -190,6 +217,7 @@ export class ClaudeAgentSdkPlugin implements AgentPlugin {
               ? { pathToClaudeCodeExecutable: CLAUDE_CODE_EXECUTABLE }
               : {}),
             env: buildClaudeEnv(),
+            sandbox: buildSandbox(),
           },
         })) {
           try {
@@ -379,6 +407,7 @@ export class ClaudeAgentSdkPlugin implements AgentPlugin {
               ? { pathToClaudeCodeExecutable: CLAUDE_CODE_EXECUTABLE }
               : {}),
             env: buildClaudeEnv(),
+            sandbox: buildSandbox(),
           },
         })) {
           try {

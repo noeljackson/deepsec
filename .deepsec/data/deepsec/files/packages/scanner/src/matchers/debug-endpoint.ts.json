@@ -1,0 +1,177 @@
+{
+  "filePath": "packages/scanner/src/matchers/debug-endpoint.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"debug-endpoint\",\n  description: \"Dev/debug/test endpoints that might be reachable in production\",\n  filePatterns: [\n    \"**/api/debug/**/*.{ts,tsx}\",",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "response-header-leak",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "    const isDebugPath = /\\/debug|\\/test\\/|\\/dev\\/|\\/internal\\/|\\/admin\\//.test(filePath);\n    const hasDebugCode = /debug.*endpoint|test.*endpoint|dev.*only|development.*only/.test(content);\n    const hasDebugHeaders = /x-debug|x-test-|x-internal/.test(content);\n    const hasEnvGate =\n      /process\\.env\\.NODE_ENV\\s*[!=]==?\\s*['\"]production['\"]|process\\.env\\.NODE_ENV\\s*[!=]==?\\s*['\"]development['\"]/.test(",
+      "matchedPattern": "Debug/internal header"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "    \"**/api/debug/**/*.{ts,tsx}\",\n    \"**/api/test/**/*.{ts,tsx}\",\n    \"**/api/dev/**/*.{ts,tsx}\",\n    \"**/api/**/debug*/*.{ts,tsx}\",\n    \"**/api/**/*.{ts,tsx,js}\",",
+      "matchedPattern": "Dev/test auth endpoint — may be reachable in production"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "  examples: [\n    `// debug endpoint for inspecting state\nexport async function GET(req: Request) {\n  return Response.json({ env: process.env });\n}`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        26
+      ],
+      "snippet": "};`,\n    `// dev only handler\nexport function DELETE() {\n  return new Response(null, { status: 204 });\n}`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        30
+      ],
+      "snippet": "}`,\n    `// uses x-debug header to dump internals\nexport async function PUT(req) {\n  if (req.headers.get(\"x-debug\")) return Response.json(state);\n  return new Response(\"ok\");",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        38
+      ],
+      "snippet": "  console.log(\"debug\");\n}\nexport async function GET() { return new Response(\"ok\"); }`,\n    `// x-internal toggles debug responses\nexport const GET = async (req) => new Response(\"hi\");`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "}`,\n    `// test endpoint — internal use only\nexport const POST = async (req) => {\n  return new Response(\"ok\");\n};`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (arrow) (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        40
+      ],
+      "snippet": "export async function GET() { return new Response(\"ok\"); }`,\n    `// x-internal toggles debug responses\nexport const GET = async (req) => new Response(\"hi\");`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (arrow) (weak candidate)"
+    },
+    {
+      "vulnSlug": "response-header-leak",
+      "lineNumbers": [
+        29,
+        31,
+        39,
+        47
+      ],
+      "snippet": "  return new Response(null, { status: 204 });\n}`,\n    `// uses x-debug header to dump internals\nexport async function PUT(req) {\n  if (req.headers.get(\"x-debug\")) return Response.json(state);",
+      "matchedPattern": "Debug/internal header"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        35
+      ],
+      "snippet": "    `// development only — do not ship\nif (process.env.NODE_ENV !== 'production') {\n  console.log(\"debug\");",
+      "matchedPattern": "process.env.NODE_ENV"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        29
+      ],
+      "snippet": "  return new Response(null, { status: 204 });\n}`,\n    `// uses x-debug header to dump internals\nexport async function PUT(req) {\n  if (req.headers.get(\"x-debug\")) return Response.json(state);",
+      "matchedPattern": "x-debug header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        31
+      ],
+      "snippet": "    `// uses x-debug header to dump internals\nexport async function PUT(req) {\n  if (req.headers.get(\"x-debug\")) return Response.json(state);\n  return new Response(\"ok\");\n}`,",
+      "matchedPattern": "x-debug header — may bypass security in production"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.751Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "74eede2fdf79e4ebb66719efd45e68725e2381e0312191df86800911366001f2",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:03.711Z",
+      "durationMs": 51567,
+      "durationApiMs": 49033,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "854302a2-95f8-4240-939f-0123848e5eb2",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.464015,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 3754,
+        "cacheReadInputTokens": 43885,
+        "cacheCreationInputTokens": 55710
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-409d9e44688f956b",
+      "investigatedAt": "2026-05-06T21:53:31.625Z",
+      "durationMs": 8354,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8bbe-7872-8058-bc2832193f0f",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0533665,
+      "usage": {
+        "inputTokens": 7103.5,
+        "outputTokens": 379.5,
+        "cacheReadInputTokens": 12928,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:31.627Z"
+  },
+  "status": "analyzed"
+}

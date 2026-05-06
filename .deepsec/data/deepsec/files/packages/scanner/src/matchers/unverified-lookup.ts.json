@@ -1,0 +1,150 @@
+{
+  "filePath": "packages/scanner/src/matchers/unverified-lookup.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"unverified-lookup\",\n  description: \"DB lookups by ID without a nearby ownership check — cross-tenant risk\",\n  filePatterns: [\n    \"**/services/**/endpoints/**/*.ts\",",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "unverified-lookup",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "  examples: [\n    `const project = await getProjectById(projectId);\nreturn Response.json(project);`,\n    `const team = await getTeamById(teamId);\nreturn Response.json(team);`,",
+      "matchedPattern": "DB lookup by ID without ownership check in next 15 lines"
+    },
+    {
+      "vulnSlug": "unverified-lookup",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "return Response.json(project);`,\n    `const team = await getTeamById(teamId);\nreturn Response.json(team);`,\n    `const user = await getUserById(userId);\nreturn Response.json(user);`,",
+      "matchedPattern": "DB lookup by ID without ownership check in next 15 lines"
+    },
+    {
+      "vulnSlug": "unverified-lookup",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "return Response.json(team);`,\n    `const user = await getUserById(userId);\nreturn Response.json(user);`,\n    `const deployment = await getDeploymentById(id);\nreturn Response.json(deployment);`,",
+      "matchedPattern": "DB lookup by ID without ownership check in next 15 lines"
+    },
+    {
+      "vulnSlug": "unverified-lookup",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "return Response.json(user);`,\n    `const deployment = await getDeploymentById(id);\nreturn Response.json(deployment);`,\n    `const installation = await getInstallationById(id);\nreturn Response.json(installation);`,",
+      "matchedPattern": "DB lookup by ID without ownership check in next 15 lines"
+    },
+    {
+      "vulnSlug": "unverified-lookup",
+      "lineNumbers": [
+        26
+      ],
+      "snippet": "return Response.json(deployment);`,\n    `const installation = await getInstallationById(id);\nreturn Response.json(installation);`,\n    `const data = await db.findUnique({ where: { id } });\nreturn Response.json(data);`,",
+      "matchedPattern": "DB lookup by ID without ownership check in next 15 lines"
+    },
+    {
+      "vulnSlug": "unverified-lookup",
+      "lineNumbers": [
+        28
+      ],
+      "snippet": "return Response.json(installation);`,\n    `const data = await db.findUnique({ where: { id } });\nreturn Response.json(data);`,\n    `const data = await db.findFirst({ where: { id } });\nreturn Response.json(data);`,",
+      "matchedPattern": "DB lookup by ID without ownership check in next 15 lines"
+    },
+    {
+      "vulnSlug": "unverified-lookup",
+      "lineNumbers": [
+        30
+      ],
+      "snippet": "return Response.json(data);`,\n    `const data = await db.findFirst({ where: { id } });\nreturn Response.json(data);`,\n    `const r = await repo.findOneById(id);\nreturn Response.json(r);`,",
+      "matchedPattern": "DB lookup by ID without ownership check in next 15 lines"
+    },
+    {
+      "vulnSlug": "unverified-lookup",
+      "lineNumbers": [
+        32
+      ],
+      "snippet": "return Response.json(data);`,\n    `const r = await repo.findOneById(id);\nreturn Response.json(r);`,\n    `const r = await repo.findByUid(uid);\nreturn Response.json(r);`,",
+      "matchedPattern": "DB lookup by ID without ownership check in next 15 lines"
+    },
+    {
+      "vulnSlug": "unverified-lookup",
+      "lineNumbers": [
+        34
+      ],
+      "snippet": "return Response.json(r);`,\n    `const r = await repo.findByUid(uid);\nreturn Response.json(r);`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "DB lookup by ID without ownership check in next 15 lines"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.586Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "5962c1dd465a29c26b5456d394400671129407c9cb8d14dabf5e04d0f6d8fa2e",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:10:20.435Z",
+      "durationMs": 40308,
+      "durationApiMs": 39609,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "c0d09f95-7ba2-439a-91c5-142da7edb665",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.22457,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2975,
+        "cacheReadInputTokens": 74545,
+        "cacheCreationInputTokens": 18062
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-1595aabe27b888ba",
+      "investigatedAt": "2026-05-06T21:53:45.524Z",
+      "durationMs": 9426.2,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b5a-79c1-8782-d679e7129e7b",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.05059860000000001,
+      "usage": {
+        "inputTokens": 5234.2,
+        "outputTokens": 467.8,
+        "cacheReadInputTokens": 20787.2,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:45.526Z"
+  },
+  "status": "analyzed"
+}

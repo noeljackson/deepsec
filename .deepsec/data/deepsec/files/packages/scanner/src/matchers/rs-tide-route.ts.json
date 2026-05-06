@@ -1,0 +1,87 @@
+{
+  "filePath": "packages/scanner/src/matchers/rs-tide-route.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        17,
+        31
+      ],
+      "snippet": "    `app.at(\"/all\").all(any_handler);`,\n    `let mut app = tide::new();`,\n    `impl Middleware<State> for AuthGuard {`,\n    `use tide::Middleware;`,\n  ],",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"rs-tide-route\",\n  description: \"Tide route handlers (gated on Tide)\",\n  filePatterns: [\"**/*.rs\"],\n  requires: { tech: [\"tide\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.479Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "0ff2d03738cdef523c9e3d5e77ccbd57690e3515d2d3c01bdcafbdbd3488ed3b",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-50cdef6ba19e673a",
+      "investigatedAt": "2026-05-06T21:50:07.570Z",
+      "durationMs": 12221.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3080-7a61-95f3-19c3f30cea48",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0695545,
+      "usage": {
+        "inputTokens": 8432.5,
+        "outputTokens": 512,
+        "cacheReadInputTokens": 24064,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-b5432b498c77e52f",
+      "investigatedAt": "2026-05-06T21:53:57.204Z",
+      "durationMs": 11760.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b8b-7480-bd91-dc6d97001c23",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0765332,
+      "usage": {
+        "inputTokens": 8055.6,
+        "outputTokens": 566.8,
+        "cacheReadInputTokens": 38502.4,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:57.205Z"
+  },
+  "status": "analyzed"
+}

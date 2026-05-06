@@ -259,6 +259,42 @@ function writeMdDir(findings: ExportedFinding[], out: string) {
   const root = path.resolve(out);
   fs.mkdirSync(root, { recursive: true });
 
+  // The set of files this export is authoritative for. Anything else in
+  // the severity subdirs is left over from a prior run — most often a
+  // finding that has since been revalidated as fixed/false-positive/
+  // accepted-risk and is now filtered out of the export. Without this
+  // sweep, those orphans linger forever and make the export directory
+  // misleading (the user thinks they still have unresolved findings on a
+  // file we've already patched).
+  const wantedFiles = new Set<string>();
+  for (const f of findings) {
+    wantedFiles.add(path.join(root, f.metadata.severity, findingFilename(f)));
+  }
+
+  // Only sweep severity subdirs we recognize — keeps an accidental
+  // `--out ~/Documents` from nuking unrelated files. Severity values are
+  // a closed enum (see `Severity` in @deepsec/core), so this list IS the
+  // namespace md-dir mode owns.
+  const ourSeverityDirs = Object.keys(SEVERITY_ORDER) as Severity[];
+  let droppedStale = 0;
+  for (const sev of ourSeverityDirs) {
+    const dir = path.join(root, sev);
+    if (!fs.existsSync(dir)) continue;
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (!entry.isFile() || !entry.name.endsWith(".md")) continue;
+      const full = path.join(dir, entry.name);
+      if (!wantedFiles.has(full)) {
+        fs.unlinkSync(full);
+        droppedStale++;
+      }
+    }
+    // Drop now-empty severity dirs so a 0-finding export leaves a clean
+    // root rather than a forest of empty directories.
+    try {
+      if (fs.readdirSync(dir).length === 0) fs.rmdirSync(dir);
+    } catch {}
+  }
+
   for (const f of findings) {
     const dir = path.join(root, f.metadata.severity);
     fs.mkdirSync(dir, { recursive: true });
@@ -267,7 +303,10 @@ function writeMdDir(findings: ExportedFinding[], out: string) {
     fs.writeFileSync(file, body);
   }
 
-  console.log(`\n${GREEN}Exported ${findings.length} finding(s)${RESET} → ${BOLD}${root}/${RESET}`);
+  const staleNote = droppedStale > 0 ? ` (removed ${droppedStale} stale file(s))` : "";
+  console.log(
+    `\n${GREEN}Exported ${findings.length} finding(s)${RESET} → ${BOLD}${root}/${RESET}${staleNote}`,
+  );
 }
 
 export async function exportCommand(opts: {
@@ -277,7 +316,13 @@ export async function exportCommand(opts: {
   discoveredToday?: boolean;
   since?: string;
   onlyTruePositive?: boolean;
+  /** Deprecated: false-positive is now hidden by default. Kept as a no-op for back-compat. */
   excludeFalsePositive?: boolean;
+  /**
+   * Restore old behavior of including resolved verdicts (fixed,
+   * false-positive, accepted-risk) in the output. Off by default.
+   */
+  includeResolved?: boolean;
   onlySlugs?: string;
   skipSlugs?: string;
   out?: string;
@@ -339,7 +384,16 @@ export async function exportCommand(opts: {
   if (opts.discoveredToday) console.log(`  ${YELLOW}Filter: discovered today only${RESET}`);
   if (opts.since) console.log(`  Filter: discovered since ${opts.since}`);
   if (opts.onlyTruePositive) console.log(`  Filter: only revalidated true-positive`);
-  if (opts.excludeFalsePositive) console.log(`  Filter: exclude revalidated false-positive`);
+  if (opts.includeResolved) {
+    console.log(`  Filter: including resolved verdicts (fixed/false-positive/accepted-risk)`);
+  } else {
+    console.log(`  Filter: hiding resolved verdicts (fixed/false-positive/accepted-risk)`);
+  }
+  if (opts.excludeFalsePositive) {
+    console.log(
+      `  ${YELLOW}Note: --exclude-false-positive is now the default; flag is a no-op.${RESET}`,
+    );
+  }
   if (onlySlugs) console.log(`  Only slugs: ${onlySlugs.join(", ")}`);
   if (skipSlugs) console.log(`  Skip slugs: ${skipSlugs.join(", ")}`);
   if (opts.requireOwner)
@@ -394,8 +448,20 @@ export async function exportCommand(opts: {
         if (onlySlugSet && !onlySlugSet.has(finding.vulnSlug)) continue;
         if (skipSlugSet?.has(finding.vulnSlug)) continue;
         if (opts.onlyTruePositive && finding.revalidation?.verdict !== "true-positive") continue;
-        if (opts.excludeFalsePositive && finding.revalidation?.verdict === "false-positive")
+        // Default behavior: hide every "resolved" verdict. fixed = patched,
+        // false-positive = not real, accepted-risk = real but consciously
+        // accepted. None of these are work the export consumer should
+        // action. Pass --include-resolved to surface them anyway (audit /
+        // history use cases). The legacy --exclude-false-positive flag is
+        // now a no-op — preserved so existing scripts don't break.
+        if (
+          !opts.includeResolved &&
+          (finding.revalidation?.verdict === "fixed" ||
+            finding.revalidation?.verdict === "false-positive" ||
+            finding.revalidation?.verdict === "accepted-risk")
+        ) {
           continue;
+        }
 
         const source = findingSource[findingIndex];
         if (onlyAgent && source?.agentType !== onlyAgent) continue;

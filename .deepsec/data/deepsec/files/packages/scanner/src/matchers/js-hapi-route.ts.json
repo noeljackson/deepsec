@@ -1,0 +1,78 @@
+{
+  "filePath": "packages/scanner/src/matchers/js-hapi-route.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"js-hapi-route\",\n  description: \"Hapi server.route configurations (gated on Hapi)\",\n  filePatterns: [\"**/*.{ts,js,mjs,cjs}\"],\n  requires: { tech: [\"hapi\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.486Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "ce65c123808343cd57e0b70b47a55c9b394663d8d01063e273a0d510acba5bb4",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214907-7a3d8aca006452b2",
+      "investigatedAt": "2026-05-06T21:49:56.339Z",
+      "durationMs": 9227,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-31ec-7f82-97cb-83ac66e7d6f7",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0527065,
+      "usage": {
+        "inputTokens": 6713,
+        "outputTokens": 433.25,
+        "cacheReadInputTokens": 12288,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-9238dd8d422443e1",
+      "investigatedAt": "2026-05-06T21:53:55.347Z",
+      "durationMs": 10910.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8cda-76b2-9f45-ba3768fbc7f4",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.062414199999999996,
+      "usage": {
+        "inputTokens": 6950.6,
+        "outputTokens": 553.4,
+        "cacheReadInputTokens": 22118.4,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:55.349Z"
+  },
+  "status": "analyzed"
+}

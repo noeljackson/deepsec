@@ -47,6 +47,9 @@ export function partitionFiles(
           const alreadyDone = (r.analysisHistory ?? []).some((h) => {
             if ((h.usage?.outputTokens ?? 0) <= 0) return false;
             if (h.agentType !== agentType) return false;
+            // Mirror processor/index.ts: revalidate entries don't count
+            // as "already processed" for a reinvestigate wave.
+            if (h.phase === "revalidate") return false;
             return h.reinvestigateMarker === marker;
           });
           return !alreadyDone;

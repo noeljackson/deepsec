@@ -341,6 +341,12 @@ export async function process(params: {
       const alreadyDone = (r.analysisHistory ?? []).some((h) => {
         if ((h.usage?.outputTokens ?? 0) <= 0) return false;
         if (h.agentType !== agentType) return false;
+        // A revalidate entry doesn't satisfy a process wave: revalidation
+        // doesn't re-investigate, it just attaches verdicts. Even if a
+        // revalidate entry somehow carried `reinvestigateMarker` (today
+        // it doesn't), counting it here would silently skip files that
+        // still need a fresh process pass.
+        if (h.phase === "revalidate") return false;
         return h.reinvestigateMarker === reinvestigate;
       });
       return !alreadyDone;
@@ -489,6 +495,32 @@ export async function process(params: {
       totalOutputTokens += batchMeta.usage?.outputTokens ?? 0;
       totalDurationMs += batchMeta.durationMs;
 
+      // Cost / tokens / duration / turns are batch-level — one agent call
+      // covers all files in the batch. Stamping the batch total onto every
+      // file's analysisHistory entry inflates `metrics` totals by ~batch
+      // size. Divide evenly so summing per-file entries gives the correct
+      // run total. We split by the count of records that will actually
+      // get an entry (results that match a record in the batch) — silent
+      // skips don't dilute the share.
+      const validResultCount = results.reduce(
+        (n, r) => n + (batch.some((b) => b.filePath === r.filePath) ? 1 : 0),
+        0,
+      );
+      const splitN = Math.max(1, validResultCount);
+      const perFileCost = batchMeta.costUsd != null ? batchMeta.costUsd / splitN : undefined;
+      const perFileUsage = batchMeta.usage
+        ? {
+            inputTokens: batchMeta.usage.inputTokens / splitN,
+            outputTokens: batchMeta.usage.outputTokens / splitN,
+            cacheReadInputTokens: batchMeta.usage.cacheReadInputTokens / splitN,
+            cacheCreationInputTokens: batchMeta.usage.cacheCreationInputTokens / splitN,
+          }
+        : undefined;
+      const perFileDurationMs = batchMeta.durationMs / splitN;
+      const perFileDurationApiMs =
+        batchMeta.durationApiMs != null ? batchMeta.durationApiMs / splitN : undefined;
+      const perFileNumTurns = batchMeta.numTurns != null ? batchMeta.numTurns / splitN : undefined;
+
       // Update file records with results + metadata.
       //
       // Re-investigation always *merges* — existing findings are preserved
@@ -517,16 +549,17 @@ export async function process(params: {
         record.analysisHistory.push({
           runId,
           investigatedAt: new Date().toISOString(),
-          durationMs: batchMeta.durationMs,
-          durationApiMs: batchMeta.durationApiMs,
+          durationMs: perFileDurationMs,
+          durationApiMs: perFileDurationApiMs,
           agentType,
           model,
           modelConfig: config,
           agentSessionId: batchMeta.agentSessionId,
           findingCount: findingsForHistoryCount,
-          numTurns: batchMeta.numTurns,
-          costUsd: batchMeta.costUsd,
-          usage: batchMeta.usage,
+          numTurns: perFileNumTurns,
+          phase: "process",
+          costUsd: perFileCost,
+          usage: perFileUsage,
           refusal: batchMeta.refusal,
           codexStderr: batchMeta.codexStderr,
           reinvestigateMarker: typeof reinvestigate === "number" ? reinvestigate : undefined,
@@ -839,7 +872,8 @@ export async function revalidate(params: {
       }
 
       const output = result.value as RevalidateOutput;
-      totalCostUsd += output.meta.costUsd ?? 0;
+      const batchMeta = output.meta;
+      totalCostUsd += batchMeta.costUsd ?? 0;
 
       // Match verdicts to findings across all files in the batch
       for (const verdict of output.verdicts) {
@@ -865,7 +899,49 @@ export async function revalidate(params: {
         else totalUncertain++;
       }
 
+      // Push a per-file `analysisHistory` entry for this revalidate batch.
+      // Without this, revalidate cost is only ever recorded in
+      // `runMeta.stats.totalCostUsd` and is invisible to the `metrics`
+      // command (which aggregates strictly off `record.analysisHistory`).
+      // We split batch-level cost / tokens / duration / turns evenly over
+      // the files in the batch so the per-file totals add up to the
+      // batch's actual spend.
+      const splitN = Math.max(1, batch.length);
+      const perFileCost = batchMeta.costUsd != null ? batchMeta.costUsd / splitN : undefined;
+      const perFileUsage = batchMeta.usage
+        ? {
+            inputTokens: batchMeta.usage.inputTokens / splitN,
+            outputTokens: batchMeta.usage.outputTokens / splitN,
+            cacheReadInputTokens: batchMeta.usage.cacheReadInputTokens / splitN,
+            cacheCreationInputTokens: batchMeta.usage.cacheCreationInputTokens / splitN,
+          }
+        : undefined;
+      const perFileDurationMs = batchMeta.durationMs / splitN;
+      const perFileDurationApiMs =
+        batchMeta.durationApiMs != null ? batchMeta.durationApiMs / splitN : undefined;
+      const perFileNumTurns = batchMeta.numTurns != null ? batchMeta.numTurns / splitN : undefined;
+      const investigatedAt = new Date().toISOString();
+
       for (const file of batch) {
+        const verdictsForFile = output.verdicts.filter((v) => v.filePath === file.filePath).length;
+        file.analysisHistory.push({
+          runId,
+          investigatedAt,
+          durationMs: perFileDurationMs,
+          durationApiMs: perFileDurationApiMs,
+          agentType,
+          model,
+          modelConfig: config,
+          agentSessionId: batchMeta.agentSessionId,
+          findingCount: verdictsForFile,
+          numTurns: perFileNumTurns,
+          phase: "revalidate",
+          costUsd: perFileCost,
+          usage: perFileUsage,
+          refusal: batchMeta.refusal,
+          codexStderr: batchMeta.codexStderr,
+        });
+
         try {
           enrichFileRecord(file, effectiveRootPath);
         } catch (e) {

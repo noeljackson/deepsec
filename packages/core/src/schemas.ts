@@ -63,6 +63,12 @@ export const analysisEntrySchema = z.object({
   agentSessionId: z.string().optional(),
   findingCount: z.number(),
   numTurns: z.number().optional(),
+  /**
+   * "process" (default) = investigation run; "revalidate" = revalidation
+   * pass. Optional for backward compat with entries written before the
+   * field existed.
+   */
+  phase: z.enum(["process", "revalidate"]).optional(),
   costUsd: z.number().optional(),
   usage: z
     .object({

@@ -91,7 +91,33 @@ export interface AnalysisEntry {
   agentSessionId?: string;
   findingCount: number;
   numTurns?: number;
+  /**
+   * Which run-type produced this entry. `process` = an investigation run
+   * appended findings to the file; `revalidate` = a revalidation run
+   * applied verdicts to existing findings (no new findings expected).
+   *
+   * Optional for backward compat: entries written before this field
+   * existed are implicitly `process`. Aggregators that want to bucket
+   * the two should treat missing as `process`.
+   *
+   * The `--reinvestigate <N>` filter in `process()` and the sandbox
+   * partitioner explicitly ignore entries where `phase === "revalidate"`
+   * — a revalidate pass shouldn't count as "this file has already been
+   * processed by this agent for wave N".
+   */
+  phase?: "process" | "revalidate";
+  /**
+   * Per-file share of batch-level cost. The agent reports cost / tokens
+   * for the whole batch (one API call covers N files); we divide evenly
+   * so summing per-file entries gives the correct run total. Pre-fix
+   * entries hold the *batch* total stamped on every file, which inflates
+   * `metrics` cost roughly by batch size.
+   */
   costUsd?: number;
+  /**
+   * Per-file share of batch-level token usage. Same divide-by-N split
+   * as `costUsd`.
+   */
   usage?: {
     inputTokens: number;
     outputTokens: number;

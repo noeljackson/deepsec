@@ -97,8 +97,7 @@ Skip files that are gitignored, generated, vendored, or not production code. If 
 
 ## Target Files
 
-- **src/index.ts**
-
+- **src/index.ts** (no scanner hits — full holistic review)
 
 ## Investigation Instructions
 

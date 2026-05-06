@@ -13,7 +13,8 @@ import {
   writeRunMeta,
 } from "@deepsec/core";
 import { glob, globSync } from "glob";
-import { type DetectedTech, detectTech, writeTechJson } from "./detect-tech.js";
+import { minimatch } from "minimatch";
+import { type DetectedTech, detectTech, readTechJson, writeTechJson } from "./detect-tech.js";
 import type { MatcherRegistry } from "./matcher-registry.js";
 import { createDefaultRegistry } from "./matchers/index.js";
 import type { MatcherPlugin, ScannerDriver, ScanProgress } from "./types.js";
@@ -105,7 +106,13 @@ export function noiseScore(slugs: string[]): number {
 
 const _SCANNER_VERSION = "0.1.0";
 
-const IGNORE_DIRS = [
+/**
+ * Default ignore globs for scanning. Exported because direct-invocation
+ * callers (`process --diff`) need to apply the same filter to user-supplied
+ * file lists — otherwise CI burns AI budget investigating `dist/**` and
+ * test files that have no security relevance.
+ */
+export const IGNORE_DIRS = [
   "**/node_modules/**",
   "**/.git/**",
   "**/dist/**",
@@ -507,5 +514,184 @@ export async function scan(params: {
     activeMatchers: matchers.map((m) => m.slug),
     skippedMatchers: skipped,
     languageStats,
+  };
+}
+
+/**
+ * Scan an explicit list of files. Differs from `scan()` in two ways:
+ *
+ *   1. The file universe is the caller's list, not glob output. Each
+ *      matcher's `filePatterns` becomes a per-file filter (skip Python
+ *      matchers on `.ts` files) instead of a globbing seed.
+ *   2. A FileRecord is written for **every** listed file — even files
+ *      that no matcher hit. This is the inversion that makes
+ *      `process --diff` work: downstream `process()` needs records to
+ *      exist so it can investigate files holistically when there are
+ *      no scanner candidates.
+ *
+ * Tech detection runs once at the project level (whole-repo signal) and
+ * is reused if a fresh `data/<id>/tech.json` is already on disk.
+ */
+export async function scanFiles(params: {
+  projectId: string;
+  root: string;
+  /** Relative POSIX paths under `root`. Caller is responsible for ignore filtering. */
+  filePaths: string[];
+  matcherSlugs?: string[];
+  /** Free-form origin label written to run-meta (e.g. "git-diff:origin/main"). */
+  source?: string;
+  onProgress?: (progress: ScanProgress) => void;
+}): Promise<{
+  runId: string;
+  filesScanned: number;
+  candidateCount: number;
+  detected: DetectedTech;
+  activeMatchers: string[];
+  skippedMatchers: string[];
+}> {
+  const registry = buildMergedRegistry();
+  const allSelected = params.matcherSlugs
+    ? registry.getBySlugs(params.matcherSlugs)
+    : registry.getAll();
+
+  if (allSelected.length === 0) {
+    throw new Error("No matchers selected");
+  }
+
+  ensureProject(params.projectId, params.root);
+
+  // Reuse cached tech detection when available so repeated diff-scoped
+  // scans don't re-walk the whole repo on every PR push. detectTech is
+  // cheap but not free.
+  const absRoot = path.resolve(params.root);
+  let detected = readTechJson(params.projectId);
+  if (!detected) {
+    detected = detectTech(absRoot);
+    writeTechJson(params.projectId, detected);
+  }
+
+  // Honor explicit `--matchers` over gates, same as scan() — see the
+  // comment block in `scan()` for why.
+  const honorAllSelected = !!params.matcherSlugs;
+  const activeMatchers: MatcherPlugin[] = [];
+  const skipped: string[] = [];
+  for (const m of allSelected) {
+    if (honorAllSelected || evaluateGate(m.requires, detected, absRoot)) {
+      activeMatchers.push(m);
+    } else {
+      skipped.push(m.slug);
+    }
+  }
+  const matchers = activeMatchers;
+
+  const meta = createRunMeta({
+    projectId: params.projectId,
+    rootPath: absRoot,
+    type: "scan",
+    scannerConfig: {
+      matcherSlugs: matchers.map((m) => m.slug),
+      mode: "files",
+      source: params.source,
+      fileCount: params.filePaths.length,
+    },
+  });
+  writeRunMeta(meta);
+
+  // Normalize and dedupe; tolerate Windows-style separators in caller input.
+  const normalizedPaths = Array.from(new Set(params.filePaths.map((p) => p.replaceAll("\\", "/"))));
+
+  // Pre-compile a "does this matcher consider this file" predicate so we
+  // run minimatch once per (matcher, file) pair rather than re-parsing
+  // the patterns on every comparison.
+  const matcherFilters = matchers.map((m) => ({
+    matcher: m,
+    test: (rel: string) =>
+      m.filePatterns.some((pat) => minimatch(rel, pat, { dot: true, nocase: false })),
+  }));
+
+  let totalCandidates = 0;
+  for (let fi = 0; fi < normalizedPaths.length; fi++) {
+    const relPath = normalizedPaths[fi];
+    const absPath = path.join(absRoot, relPath);
+    if (!fs.existsSync(absPath) || !fs.statSync(absPath).isFile()) {
+      params.onProgress?.({
+        type: "file_scanned",
+        message: `Skipping missing file: ${relPath}`,
+        filePath: relPath,
+        matchCount: 0,
+      });
+      continue;
+    }
+
+    let content = "";
+    try {
+      content = fs.readFileSync(absPath, "utf-8").replaceAll("\r\n", "\n");
+    } catch {
+      // Unreadable (binary, permissions); still write a record so process
+      // can decide what to do, but with empty hash.
+    }
+    const hash = content ? crypto.createHash("sha256").update(content).digest("hex") : "";
+
+    // Load-or-create the FileRecord. Existing candidates from prior scans
+    // are preserved — we merge new matches in, never overwrite.
+    const record =
+      readFileRecord(params.projectId, relPath) ??
+      ({
+        filePath: relPath,
+        projectId: params.projectId,
+        candidates: [],
+        lastScannedAt: "",
+        lastScannedRunId: "",
+        fileHash: "",
+        findings: [],
+        analysisHistory: [],
+        status: "pending" as const,
+      } satisfies FileRecord);
+
+    let fileMatches = 0;
+    if (content) {
+      for (const { matcher, test } of matcherFilters) {
+        if (!test(relPath)) continue;
+        const matches = matcher.match(content, relPath);
+        if (matches.length === 0) continue;
+        fileMatches += matches.length;
+        for (const m of matches) {
+          const exists = record.candidates.some(
+            (c) =>
+              c.vulnSlug === m.vulnSlug &&
+              c.matchedPattern === m.matchedPattern &&
+              c.lineNumbers.join(",") === m.lineNumbers.join(","),
+          );
+          if (!exists) record.candidates.push(m);
+        }
+      }
+    }
+
+    record.lastScannedAt = new Date().toISOString();
+    record.lastScannedRunId = meta.runId;
+    record.fileHash = hash;
+    writeFileRecord(record);
+
+    totalCandidates += fileMatches;
+    params.onProgress?.({
+      type: "file_scanned",
+      message: `${relPath}: ${fileMatches} match(es)`,
+      filePath: relPath,
+      matchCount: fileMatches,
+    });
+  }
+
+  completeRun(params.projectId, meta.runId, "done", {
+    filesScanned: normalizedPaths.length,
+    candidatesFound: totalCandidates,
+  });
+
+  return {
+    runId: meta.runId,
+    filesScanned: normalizedPaths.length,
+    candidateCount: totalCandidates,
+    detected,
+    activeMatchers: matchers.map((m) => m.slug),
+    skippedMatchers: skipped,
   };
 }

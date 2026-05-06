@@ -21,6 +21,88 @@ import type {
   RevalidateParams,
 } from "./types.js";
 
+/**
+ * Optional path to the Claude Code native binary. The SDK normally
+ * resolves this from its bundled platform-specific optional
+ * dependencies, but pnpm sometimes ships incomplete content for
+ * platform variants it didn't fetch (the Linux-x64-musl shell exists
+ * but its `claude` binary is absent). Setting this env var lets CI
+ * point at a separately-installed `@anthropic-ai/claude-code` and
+ * sidestep the resolution path entirely.
+ */
+const CLAUDE_CODE_EXECUTABLE = process.env.CLAUDE_CODE_EXECUTABLE;
+
+/**
+ * Variables the Claude Code CLI / spawned shell legitimately needs.
+ * Same defense as the codex allowlist: prompt-injection via repository
+ * content cannot ask the agent to `cat /proc/self/environ` and read
+ * GITHUB_TOKEN, AWS_*, etc. when none of those reach the spawn env.
+ *
+ * The Claude SDK's `query()` accepts an `env` option that REPLACES
+ * process.env in the spawned `claude` child. We construct a minimal
+ * environment from this allowlist plus the credentials Claude actually
+ * needs to authenticate.
+ */
+const CLAUDE_ENV_ALLOWLIST = new Set<string>([
+  "PATH",
+  "HOME",
+  "USER",
+  "LOGNAME",
+  "SHELL",
+  "TERM",
+  "TZ",
+  "LANG",
+  "LANGUAGE",
+  "LC_ALL",
+  "LC_CTYPE",
+  "LC_MESSAGES",
+  "LC_COLLATE",
+  "LC_NUMERIC",
+  "LC_TIME",
+  "TMPDIR",
+  "TMP",
+  "TEMP",
+  "PWD",
+  "NODE_PATH",
+  "NODE_OPTIONS",
+  "NPM_CONFIG_USERCONFIG",
+  "DEBUG_CLAUDE_AGENT_SDK",
+  "CLAUDE_CODE_ENTRYPOINT",
+  "CLAUDE_CODE_DEBUG_LOGS_DIR",
+]);
+
+/**
+ * Build the minimal env passed to the Claude Code child process.
+ * Allowlist + the credential routing the SDK was about to read off
+ * `process.env` itself. Anything else (CI tokens, cloud creds, custom
+ * vars) is dropped.
+ */
+function buildClaudeEnv(): Record<string, string> {
+  const env: Record<string, string> = {};
+  for (const [k, v] of Object.entries(process.env)) {
+    if (typeof v !== "string") continue;
+    if (CLAUDE_ENV_ALLOWLIST.has(k) || k.startsWith("LC_")) {
+      env[k] = v;
+    }
+  }
+  // Forward only the credential routing pair the SDK needs to auth.
+  // ANTHROPIC_AUTH_TOKEN + ANTHROPIC_BASE_URL is the gateway pair;
+  // ANTHROPIC_API_KEY covers direct-Anthropic. CLAUDE_CODE_OAUTH_TOKEN
+  // is the subscription-mode token. Forwarding only these (rather
+  // than wholesale process.env) means the agent's Bash sees just
+  // these specific values — no GITHUB_TOKEN, AWS_*, etc.
+  for (const k of [
+    "ANTHROPIC_API_KEY",
+    "ANTHROPIC_AUTH_TOKEN",
+    "ANTHROPIC_BASE_URL",
+    "CLAUDE_CODE_OAUTH_TOKEN",
+  ]) {
+    const v = process.env[k];
+    if (typeof v === "string") env[k] = v;
+  }
+  return env;
+}
+
 async function runRefusalFollowUp(
   sessionId: string | undefined,
   model: string,
@@ -41,6 +123,8 @@ async function runRefusalFollowUp(
         resume: sessionId,
         thinking: { type: "adaptive" },
         effort: "low",
+        ...(CLAUDE_CODE_EXECUTABLE ? { pathToClaudeCodeExecutable: CLAUDE_CODE_EXECUTABLE } : {}),
+        env: buildClaudeEnv(),
       },
     })) {
       const msg = message as Record<string, any>;
@@ -102,6 +186,10 @@ export class ClaudeAgentSdkPlugin implements AgentPlugin {
             model,
             thinking: { type: "adaptive" },
             effort: "max",
+            ...(CLAUDE_CODE_EXECUTABLE
+              ? { pathToClaudeCodeExecutable: CLAUDE_CODE_EXECUTABLE }
+              : {}),
+            env: buildClaudeEnv(),
           },
         })) {
           try {
@@ -219,6 +307,18 @@ export class ClaudeAgentSdkPlugin implements AgentPlugin {
       message: `Investigation complete (${(durationMs / 1000).toFixed(1)}s, ${turnCount} turns, ${toolUseCount} tool calls${costStr}${tokensStr}${refusal?.refused ? " ⚠️  refusal" : ""})`,
     };
 
+    // Hard-fail when the SDK never produced a result. Without this throw
+    // the empty resultText falls through to `parseInvestigateResults` →
+    // `[{filePath, findings: []}, …]`, which the processor accepts as a
+    // clean "ran fine, found nothing" run. That silently masks fatal
+    // errors like "claude binary not found" in CI.
+    if (!resultText) {
+      throw new Error(
+        `Claude Agent SDK produced no result after ${MAX_ATTEMPTS} attempt(s). ` +
+          `Last error: ${lastError || "(none captured)"}.`,
+      );
+    }
+
     return {
       results: parseInvestigateResults(resultText, batch),
       meta: {
@@ -275,6 +375,10 @@ export class ClaudeAgentSdkPlugin implements AgentPlugin {
             model,
             thinking: { type: "adaptive" },
             effort: "max",
+            ...(CLAUDE_CODE_EXECUTABLE
+              ? { pathToClaudeCodeExecutable: CLAUDE_CODE_EXECUTABLE }
+              : {}),
+            env: buildClaudeEnv(),
           },
         })) {
           try {
@@ -347,6 +451,13 @@ export class ClaudeAgentSdkPlugin implements AgentPlugin {
       type: "complete",
       message: `Revalidation complete (${(durationMs / 1000).toFixed(1)}s, ${turnCount} turns${costStr}, ${verdicts.length} verdicts${refusal?.refused ? " ⚠️  refusal" : ""})`,
     };
+
+    if (!resultText) {
+      throw new Error(
+        `Claude Agent SDK produced no revalidation result after ${MAX_ATTEMPTS} attempt(s). ` +
+          `Last error: ${lastError || "(none captured)"}.`,
+      );
+    }
 
     return {
       verdicts,

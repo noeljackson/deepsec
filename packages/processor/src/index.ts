@@ -95,8 +95,30 @@ export async function process(params: {
   onlySlugs?: string[];
   /** Skip files whose candidate slugs are ALL in this set (files with any other slug still get processed) */
   skipSlugs?: string[];
+  /**
+   * Direct invocation mode. When set, the scanner-state filter
+   * (pending/error/stale) is bypassed and these exact files are always
+   * investigated — regardless of prior status. Used by `process --diff`
+   * and friends. Caller is expected to have run `scanFiles()` first so
+   * each path has a FileRecord on disk; missing records are skipped
+   * with a console warning.
+   */
+  filePaths?: string[];
+  /** Free-form origin label for direct invocations (e.g. "git-diff:origin/main"). */
+  source?: string;
   onProgress?: (progress: ProcessProgress) => void;
-}): Promise<{ runId: string; analysisCount: number; findingCount: number }> {
+}): Promise<{
+  runId: string;
+  analysisCount: number;
+  findingCount: number;
+  /**
+   * Batches whose agent threw — i.e. produced no usable result text after
+   * retries. Distinct from a clean run with zero findings: a non-zero
+   * count means the agent failed to run (missing binary, gateway error,
+   * crashed CLI). CI gates on this so a silent fail doesn't pass.
+   */
+  errorBatchCount: number;
+}> {
   const { projectId, agentType = "claude-agent-sdk", config = {}, reinvestigate = false } = params;
   // We deliberately don't default `promptTemplate` to DEFAULT_PROMPT_TEMPLATE
   // here — when the caller doesn't pass one, we use the modular assembler
@@ -214,15 +236,22 @@ export async function process(params: {
         type: "all_complete",
         message: `Run ${runId} already completed`,
       });
-      return { runId, analysisCount: 0, findingCount: 0 };
+      return { runId, analysisCount: 0, findingCount: 0, errorBatchCount: 0 };
     }
   } else {
     // Create new run
+    const directMode = params.filePaths !== undefined;
     const meta = createRunMeta({
       projectId,
       rootPath: effectiveRootPath,
       type: "process",
-      processorConfig: { agentType, model, modelConfig: config },
+      processorConfig: {
+        agentType,
+        model,
+        modelConfig: config,
+        invocationMode: directMode ? "direct" : "scan",
+        source: directMode ? params.source : undefined,
+      },
     });
     writeRunMeta(meta);
     runId = meta.runId;
@@ -235,11 +264,70 @@ export async function process(params: {
   }
   const agent = maybeAgent;
 
+  // Reclaim policy for `processing` records held by other runs. The
+  // race we're protecting against: two `process()` invocations against
+  // the same project at the same time. Without this check, the second
+  // run grabs files the first run is mid-investigation on, both write
+  // back, and findings/history get clobbered.
+  //
+  // A lock is reclaimable when EITHER:
+  //   1. The owning run's RunMeta says it's done/error/missing — the
+  //      lock won't be released by the original owner, ever.
+  //   2. The lock is older than STALE_LOCK_MS and the owning run's
+  //      RunMeta phase is still "running" (likely a hard crash; the
+  //      heartbeat would update lockedAt during normal progress).
+  //
+  // STALE_LOCK_MS is generous (1h) because individual investigations
+  // can legitimately take 20–40 minutes on big repos with max
+  // thinking. False reclaims are catastrophic; false rejections only
+  // cost a retry on the next run.
+  const STALE_LOCK_MS = 60 * 60 * 1000;
+  const isReclaimableLock = (r: FileRecord): boolean => {
+    if (!r.lockedByRunId) return true;
+    // Cross-check the owning run's status. A done/error/missing run's
+    // lock is always safe to reclaim — nobody is going to flip the
+    // record back to "analyzed".
+    let ownerPhase: "running" | "done" | "error" | undefined;
+    try {
+      ownerPhase = readRunMeta(projectId, r.lockedByRunId).phase;
+    } catch {
+      // Missing/corrupt run-meta — owning run is gone, reclaim safely.
+      return true;
+    }
+    if (ownerPhase === "done" || ownerPhase === "error") return true;
+    // Owner reports running — only reclaim after a stale-lock timeout
+    // (hard crashes leave phase=running forever). Records written
+    // before lockedAt existed have no timestamp; treat those as old
+    // enough to reclaim so we can recover legacy locked state.
+    if (!r.lockedAt) return true;
+    const ageMs = Date.now() - new Date(r.lockedAt).getTime();
+    return ageMs >= STALE_LOCK_MS;
+  };
+
   // Load file records and pick which to process
   const allRecords = loadAllFileRecords(projectId);
   let toProcess: FileRecord[];
 
-  if (typeof reinvestigate === "number") {
+  // Direct mode: caller passed an exact file list. Bypass the
+  // scanner-state filter, the noise sort, and reinvestigate logic — the
+  // user's list IS the work. Records are loaded by path; we expect
+  // `scanFiles()` to have run first so every path has a record on disk.
+  if (params.filePaths !== undefined) {
+    const wanted = new Set(params.filePaths.map((p) => p.replaceAll("\\", "/")));
+    const byPath = new Map(allRecords.map((r) => [r.filePath, r]));
+    const missing: string[] = [];
+    toProcess = [];
+    for (const p of wanted) {
+      const r = byPath.get(p);
+      if (r) toProcess.push(r);
+      else missing.push(p);
+    }
+    if (missing.length > 0) {
+      console.warn(
+        `[deepsec] process: ${missing.length} file(s) had no FileRecord and were skipped: ${missing.slice(0, 5).join(", ")}${missing.length > 5 ? "…" : ""}`,
+      );
+    }
+  } else if (typeof reinvestigate === "number") {
     // Idempotent reinvestigate: `--reinvestigate <N>` is a *wave marker*.
     // The first run with a given N tags every productive analysis it
     // produces with `reinvestigateMarker = N`; re-running with the same N
@@ -264,8 +352,12 @@ export async function process(params: {
       (r) =>
         r.status === "pending" ||
         r.status === "error" ||
-        // Unlock stale locks from crashed runs
-        (r.status === "processing" && r.lockedByRunId !== runId),
+        // Reclaim a `processing` record from another run only when the
+        // owning lock is genuinely abandoned. The previous version
+        // reclaimed unconditionally, which let two concurrent runs
+        // both pick up the same file and clobber each other on
+        // write. See `isReclaimableLock` for the exact criteria.
+        (r.status === "processing" && r.lockedByRunId !== runId && isReclaimableLock(r)),
     );
   }
 
@@ -317,7 +409,7 @@ export async function process(params: {
       message: "No files to process",
     });
     completeRun(projectId, runId, "done", { filesProcessed: 0 });
-    return { runId, analysisCount: 0, findingCount: 0 };
+    return { runId, analysisCount: 0, findingCount: 0, errorBatchCount: 0 };
   }
 
   // Apply path filter
@@ -331,9 +423,11 @@ export async function process(params: {
   }
 
   // Lock files for this run
+  const lockedAt = new Date().toISOString();
   for (const record of toProcess) {
     record.status = "processing";
     record.lockedByRunId = runId;
+    record.lockedAt = lockedAt;
     writeFileRecord(record);
   }
 
@@ -345,6 +439,7 @@ export async function process(params: {
   let totalOutputTokens = 0;
   let totalDurationMs = 0;
   let batchesCompleted = 0;
+  let batchesFailed = 0;
   let batchesInFlight = 0;
   const concurrency = params.concurrency ?? defaultConcurrency();
 
@@ -409,7 +504,13 @@ export async function process(params: {
         const sig = (slug: string | undefined, title: string | undefined) =>
           `${slug ?? ""}::${(title ?? "").trim().toLowerCase()}`;
         const existing = new Set((record.findings ?? []).map((f) => sig(f.vulnSlug, f.title)));
-        const newFindings = res.findings.filter((f) => !existing.has(sig(f.vulnSlug, f.title)));
+        const newFindings = res.findings
+          .filter((f) => !existing.has(sig(f.vulnSlug, f.title)))
+          // Stamp the originating run so PR comments and post-run
+          // tooling can filter to net-new findings only. Findings from
+          // earlier runs keep their (older) producedByRunId — or
+          // undefined for findings written before this field existed.
+          .map((f) => ({ ...f, producedByRunId: runId }));
         record.findings = [...(record.findings ?? []), ...newFindings];
         const findingsForHistoryCount = newFindings.length;
 
@@ -432,6 +533,7 @@ export async function process(params: {
         });
         record.status = "analyzed";
         record.lockedByRunId = undefined;
+        record.lockedAt = undefined;
         try {
           enrichFileRecord(record, effectiveRootPath);
         } catch (e) {
@@ -442,7 +544,10 @@ export async function process(params: {
         writeFileRecord(record);
 
         totalAnalyses++;
-        totalFindings += res.findings.length;
+        // Count net-new only — re-runs of analyzed files that produce
+        // duplicates of existing findings shouldn't inflate the run
+        // total (and shouldn't fail the CLI exit gate in direct mode).
+        totalFindings += newFindings.length;
       }
 
       // Mark any files not in results as error
@@ -450,6 +555,7 @@ export async function process(params: {
         if (!results.some((r) => r.filePath === record.filePath)) {
           record.status = "error";
           record.lockedByRunId = undefined;
+          record.lockedAt = undefined;
           writeFileRecord(record);
         }
       }
@@ -465,9 +571,11 @@ export async function process(params: {
     } catch (err) {
       batchesInFlight--;
       batchesCompleted++;
+      batchesFailed++;
       for (const record of batch) {
         record.status = "error";
         record.lockedByRunId = undefined;
+        record.lockedAt = undefined;
         writeFileRecord(record);
       }
       emitProgress({
@@ -508,10 +616,15 @@ export async function process(params: {
 
   emitProgress({
     type: "all_complete",
-    message: `Processing complete: ${totalAnalyses} analyses, ${totalFindings} findings`,
+    message: `Processing complete: ${totalAnalyses} analyses, ${totalFindings} findings${batchesFailed > 0 ? `, ${batchesFailed} batch(es) failed` : ""}`,
   });
 
-  return { runId, analysisCount: totalAnalyses, findingCount: totalFindings };
+  return {
+    runId,
+    analysisCount: totalAnalyses,
+    findingCount: totalFindings,
+    errorBatchCount: batchesFailed,
+  };
 }
 
 // --- Revalidation ---

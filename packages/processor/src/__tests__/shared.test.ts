@@ -59,10 +59,21 @@ describe("parseInvestigateResults", () => {
     expect(out.find((r) => r.filePath === "b.ts")?.findings).toEqual([]);
   });
 
-  it("returns empty findings for all files on parse failure", () => {
-    const out = parseInvestigateResults("not JSON at all", batch);
-    expect(out).toHaveLength(2);
-    expect(out.every((r) => r.findings.length === 0)).toBe(true);
+  it("throws on parse failure (fail-loud, never silently empty)", () => {
+    // Silently returning empty findings on malformed JSON would mask
+    // model truncation, prompt-injection-driven non-JSON output, and
+    // gateway splices — all of which are indistinguishable from a
+    // legitimate clean result. The processor's batch-level catch
+    // converts this throw into batchesFailed++ + status=error.
+    expect(() => parseInvestigateResults("not JSON at all", batch)).toThrow(
+      /wasn't a parseable JSON findings array/,
+    );
+  });
+
+  it("throws when the JSON parses but isn't an array", () => {
+    expect(() => parseInvestigateResults('```json\n{"oops":"object"}\n```', batch)).toThrow(
+      /not an array/,
+    );
   });
 });
 
@@ -75,7 +86,7 @@ describe("parseRevalidateVerdicts", () => {
     expect(v[0].verdict).toBe("true-positive");
   });
 
-  it("returns empty array on parse failure", () => {
-    expect(parseRevalidateVerdicts("garbage")).toEqual([]);
+  it("throws on parse failure", () => {
+    expect(() => parseRevalidateVerdicts("garbage")).toThrow(/wasn't parseable JSON/);
   });
 });

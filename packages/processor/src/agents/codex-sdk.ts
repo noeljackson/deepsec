@@ -164,14 +164,79 @@ function resolveCodexPaths(): { wrapper: string; realBin: string } | null {
 }
 
 /**
- * The codex SDK's `env` option REPLACES process.env if provided — there's
- * no merge. We need to copy the whole environment plus add CODEX_HOME and
- * the wrapper-related vars (and filter out keys with undefined values).
+ * Variables the codex CLI / spawned shell legitimately needs. Anything
+ * outside this set is dropped before the agent process inherits the
+ * environment — defense against prompt-injection-driven exfiltration
+ * via `env` / `printenv` / `cat /proc/self/environ`.
+ *
+ * Adding new entries: only do so if codex genuinely fails without them.
+ * Values matching `*_TOKEN`, `*_KEY`, `*_SECRET`, `*_PASSWORD` should
+ * basically never be added — the model has unrestricted Bash and we
+ * cannot trust prompt-level instructions to keep its hands off them.
+ */
+const CODEX_ENV_ALLOWLIST = new Set<string>([
+  // Shell + locale
+  "PATH",
+  "HOME",
+  "USER",
+  "LOGNAME",
+  "SHELL",
+  "TERM",
+  "TZ",
+  "LANG",
+  "LANGUAGE",
+  "LC_ALL",
+  "LC_CTYPE",
+  "LC_MESSAGES",
+  "LC_COLLATE",
+  "LC_NUMERIC",
+  "LC_TIME",
+  "TMPDIR",
+  "TMP",
+  "TEMP",
+  "PWD",
+  // Node/JS toolchain (codex CLI is node)
+  "NODE_PATH",
+  "NODE_OPTIONS",
+  "NPM_CONFIG_USERCONFIG",
+  // Rust tracing (codex's Rust binary respects RUST_LOG/RUST_BACKTRACE)
+  "RUST_LOG",
+  "RUST_BACKTRACE",
+  // Codex itself
+  "CODEX_HOME",
+  // Our wrapper
+  "CODEX_REAL_BIN",
+  "CODEX_STDERR_LOG",
+  // Debug toggle (mirrors what claude-agent-sdk respects)
+  "DEBUG_CLAUDE_AGENT_SDK",
+]);
+
+/**
+ * Allowlist match for keys whose names start with a known-safe prefix.
+ * Useful for cases like `LC_*` we already enumerate, plus a few
+ * codex-specific knobs that may grow over time.
+ */
+const CODEX_ENV_ALLOWLIST_PREFIXES = ["LC_"];
+
+/**
+ * Build the env passed to the codex child process. The SDK's `env`
+ * option REPLACES process.env (no merge), so we explicitly construct a
+ * minimal environment: allowlisted basics + caller-supplied extras
+ * (CODEX_HOME, wrapper paths) + the credential variable codex actually
+ * needs in the current mode.
+ *
+ * Crucially, this means the agent's Bash tool can NOT see CI secrets
+ * (GITHUB_TOKEN, AWS_*, *_API_KEY, etc.) that the orchestrator process
+ * received. Only the credential explicitly forwarded via `extras`
+ * reaches the agent.
  */
 function buildCodexEnv(extras: Record<string, string>): Record<string, string> {
   const env: Record<string, string> = {};
   for (const [k, v] of Object.entries(process.env)) {
-    if (typeof v === "string") env[k] = v;
+    if (typeof v !== "string") continue;
+    if (CODEX_ENV_ALLOWLIST.has(k) || CODEX_ENV_ALLOWLIST_PREFIXES.some((p) => k.startsWith(p))) {
+      env[k] = v;
+    }
   }
   Object.assign(env, extras);
   return env;
@@ -218,17 +283,11 @@ function buildCodexInvocation(): CodexInvocation {
   }
 
   if (subscriptionHome) {
+    // No credentials enter the codex env in subscription mode — auth
+    // happens via the mirrored auth.json. The allowlist already drops
+    // OPENAI_API_KEY/ANTHROPIC_AUTH_TOKEN/_BASE_URL, so no explicit
+    // delete is needed.
     const env = buildCodexEnv(extras);
-    // Strip gateway-routing env so the built-in openai provider talks to
-    // api.openai.com using the auth.json we just mirrored — a stray
-    // OPENAI_BASE_URL or token from .env.local would otherwise override
-    // the subscription session and either 401 or route through the
-    // gateway with a missing key.
-    delete env.OPENAI_BASE_URL;
-    delete env.ANTHROPIC_BASE_URL;
-    delete env.OPENAI_API_KEY;
-    delete env.ANTHROPIC_AUTH_TOKEN;
-
     const options: CodexOptions = { env };
     if (codexPathOverride) options.codexPathOverride = codexPathOverride;
     return { options, stderrLog, codexHome };
@@ -260,6 +319,13 @@ function buildCodexInvocation(): CodexInvocation {
       [CUSTOM_PROVIDER_ID]: providerConfig,
     },
   };
+
+  // Forward ONLY the credential codex actually needs via env. The
+  // allowlist drops every other secret in process.env, so prompt
+  // injection via repository content can't exfiltrate GITHUB_TOKEN,
+  // AWS_*, etc. — the agent's Bash sees just this one key value
+  // (which it needs anyway to talk to the gateway) plus shell basics.
+  if (apiKey) extras.OPENAI_API_KEY = apiKey;
 
   // Don't pass baseUrl as an SDK option — that would emit
   // `openai_base_url=...` which only affects the built-in openai provider
@@ -731,6 +797,21 @@ export class CodexAgentSdkPlugin implements AgentPlugin {
     // follow-up since that uses resumeThread which reads the session DB.
     cleanupCodexHome(invocation.codexHome);
 
+    // Silent-fail: codex exited clean but did no work (0 output tokens,
+    // empty resultText). Without this throw the empty output falls
+    // through and files get marked "analyzed" with no findings, masking
+    // the actual failure (rate-limit, gateway error, missing binary).
+    // The forensic stderr is included in the error message.
+    if (!resultText) {
+      const stderrSuffix = sdkMeta.codexStderr
+        ? ` Stderr tail: ${sdkMeta.codexStderr.slice(0, 800)}`
+        : "";
+      throw new Error(
+        `Codex SDK produced no result after ${MAX_ATTEMPTS} attempt(s). ` +
+          `Last error: ${lastError || "(none captured)"}.${stderrSuffix}`,
+      );
+    }
+
     return {
       results: parsed,
       meta: {
@@ -913,6 +994,16 @@ export class CodexAgentSdkPlugin implements AgentPlugin {
     };
 
     cleanupCodexHome(invocation.codexHome);
+
+    if (!resultText) {
+      const stderrSuffix = sdkMeta.codexStderr
+        ? ` Stderr tail: ${sdkMeta.codexStderr.slice(0, 800)}`
+        : "";
+      throw new Error(
+        `Codex SDK produced no revalidation result after ${MAX_ATTEMPTS} attempt(s). ` +
+          `Last error: ${lastError || "(none captured)"}.${stderrSuffix}`,
+      );
+    }
 
     return {
       verdicts,

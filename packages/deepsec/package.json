@@ -1,6 +1,6 @@
 {
   "name": "deepsec",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "AI-powered vulnerability scanner for any codebase",
   "license": "Apache-2.0",
   "repository": {
@@ -38,6 +38,7 @@
     "@vercel/oidc": "^3.4.0",
     "@vercel/sandbox": "^1.9.0",
     "jiti": "^2.4.0",
+    "minimatch": "^10.0.0",
     "tar": "^7.5.13"
   },
   "devDependencies": {

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@deepsec/core": "workspace:*",
-    "glob": "^11.0.0"
+    "glob": "^11.0.0",
+    "minimatch": "^10.0.0"
   }
 }

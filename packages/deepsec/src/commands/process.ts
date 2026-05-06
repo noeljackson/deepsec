@@ -1,10 +1,15 @@
-import { readProjectConfig } from "@deepsec/core";
+import fs from "node:fs";
+import path from "node:path";
+import { ensureProject, readProjectConfig } from "@deepsec/core";
 import { process as processRun } from "@deepsec/processor";
+import { scanFiles } from "@deepsec/scanner";
 import { defaultModelForAgent } from "../agent-defaults.js";
+import { resolveFiles } from "../file-sources.js";
 import { BOLD, CYAN, DIM, GREEN, RED, RESET, YELLOW } from "../formatters.js";
+import { renderPrComment } from "../pr-comment.js";
 import { assertAgentCredential } from "../preflight.js";
 import { resolveAgentType } from "../resolve-agent-type.js";
-import { resolveProjectId } from "../resolve-project-id.js";
+import { resolveProjectId, resolveProjectIdForDirect } from "../resolve-project-id.js";
 
 function logProgress(progress: {
   type: string;
@@ -84,7 +89,30 @@ export async function processCommand(opts: {
   manifest?: string;
   onlySlugs?: string;
   skipSlugs?: string;
+  // Direct invocation flags
+  diff?: string;
+  diffStaged?: boolean;
+  diffWorking?: boolean;
+  files?: string;
+  filesFrom?: string;
+  /** Commander auto-injects this from `--no-ignore` (default true). */
+  ignore?: boolean;
+  commentOut?: string;
 }) {
+  const isDirectMode =
+    opts.diff !== undefined ||
+    !!opts.diffStaged ||
+    !!opts.diffWorking ||
+    !!opts.files ||
+    !!opts.filesFrom;
+
+  if (isDirectMode) {
+    return processDirectMode(opts);
+  }
+  return processStandardMode(opts);
+}
+
+async function processStandardMode(opts: Parameters<typeof processCommand>[0]) {
   const projectId = resolveProjectId(opts.projectId);
   const onlySlugs = parseCsv(opts.onlySlugs);
   const skipSlugs = parseCsv(opts.skipSlugs);
@@ -151,7 +179,175 @@ export async function processCommand(opts: {
   console.log(`${GREEN}Processing complete.${RESET} Run: ${BOLD}${result.runId}${RESET}`);
   console.log(`  Analyses: ${result.analysisCount}`);
   console.log(`  Findings: ${result.findingCount}`);
+  if (result.errorBatchCount > 0) {
+    console.log(`  ${RED}Errored batches: ${result.errorBatchCount}${RESET}`);
+  }
   console.log();
-  console.log(`Next:`);
-  console.log(`${DIM}pnpm deepsec report --project-id ${projectId}${RESET}`);
+
+  // Standard-mode parity with direct-mode: a run that crashed agent
+  // batches isn't a clean review. Print the runtime hint first so
+  // operators see it on success runs, then fail-loud when applicable.
+  if (result.errorBatchCount === 0) {
+    console.log(`Next:`);
+    console.log(`${DIM}pnpm deepsec report --project-id ${projectId}${RESET}`);
+    return;
+  }
+
+  console.log(
+    `${RED}${result.errorBatchCount} batch(es) errored — exiting 1 (agent failure, not a clean review).${RESET}`,
+  );
+  console.log(
+    `${DIM}Files in those batches were marked status=error and will be retried on the next run.${RESET}`,
+  );
+  process.exit(1);
+}
+
+/**
+ * Direct invocation: scan + process a specific file list.
+ *
+ * Lifecycle:
+ *   1. Resolve the file list (git diff / explicit files / stdin).
+ *   2. Auto-create the project on disk if it isn't in deepsec.config.ts.
+ *   3. Run a scoped `scanFiles()` so each path has a FileRecord — this
+ *      gives the agent regex-derived signals to anchor on, even when the
+ *      diff includes files outside any matcher's pattern set.
+ *   4. Run `process()` over those exact paths.
+ *   5. Optionally render a PR-comment markdown.
+ *   6. Exit 1 if any new finding was produced. CI gates on this.
+ */
+async function processDirectMode(opts: Parameters<typeof processCommand>[0]) {
+  const sources = [
+    opts.diff !== undefined ? "--diff" : null,
+    opts.diffStaged ? "--diff-staged" : null,
+    opts.diffWorking ? "--diff-working" : null,
+    opts.files ? "--files" : null,
+    opts.filesFrom ? "--files-from" : null,
+  ].filter(Boolean) as string[];
+  if (sources.length > 1) {
+    throw new Error(`Conflicting file sources: ${sources.join(", ")}. Pick exactly one.`);
+  }
+
+  // Warn-and-ignore options that don't apply in direct mode. The user's
+  // file list IS the filter — these flags would silently subset it
+  // further, which is rarely what someone passing a diff wants.
+  if (opts.reinvestigate !== undefined) {
+    console.warn(
+      `${YELLOW}Note: --reinvestigate is ignored in direct mode (file list is authoritative).${RESET}`,
+    );
+  }
+  if (opts.manifest) {
+    console.warn(
+      `${YELLOW}Note: --manifest is ignored in direct mode; --files / --files-from / --diff* take precedence.${RESET}`,
+    );
+  }
+
+  const { projectId, rootPath, autoCreated } = resolveProjectIdForDirect(opts.projectId, opts.root);
+
+  // Materialize project on disk before resolveFiles needs it (no — resolveFiles
+  // doesn't need it, but scanFiles + process do, and ensureProject also normalizes
+  // the rootPath in data/<id>/project.json).
+  ensureProject(projectId, rootPath);
+
+  const agentType = resolveAgentType(opts.agent);
+  const model = opts.model ?? defaultModelForAgent(agentType);
+  assertAgentCredential(agentType);
+
+  // Resolve the file list.
+  const resolved = resolveFiles({
+    rootPath,
+    diff: opts.diff,
+    diffStaged: opts.diffStaged,
+    diffWorking: opts.diffWorking,
+    files: parseCsv(opts.files),
+    filesFrom: opts.filesFrom,
+    // Commander's `--no-ignore` toggles `opts.ignore` to false; default true.
+    noIgnore: opts.ignore === false,
+  });
+
+  console.log(`${BOLD}Direct process${RESET} project ${BOLD}${projectId}${RESET}`);
+  if (autoCreated) {
+    console.log(`  ${DIM}Auto-created project at ${rootPath}${RESET}`);
+  }
+  console.log(`  Source: ${resolved.sourceLabel}`);
+  console.log(`  Files: ${resolved.filePaths.length}`);
+  console.log(`  Agent: ${agentType} (${model})`);
+  console.log(`  Root: ${rootPath}`);
+  console.log();
+
+  if (resolved.filePaths.length === 0) {
+    console.log(`${YELLOW}No files matched ${resolved.sourceLabel} (after ignore filter).${RESET}`);
+    console.log(`${GREEN}Nothing to process — exit 0.${RESET}`);
+    return;
+  }
+
+  // Scan the listed files first to gather signals. Records get written
+  // for every file, even those with no matcher hits.
+  console.log(`${BOLD}Scanning ${resolved.filePaths.length} file(s)…${RESET}`);
+  const scanResult = await scanFiles({
+    projectId,
+    root: rootPath,
+    filePaths: resolved.filePaths,
+    source: resolved.sourceLabel,
+  });
+  console.log(
+    `  ${DIM}${scanResult.candidateCount} candidate(s) across ${scanResult.filesScanned} file(s)${RESET}`,
+  );
+  console.log();
+
+  // Now investigate. process() loads the records scanFiles wrote.
+  const result = await processRun({
+    projectId,
+    runId: opts.runId,
+    agentType,
+    config: { model, ...(opts.maxTurns ? { maxTurns: opts.maxTurns } : {}) },
+    concurrency: opts.concurrency,
+    batchSize: opts.batchSize,
+    rootPathOverride: rootPath,
+    filePaths: resolved.filePaths,
+    source: resolved.sourceLabel,
+    onProgress: logProgress,
+  });
+
+  console.log(`${GREEN}Processing complete.${RESET} Run: ${BOLD}${result.runId}${RESET}`);
+  console.log(`  Analyses: ${result.analysisCount}`);
+  console.log(`  Findings: ${result.findingCount}`);
+  if (result.errorBatchCount > 0) {
+    console.log(`  ${RED}Errored batches: ${result.errorBatchCount}${RESET}`);
+  }
+
+  // Hard-fail when any batch threw — that means the agent itself
+  // failed to run (missing binary, auth error, etc.) on at least one
+  // batch. A "clean run with 0 findings" is a green CI signal; we
+  // can't let a silent agent crash mascarade as that.
+  if (result.errorBatchCount > 0) {
+    console.log();
+    console.log(
+      `${RED}${result.errorBatchCount} batch(es) errored — exiting 1 (agent failure, not a clean review).${RESET}`,
+    );
+    process.exit(1);
+  }
+
+  // Optionally write a PR-comment-shaped markdown for the workflow to
+  // pass to github-script.
+  if (opts.commentOut && result.findingCount > 0) {
+    const md = renderPrComment({
+      projectId,
+      runId: result.runId,
+      source: resolved.sourceLabel,
+    });
+    if (md) {
+      const outPath = path.resolve(opts.commentOut);
+      fs.mkdirSync(path.dirname(outPath), { recursive: true });
+      fs.writeFileSync(outPath, md);
+      console.log(`  ${DIM}Wrote PR comment to ${outPath}${RESET}`);
+    }
+  }
+
+  if (result.findingCount > 0) {
+    console.log();
+    console.log(`${RED}${result.findingCount} new finding(s) — exiting 1${RESET}`);
+    process.exit(1);
+  }
+  console.log();
+  console.log(`${GREEN}No findings.${RESET}`);
 }

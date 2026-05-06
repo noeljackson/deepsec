@@ -397,6 +397,202 @@ describe("processor with stub agent", () => {
     expect(after.findings[0].revalidation?.reasoning).toBe("stub: confirmed");
   });
 
+  it("process() divides batch-level cost / tokens evenly across files in the batch", async () => {
+    // Repro for the metrics inflation bug: agent.investigate() reports
+    // one cost / token total for the whole batch (one API call covers N
+    // files), and we used to stamp that total onto every file's
+    // analysisHistory entry. Summing per-file entries then over-counted
+    // by ~batch size in `metrics`.
+    const fx = setupProject({ files: ["a.ts", "b.ts", "c.ts", "d.ts"] });
+    fx.writeRecord(pendingRecord(fx.projectId, "a.ts"));
+    fx.writeRecord(pendingRecord(fx.projectId, "b.ts"));
+    fx.writeRecord(pendingRecord(fx.projectId, "c.ts"));
+    fx.writeRecord(pendingRecord(fx.projectId, "d.ts"));
+
+    const stub = new StubAgent({
+      async *investigateImpl(params) {
+        return {
+          results: params.batch.map((r) => ({ filePath: r.filePath, findings: [] })),
+          meta: {
+            durationMs: 4000,
+            durationApiMs: 2000,
+            numTurns: 8,
+            costUsd: 4.0,
+            usage: {
+              inputTokens: 4000,
+              outputTokens: 400,
+              cacheReadInputTokens: 800,
+              cacheCreationInputTokens: 200,
+            },
+          },
+        };
+      },
+    });
+    setLoadedConfig(
+      defineConfig({
+        projects: [{ id: fx.projectId, root: fx.targetRoot }],
+        plugins: [{ name: "stub", agents: [stub] }],
+      }),
+    );
+
+    await processProject({
+      projectId: fx.projectId,
+      agentType: "stub",
+      concurrency: 1,
+      batchSize: 4,
+    });
+
+    const records = ["a.ts", "b.ts", "c.ts", "d.ts"].map((f) => fx.readRecord(f));
+    // Each file gets a quarter of the batch-level numbers.
+    for (const r of records) {
+      expect(r.analysisHistory).toHaveLength(1);
+      const h = r.analysisHistory[0];
+      expect(h.costUsd).toBe(1.0);
+      expect(h.usage?.inputTokens).toBe(1000);
+      expect(h.usage?.outputTokens).toBe(100);
+      expect(h.usage?.cacheReadInputTokens).toBe(200);
+      expect(h.usage?.cacheCreationInputTokens).toBe(50);
+      expect(h.durationMs).toBe(1000);
+      expect(h.durationApiMs).toBe(500);
+      expect(h.numTurns).toBe(2);
+      expect(h.phase).toBe("process");
+    }
+    // Sum across per-file entries reproduces the batch total.
+    const sumCost = records.reduce((s, r) => s + (r.analysisHistory[0].costUsd ?? 0), 0);
+    expect(sumCost).toBeCloseTo(4.0, 6);
+  });
+
+  it("revalidate() pushes a per-file analysisHistory entry tagged phase='revalidate' with divided cost", async () => {
+    const fx = setupProject({ files: ["x.ts", "y.ts"] });
+    for (const f of ["x.ts", "y.ts"]) {
+      const r = pendingRecord(fx.projectId, f);
+      r.status = "analyzed";
+      r.findings = [
+        {
+          severity: "HIGH",
+          vulnSlug: "auth-bypass",
+          title: `bug in ${f}`,
+          description: "x",
+          lineNumbers: [1],
+          recommendation: "x",
+          confidence: "high",
+        },
+      ];
+      r.analysisHistory = [
+        {
+          runId: "earlier",
+          investigatedAt: new Date().toISOString(),
+          durationMs: 1,
+          agentType: "stub",
+          model: "stub",
+          modelConfig: {},
+          findingCount: 1,
+          phase: "process",
+        },
+      ];
+      fx.writeRecord(r);
+    }
+
+    const stub = new StubAgent({
+      async *revalidateImpl(params) {
+        return {
+          verdicts: params.batch.flatMap((rec) =>
+            rec.findings.map((f) => ({
+              filePath: rec.filePath,
+              title: f.title,
+              verdict: "true-positive" as const,
+              reasoning: "stub",
+            })),
+          ),
+          meta: {
+            durationMs: 2000,
+            costUsd: 0.5,
+            usage: {
+              inputTokens: 2000,
+              outputTokens: 200,
+              cacheReadInputTokens: 0,
+              cacheCreationInputTokens: 0,
+            },
+          },
+        };
+      },
+    });
+    setLoadedConfig(
+      defineConfig({
+        projects: [{ id: fx.projectId, root: fx.targetRoot }],
+        plugins: [{ name: "stub", agents: [stub] }],
+      }),
+    );
+
+    await revalidate({
+      projectId: fx.projectId,
+      agentType: "stub",
+      concurrency: 1,
+      batchSize: 2,
+    });
+
+    const xs = fx.readRecord("x.ts");
+    const ys = fx.readRecord("y.ts");
+
+    // Each file now has the original process entry + a new revalidate entry.
+    for (const r of [xs, ys]) {
+      expect(r.analysisHistory).toHaveLength(2);
+      const reval = r.analysisHistory.find((h) => h.phase === "revalidate");
+      expect(reval).toBeDefined();
+      expect(reval?.costUsd).toBe(0.25);
+      expect(reval?.usage?.inputTokens).toBe(1000);
+      expect(reval?.findingCount).toBe(1);
+      expect(reval?.agentType).toBe("stub");
+    }
+  });
+
+  it("process(--reinvestigate N) ignores phase='revalidate' entries when deciding what's already done", async () => {
+    // A revalidate run shouldn't satisfy a process wave: a file that
+    // only has a revalidate entry for agent X still needs a fresh
+    // process pass for agent X on wave N.
+    const fx = setupProject({ files: ["a.ts"] });
+    const rec = pendingRecord(fx.projectId, "a.ts");
+    rec.status = "analyzed";
+    rec.analysisHistory = [
+      {
+        runId: "reval-only",
+        investigatedAt: new Date().toISOString(),
+        durationMs: 1,
+        agentType: "stub",
+        model: "stub",
+        modelConfig: {},
+        findingCount: 0,
+        phase: "revalidate",
+        usage: {
+          inputTokens: 1,
+          outputTokens: 1,
+          cacheReadInputTokens: 0,
+          cacheCreationInputTokens: 0,
+        },
+        reinvestigateMarker: 1, // simulate a future bug stamping it
+      },
+    ];
+    fx.writeRecord(rec);
+
+    const stub = new StubAgent();
+    setLoadedConfig(
+      defineConfig({
+        projects: [{ id: fx.projectId, root: fx.targetRoot }],
+        plugins: [{ name: "stub", agents: [stub] }],
+      }),
+    );
+
+    const result = await processProject({
+      projectId: fx.projectId,
+      agentType: "stub",
+      reinvestigate: 1,
+      concurrency: 1,
+    });
+
+    expect(result.analysisCount).toBe(1);
+    expect(stub.calls.investigateCalls).toHaveLength(1);
+  });
+
   it("revalidate() skips findings that already have a verdict unless --force", async () => {
     const fx = setupProject({ files: ["app.ts"] });
     const rec = pendingRecord(fx.projectId, "app.ts");

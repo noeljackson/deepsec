@@ -3,6 +3,7 @@ import path from "node:path";
 import { dataDir } from "@deepsec/core";
 import type { Sandbox } from "@vercel/sandbox";
 import * as tar from "tar";
+import { mergeAfterExtract, snapshotFileRecords } from "./merge-records.js";
 import { DATA_DIR } from "./setup.js";
 
 // Sandbox results are JSON file records, run metadata, and reports —
@@ -160,6 +161,14 @@ export async function extractTarballLocally(tarPath: string, destDir: string): P
       `Refusing sandbox results tarball: ${violations.length} disallowed entr${violations.length === 1 ? "y" : "ies"}:\n  ${preview}${more}\nAllowed: regular files with extensions ${[...ALLOWED_EXTENSIONS].sort().join(", ")}.`,
     );
   }
+
+  // Snapshot existing per-file records BEFORE extracting. The tarball
+  // extract is a blind overwrite, so without this any prior on-host
+  // analysisHistory / findings / revalidation / triage entries would
+  // disappear when a concurrently-running sandbox uploads its (older)
+  // view of the same file. We re-merge after extract.
+  const hostSnapshot = snapshotFileRecords(destDir);
   await tar.extract({ file: tarPath, cwd: destDir });
+  mergeAfterExtract(destDir, hostSnapshot);
   return fileCount;
 }

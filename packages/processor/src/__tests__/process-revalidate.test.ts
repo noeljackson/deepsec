@@ -212,6 +212,102 @@ describe("processor with stub agent", () => {
     ).rejects.toThrow(/Project root does not exist/);
   });
 
+  it("process() does NOT reclaim a record locked by a still-running other run", async () => {
+    // Race regression: two concurrent process() invocations against the
+    // same project would both pick up the same `processing` record and
+    // clobber each other's writes. Reclaim should only fire when the
+    // owning lock is genuinely abandoned (run done/error/missing or
+    // STALE_LOCK_MS expired).
+    const fx = setupProject({ files: ["app.ts"] });
+
+    // Pretend an "other" run is mid-investigation: fresh lock, run-meta
+    // says phase=running.
+    const otherRunId = "20260101000000-otheraaaaaaaaaaa";
+    const lockedRec = pendingRecord(fx.projectId, "app.ts");
+    lockedRec.status = "processing";
+    lockedRec.lockedByRunId = otherRunId;
+    lockedRec.lockedAt = new Date().toISOString();
+    fx.writeRecord(lockedRec);
+    fs.mkdirSync(path.join(fx.dataRoot, fx.projectId, "runs"), { recursive: true });
+    fs.writeFileSync(
+      path.join(fx.dataRoot, fx.projectId, "runs", `${otherRunId}.json`),
+      JSON.stringify({
+        runId: otherRunId,
+        projectId: fx.projectId,
+        rootPath: fx.targetRoot,
+        createdAt: new Date().toISOString(),
+        type: "process",
+        phase: "running",
+        stats: {},
+      }),
+    );
+
+    const stub = new StubAgent();
+    setLoadedConfig(
+      defineConfig({
+        projects: [{ id: fx.projectId, root: fx.targetRoot }],
+        plugins: [{ name: "stub", agents: [stub] }],
+      }),
+    );
+
+    const result = await processProject({
+      projectId: fx.projectId,
+      agentType: "stub",
+      concurrency: 1,
+    });
+
+    // Lock respected — agent never invoked, file untouched.
+    expect(stub.calls.investigateCalls).toHaveLength(0);
+    expect(result.analysisCount).toBe(0);
+    const after = fx.readRecord("app.ts");
+    expect(after.status).toBe("processing");
+    expect(after.lockedByRunId).toBe(otherRunId);
+  });
+
+  it("process() reclaims a record whose owning run finished (phase=done)", async () => {
+    const fx = setupProject({ files: ["app.ts"] });
+
+    // Same setup but the owning run's meta says phase=done — its lock
+    // is abandoned and safe to reclaim.
+    const deadRunId = "20260101000000-deadaaaaaaaaaaaa";
+    const lockedRec = pendingRecord(fx.projectId, "app.ts");
+    lockedRec.status = "processing";
+    lockedRec.lockedByRunId = deadRunId;
+    lockedRec.lockedAt = new Date().toISOString();
+    fx.writeRecord(lockedRec);
+    fs.mkdirSync(path.join(fx.dataRoot, fx.projectId, "runs"), { recursive: true });
+    fs.writeFileSync(
+      path.join(fx.dataRoot, fx.projectId, "runs", `${deadRunId}.json`),
+      JSON.stringify({
+        runId: deadRunId,
+        projectId: fx.projectId,
+        rootPath: fx.targetRoot,
+        createdAt: new Date().toISOString(),
+        completedAt: new Date().toISOString(),
+        type: "process",
+        phase: "done",
+        stats: {},
+      }),
+    );
+
+    const stub = new StubAgent();
+    setLoadedConfig(
+      defineConfig({
+        projects: [{ id: fx.projectId, root: fx.targetRoot }],
+        plugins: [{ name: "stub", agents: [stub] }],
+      }),
+    );
+
+    const result = await processProject({
+      projectId: fx.projectId,
+      agentType: "stub",
+      concurrency: 1,
+    });
+
+    expect(result.analysisCount).toBe(1);
+    expect(stub.calls.investigateCalls).toHaveLength(1);
+  });
+
   it("process() captures refusals from the agent into AnalysisEntry", async () => {
     const fx = setupProject({ files: ["app.ts"] });
     fx.writeRecord(pendingRecord(fx.projectId, "app.ts"));

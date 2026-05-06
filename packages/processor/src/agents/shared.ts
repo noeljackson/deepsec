@@ -81,6 +81,13 @@ export function buildInvestigatePrompt(params: {
 
   const fileList = batch
     .map((r) => {
+      // Direct-invocation runs (e.g. `process --diff`) can include files
+      // the scanner saw but didn't flag. Render those as a holistic-review
+      // hint so the agent doesn't waste turns asking "what's the
+      // candidate?" when there isn't one.
+      if (r.candidates.length === 0) {
+        return `- **${r.filePath}** (no scanner hits — full holistic review)`;
+      }
       const matchDetails = r.candidates
         .map((m) => {
           const lines = m.lineNumbers.join(", ");
@@ -159,17 +166,33 @@ export function parseInvestigateResults(
   const jsonMatch = resultText.match(/```json\s*([\s\S]*?)```/);
   const jsonStr = jsonMatch ? jsonMatch[1].trim() : resultText.trim();
 
-  let parsed: Array<{ filePath: string; findings: Finding[] }>;
+  let parsed: unknown;
   try {
     parsed = JSON.parse(jsonStr);
-  } catch {
-    return batch.map((r) => ({ filePath: r.filePath, findings: [] }));
+  } catch (err) {
+    // Fail loud — a malformed JSON response is indistinguishable from
+    // a "found nothing" run if we silently return empty findings, and
+    // for a security tool that's the worst possible failure mode
+    // (truncated model output, rate-limit splice, prompt-injection
+    // override could all suppress real findings). The processor's
+    // batch-level catch fires from this throw, marks files status=error,
+    // increments errorBatchCount, and the CLI exits non-zero.
+    const excerpt = resultText.slice(0, 400).replace(/\s+/g, " ");
+    throw new Error(
+      `Agent produced output that wasn't a parseable JSON findings array: ${err instanceof Error ? err.message : err}. ` +
+        `First 400 chars: ${excerpt}`,
+    );
   }
 
+  if (!Array.isArray(parsed)) {
+    throw new Error(`Agent produced JSON but not an array of file findings. Got: ${typeof parsed}`);
+  }
+
+  const typedParsed = parsed as Array<{ filePath: string; findings: Finding[] }>;
   const results: InvestigateResult[] = [];
   const batchPaths = new Set(batch.map((r) => r.filePath));
 
-  for (const entry of parsed) {
+  for (const entry of typedParsed) {
     if (batchPaths.has(entry.filePath)) {
       results.push({
         filePath: entry.filePath,
@@ -298,9 +321,22 @@ If severity should change, set \`adjustedSeverity\`. Omit if correct.
 export function parseRevalidateVerdicts(resultText: string): RevalidateVerdict[] {
   const jsonMatch = resultText.match(/```json\s*([\s\S]*?)```/);
   const jsonStr = jsonMatch ? jsonMatch[1].trim() : resultText.trim();
+  let parsed: unknown;
   try {
-    return JSON.parse(jsonStr) as RevalidateVerdict[];
-  } catch {
-    return [];
+    parsed = JSON.parse(jsonStr);
+  } catch (err) {
+    // Same fail-loud rationale as parseInvestigateResults: silently
+    // returning [] for malformed output would mark a batch of findings
+    // as "no verdicts produced" instead of erroring, suppressing
+    // intended revalidation results.
+    const excerpt = resultText.slice(0, 400).replace(/\s+/g, " ");
+    throw new Error(
+      `Agent produced revalidation output that wasn't parseable JSON: ${err instanceof Error ? err.message : err}. ` +
+        `First 400 chars: ${excerpt}`,
+    );
   }
+  if (!Array.isArray(parsed)) {
+    throw new Error(`Agent produced revalidation JSON but not an array. Got: ${typeof parsed}`);
+  }
+  return parsed as RevalidateVerdict[];
 }

@@ -154,6 +154,22 @@ program
   )
   .option("--only-slugs <csv>", "Only process files that have a candidate with one of these slugs")
   .option("--skip-slugs <csv>", "Skip files whose candidate slugs are all in this set")
+  .option(
+    "--diff <ref>",
+    "Direct mode: investigate files changed between <ref> and HEAD (e.g. origin/main, HEAD~1..HEAD). Auto-creates the project if needed. Exits 1 if any finding is produced.",
+  )
+  .option("--diff-staged", "Direct mode: investigate files in the git index (vs HEAD)")
+  .option("--diff-working", "Direct mode: investigate uncommitted + untracked files")
+  .option("--files <csv>", "Direct mode: investigate this comma-separated path list")
+  .option(
+    "--files-from <path>",
+    "Direct mode: read newline-delimited paths from <path> (or '-' for stdin)",
+  )
+  .option("--no-ignore", "In direct mode, skip the default ignore filter (test files, dist, etc.)")
+  .option(
+    "--comment-out <path>",
+    "Write a PR-comment-shaped markdown summary to <path> (only when findings exist)",
+  )
   .action(processCommand);
 
 program

@@ -57,6 +57,9 @@ importers:
       jiti:
         specifier: ^2.4.0
         version: 2.6.1
+      minimatch:
+        specifier: ^10.0.0
+        version: 10.2.5
       tar:
         specifier: ^7.5.13
         version: 7.5.13
@@ -106,6 +109,9 @@ importers:
       glob:
         specifier: ^11.0.0
         version: 11.1.0
+      minimatch:
+        specifier: ^10.0.0
+        version: 10.2.5
 
 packages:
 

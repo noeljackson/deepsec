@@ -1,0 +1,81 @@
+name: deepsec
+
+on: pull_request
+
+# Default to read-only at the workflow level. The comment job opts up
+# to pull-requests:write only for the step that posts the artifact;
+# the analyze job that runs PR-controlled code never gets write
+# permission on this repository.
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    # Same-repo PRs only. Fork PRs already don't receive repo secrets
+    # under the `pull_request` event, so this check is mostly a UX
+    # filter — without it, fork PRs would run, fail on the missing
+    # credential, and post a red ❌ on every external contribution.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # need history for `git diff origin/<base>`
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm }
+
+      - run: pnpm install --frozen-lockfile
+      - run: npm install -g @anthropic-ai/claude-code
+
+      - id: deepsec
+        env:
+          AI_GATEWAY_API_KEY: ${{ secrets.AI_GATEWAY_API_KEY }}
+          CLAUDE_CODE_EXECUTABLE: claude
+        run: |
+          pnpm deepsec process --agent codex \
+            --diff origin/${{ github.event.pull_request.base.ref }} \
+            --comment-out comment.md
+
+      # Hand off to the comment job via an artifact so the privileged
+      # step never has to run any PR-controlled code.
+      - if: always() && hashFiles('comment.md') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: deepsec-comment
+          path: comment.md
+          retention-days: 1
+
+  comment:
+    needs: analyze
+    # Run only if analyze produced a comment (analyze exits 1 on
+    # findings, so result == 'failure' is the trigger). The
+    # download-artifact step also fails closed if the artifact is
+    # missing, so other failure modes (network, timeout) silently
+    # skip the post.
+    if: always() && needs.analyze.result == 'failure'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - id: dl
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: deepsec-comment
+
+      - if: steps.dl.outcome == 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: fs.readFileSync('comment.md', 'utf8'),
+            });

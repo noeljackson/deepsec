@@ -101,8 +101,7 @@ This repo uses 77 known frameworks: Next.js, React, Express.js, Fastify, NestJS,
 
 ## Target Files
 
-- **infra/Dockerfile**
-
+- **infra/Dockerfile** (no scanner hits — full holistic review)
 
 ## Investigation Instructions
 

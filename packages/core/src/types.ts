@@ -10,11 +10,39 @@ export interface RunMeta {
   phase: "running" | "done" | "error";
   scannerConfig?: {
     matcherSlugs: string[];
+    /**
+     * Scan mode. "full" (default, omitted on legacy runs) is the
+     * whole-repo glob-driven scan. "files" means the run was bounded to
+     * an explicit file list (e.g. `process --diff`); FileRecords were
+     * written for every listed file even when no matchers fired.
+     */
+    mode?: "full" | "files";
+    /**
+     * Where the file list came from. Free-form label like
+     * "git-diff:origin/main" or "files:cli". Only meaningful when
+     * mode === "files".
+     */
+    source?: string;
+    /** Number of files in the explicit list. Only set when mode === "files". */
+    fileCount?: number;
   };
   processorConfig?: {
     agentType: string;
     model: string;
     modelConfig: Record<string, unknown>;
+    /**
+     * "scan" (default, omitted on legacy runs) means process pulled work
+     * from the scanner's pending file queue. "direct" means the file
+     * list was passed in explicitly (e.g. `process --diff`) and the
+     * scanner-state filtering was bypassed.
+     */
+    invocationMode?: "scan" | "direct";
+    /**
+     * Origin label for direct invocations: "git-diff:origin/main",
+     * "files:cli", "files-from:-", etc. Only meaningful when
+     * invocationMode === "direct".
+     */
+    source?: string;
   };
   stats: {
     filesScanned?: number;
@@ -124,6 +152,16 @@ export interface Finding {
   confidence: Confidence;
   triage?: Triage;
   revalidation?: Revalidation;
+  /**
+   * The run that first surfaced this finding (the one that appended it
+   * to `FileRecord.findings`). Set once at append time and never updated
+   * — re-runs that re-report the same signature get deduped, so this
+   * stays bound to the original discovery.
+   *
+   * Optional for backward compatibility with findings written before
+   * this field existed.
+   */
+  producedByRunId?: string;
 }
 
 // --- Ownership oracle types ---
@@ -199,6 +237,21 @@ export interface FileRecord {
   // Status & locking
   status: FileStatus;
   lockedByRunId?: string;
+  /**
+   * ISO timestamp when `status` last transitioned to `processing` and
+   * `lockedByRunId` was set. Used by the work selector to decide when
+   * a `processing` record from another run is reclaimable: only when
+   * the lock is older than `STALE_LOCK_MS` AND the locking run's
+   * RunMeta is `done` / `error` / missing. Without this, two
+   * overlapping `process()` runs could both pick up the same record
+   * and clobber each other's findings on write.
+   *
+   * Optional for backward compatibility with records written before
+   * this field existed. Missing values are treated as "very old" so
+   * legacy locked records can still be reclaimed when their owning
+   * run is no longer alive.
+   */
+  lockedAt?: string;
 }
 
 // --- Project config ---

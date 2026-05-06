@@ -38,10 +38,16 @@ const OIDC_EXPIRATION_BUFFER_MS = 60 * 60 * 1000;
  * `OPENAI_API_KEY` (the gateway accepts the same token for both).
  *
  * Falls back to a Vercel OIDC token (via `@vercel/oidc`) when
- * `AI_GATEWAY_API_KEY` is unset. The AI Gateway accepts OIDC tokens
- * issued by `vercel env pull`, so a user who's already linked the project
- * doesn't need a separate gateway key. `getVercelOidcToken` also refreshes
- * the token in development when it's expired or near expiry.
+ * `AI_GATEWAY_API_KEY` is unset *and* `VERCEL_OIDC_TOKEN` is already in env
+ * (typically populated by `vercel env pull`). The presence of the env var
+ * is the user's opt-in: without it we never invoke `@vercel/oidc`, because
+ * the library's refresh path walks up the directory tree from `cwd` looking
+ * for a parent `.vercel/project.json` and would otherwise silently mint a
+ * gateway token against an unrelated linked project (issue: a user with a
+ * `.vercel/` two dirs up gets billed without realizing the gateway is in
+ * play). With the gate, the token is taken from env and only the library's
+ * near-expiry refresh ever touches the linked project — and only on a
+ * project the user already authenticated against.
  *
  * Existing values always win — this only fills in what's missing, so a
  * user who has set, say, `ANTHROPIC_BASE_URL=https://api.anthropic.com`
@@ -51,15 +57,16 @@ const OIDC_EXPIRATION_BUFFER_MS = 60 * 60 * 1000;
  * any module reads these vars.
  */
 export async function applyAiGatewayDefaults(): Promise<void> {
-  if (!process.env.AI_GATEWAY_API_KEY) {
+  if (!process.env.AI_GATEWAY_API_KEY && process.env.VERCEL_OIDC_TOKEN) {
     try {
       process.env.AI_GATEWAY_API_KEY = await getVercelOidcToken({
         expirationBufferMs: OIDC_EXPIRATION_BUFFER_MS,
       });
     } catch {
-      // No OIDC token available (no env var, no linked project, or refresh
-      // failed). Fall through — assertAgentCredential will emit a clearer
-      // error pointing at .env.local if a credential is actually required.
+      // Refresh failed (token unparseable, network, or the linked project
+      // it would refresh against is gone). Fall through — assertAgentCredential
+      // will emit a clearer error pointing at .env.local if a credential is
+      // actually required.
     }
   }
   const key = process.env.AI_GATEWAY_API_KEY;

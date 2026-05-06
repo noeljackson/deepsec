@@ -66,6 +66,7 @@ describe("assertAgentCredential", () => {
   });
 
   it("throws actionable message for claude-agent-sdk when no token and no claude CLI", () => {
+    expect(() => assertAgentCredential("claude-agent-sdk")).toThrow(/--agent claude/);
     expect(() => assertAgentCredential("claude-agent-sdk")).toThrow(/ANTHROPIC_AUTH_TOKEN/);
     expect(() => assertAgentCredential("claude-agent-sdk")).toThrow(/AI_GATEWAY_API_KEY/);
     expect(() => assertAgentCredential("claude-agent-sdk")).toThrow(

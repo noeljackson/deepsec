@@ -132,11 +132,11 @@ program
   .option("--run-id <id>", "Resume a specific processing run")
   .option(
     "--agent <type>",
-    "Agent plugin type: claude-agent-sdk or codex (default: defaultAgent in deepsec.config.ts, else claude-agent-sdk)",
+    "Agent plugin type: codex or claude (default: defaultAgent in deepsec.config.ts, else codex)",
   )
   .option(
     "--model <model>",
-    "Model to use (default: claude-opus-4-7 for claude-agent-sdk, gpt-5.5 for codex)",
+    "Model to use (default: claude-opus-4-7 for claude, gpt-5.5 for codex)",
   )
   .option("--max-turns <n>", "Max conversation turns per batch (default: 150)", parseInt)
   .option(
@@ -192,11 +192,11 @@ program
   .option("--run-id <id>", "Resume a specific revalidation run")
   .option(
     "--agent <type>",
-    "Agent plugin type: claude-agent-sdk or codex (default: defaultAgent in deepsec.config.ts, else claude-agent-sdk)",
+    "Agent plugin type: codex or claude (default: defaultAgent in deepsec.config.ts, else codex)",
   )
   .option(
     "--model <model>",
-    "Model to use (default: claude-opus-4-7 for claude-agent-sdk, gpt-5.5 for codex)",
+    "Model to use (default: claude-opus-4-7 for claude, gpt-5.5 for codex)",
   )
   .option("--max-turns <n>", "Max conversation turns per batch (default: 150)", parseInt)
   .option(
@@ -278,7 +278,7 @@ program
   .option("--require-owner", "Drop findings that have no ownership data (no assignee, no teams)")
   .option(
     "--only-agent <type>",
-    "Only export findings produced by this agent backend (e.g. codex, claude-agent-sdk)",
+    "Only export findings produced by this agent backend (e.g. codex, claude)",
   )
   .option(
     "--only-marker <n>",

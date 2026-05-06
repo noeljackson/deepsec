@@ -59,8 +59,8 @@ AI_GATEWAY_API_KEY=vck_…
 deepsec expands whichever credential it finds (the API key first, the
 OIDC token as fallback) at startup into the four vars the agent SDKs
 read (`ANTHROPIC_AUTH_TOKEN`, `OPENAI_API_KEY`, `ANTHROPIC_BASE_URL`,
-`OPENAI_BASE_URL`), so a single credential covers both Claude
-(`--agent claude-agent-sdk`, the default) and Codex (`--agent codex`).
+`OPENAI_BASE_URL`), so a single credential covers both Codex
+(`--agent codex`, the default) and Claude (`--agent claude`).
 Any of those four vars you set explicitly takes precedence over the
 expansion — useful for mixing direct Anthropic with gateway-routed
 OpenAI, etc.
@@ -155,6 +155,6 @@ vars (access token).
 |---|---|
 | `401` from `process` / `revalidate` | No gateway credential loaded — set `AI_GATEWAY_API_KEY` (or `ANTHROPIC_AUTH_TOKEN`), or run `vercel env pull` to get a `VERCEL_OIDC_TOKEN`. Confirm `.env.local` is in the cwd deepsec runs from. If you're using OIDC, the token may have expired (12 h) — re-pull. |
 | Sandbox spawn fails with auth error | OIDC token expired (12 h) — re-run `vercel env pull`. Or fall back to access-token mode. |
-| `Missing AI credentials for --agent claude-agent-sdk` | Set `AI_GATEWAY_API_KEY` / `ANTHROPIC_AUTH_TOKEN` in `.env.local`, or `claude login` for non-sandbox subscription auth. |
+| `Missing AI credentials for --agent claude` | Set `AI_GATEWAY_API_KEY` / `ANTHROPIC_AUTH_TOKEN` in `.env.local`, or `claude login` for non-sandbox subscription auth. |
 | `Missing AI credentials for --agent codex` | Set `AI_GATEWAY_API_KEY` / `OPENAI_API_KEY` in `.env.local`, or `codex login` for non-sandbox subscription auth. |
 | Findings missing cost in the log | Pricing entry missing for a non-default Codex model. See [models.md](models.md#future-models-eg-anthropic-mythos). |

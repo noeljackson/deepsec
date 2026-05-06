@@ -179,8 +179,10 @@ export function assertAgentCredential(
 
   if (anthropic) return;
   if (!options.inSandbox && hasLocalClaudeAgent()) return;
+  const displayAgent =
+    agentType === "claude-agent-sdk" || agentType === undefined ? "claude" : agentType;
   throw new Error(
-    `Missing AI credentials for --agent ${agentType ?? "claude-agent-sdk"}.\n` +
+    `Missing AI credentials for --agent ${displayAgent}.\n` +
       `\n` +
       `  Add to .env.local:    AI_GATEWAY_API_KEY=vck_…   (or ANTHROPIC_AUTH_TOKEN=…)\n` +
       `  Setup: ${SETUP_DOC_URL}`,

@@ -176,7 +176,6 @@ export default defineConfig({
         "deepsec.config.ts",
         "README.md",
         "AGENTS.md",
-        ".env.local",
         ".gitignore",
         "data/my-app/INFO.md",
         "data/my-app/SETUP.md",
@@ -184,6 +183,7 @@ export default defineConfig({
       ]) {
         expect(fs.existsSync(path.join(workspace, f)), `missing ${f}`).toBe(true);
       }
+      expect(fs.existsSync(path.join(workspace, ".env.local"))).toBe(false);
       // No top-level INFO.md / SETUP.md — both live under data/<id>/.
       expect(fs.existsSync(path.join(workspace, "INFO.md"))).toBe(false);
       expect(fs.existsSync(path.join(workspace, "SETUP.md"))).toBe(false);

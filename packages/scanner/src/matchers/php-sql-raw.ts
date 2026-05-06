@@ -79,9 +79,8 @@ export const phpSqlRawMatcher: MatcherPlugin = {
         // followed by `.` `$var`. The opening quote dictates the matching
         // closing quote, so `'` inside a `"..."` string is fine.
         {
-          regex: new RegExp(
-            `(?:"\\s*(?:SELECT|INSERT|UPDATE|DELETE)\\s+[^"]{0,400}"|'\\s*(?:SELECT|INSERT|UPDATE|DELETE)\\s+[^']{0,400}')\\s*\\.\\s*\\$\\w+`,
-          ),
+          regex:
+            /(?:"\s*(?:SELECT|INSERT|UPDATE|DELETE)\s+[^"]{0,400}"|'\s*(?:SELECT|INSERT|UPDATE|DELETE)\s+[^']{0,400}')\s*\.\s*\$\w+/,
           label: "Raw SQL string with concat (SQL injection)",
         },
       ],

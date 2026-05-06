@@ -229,6 +229,25 @@ describe("applyAiGatewayDefaults", () => {
     expect(process.env.OPENAI_BASE_URL).toBe("https://ai-gateway.vercel.sh/v1");
   });
 
+  it("does not invoke @vercel/oidc when no VERCEL_OIDC_TOKEN is in env", async () => {
+    // Guard against the library walking up from cwd looking for a parent
+    // `.vercel/project.json`. Without VERCEL_OIDC_TOKEN as the explicit
+    // opt-in, we leave AI_GATEWAY_API_KEY unset and fall through to the
+    // claude/codex subscription path.
+    let invoked = false;
+    const oidcModule = await import("@vercel/oidc");
+    const spy = vi.spyOn(oidcModule, "getVercelOidcToken").mockImplementation(async () => {
+      invoked = true;
+      return "should-not-be-used";
+    });
+    await applyAiGatewayDefaults();
+    expect(invoked).toBe(false);
+    expect(process.env.AI_GATEWAY_API_KEY).toBeUndefined();
+    expect(process.env.ANTHROPIC_AUTH_TOKEN).toBeUndefined();
+    expect(process.env.ANTHROPIC_BASE_URL).toBeUndefined();
+    spy.mockRestore();
+  });
+
   it("prefers an explicit AI_GATEWAY_API_KEY over VERCEL_OIDC_TOKEN", async () => {
     process.env.AI_GATEWAY_API_KEY = "gw-key";
     process.env.VERCEL_OIDC_TOKEN = "oidc-tok";

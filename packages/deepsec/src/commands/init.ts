@@ -56,7 +56,6 @@ export function initCommand(opts: InitOpts) {
   writeFile(workspaceDir, "pnpm-workspace.yaml", pnpmWorkspaceYaml());
   writeFile(workspaceDir, "deepsec.config.ts", emptyConfigTs());
   writeFile(workspaceDir, "AGENTS.md", workspaceAgentsMd());
-  writeFile(workspaceDir, ".env.local", envLocal());
   writeFile(workspaceDir, ".gitignore", gitignore());
 
   // Register the first project via the shared code path. Same writes
@@ -318,16 +317,6 @@ asked to set a project up.
 The deepsec skill is at \`node_modules/deepsec/SKILL.md\` (after
 \`pnpm install\`). The full docs ship at
 \`node_modules/deepsec/dist/docs/\`.
-`;
-}
-
-function envLocal(): string {
-  // One-line gateway setup. deepsec expands AI_GATEWAY_API_KEY at startup
-  // into ANTHROPIC_AUTH_TOKEN / OPENAI_API_KEY / *_BASE_URL, so a user
-  // who only has a gateway key is fully wired with this single line.
-  // Users with claude/codex CLI logged in locally can leave this empty
-  // for non-sandbox runs — deepsec auto-detects.
-  return `AI_GATEWAY_API_KEY=
 `;
 }
 

@@ -19,10 +19,19 @@ const ALLOWED_EXTENSIONS = new Set([".json", ".md", ".csv"]);
 // `rootPath` field would otherwise be trusted by the next CLI run and steer
 // later sandbox uploads at attacker-chosen host paths). See the
 // "archive-extraction-untrusted" finding in .deepsec/findings.
+//
+// Path segments use `[^/\\\0]+` rather than a stricter character class so
+// real-world repo paths pass through unchanged: Next.js dynamic routes
+// (`[id]`, `[...slug]`, `[[...slug]]`), parallel routes (`@modal`), route
+// groups (`(public)`), and filenames with `+`, `=`, `,`, parens, spaces,
+// etc. were rejected by the previous `[A-Za-z0-9._-]` class. The defense
+// against unsafe segments (`..`, `.`, empty) is now a dedicated check
+// below; tar.strict provides the same guarantee for absolute paths and
+// `..` traversal as a second layer.
 const ALLOWED_ENTRY_PATTERNS: RegExp[] = [
-  /^\.?\/?files\/(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+\.json$/,
-  /^\.?\/?runs\/[A-Za-z0-9._-]+\.json$/,
-  /^\.?\/?reports\/report[A-Za-z0-9._-]*\.(?:json|md|csv)$/,
+  /^\.?\/?files\/(?:[^/\\\0]+\/)*[^/\\\0]+\.json$/,
+  /^\.?\/?runs\/[^/\\\0]+\.json$/,
+  /^\.?\/?reports\/report[^/\\\0]*\.(?:json|md|csv)$/,
 ];
 
 // Belt-and-suspenders caps on a sandbox-supplied tarball. The numbers err
@@ -183,6 +192,17 @@ export async function extractTarballLocally(tarPath: string, destDir: string): P
         return;
       }
       const norm = entry.path.replace(/^\.\//, "");
+      // Defense-in-depth segment check. tar.strict already rejects `..`
+      // segments and absolute paths — this is the second layer in case
+      // strictness is ever loosened, plus it explicitly excludes the
+      // empty segment / lone "." segment cases we'd otherwise let pass
+      // since the allowed-pattern char class is now intentionally broad
+      // (to accept Next.js bracket routes, etc.).
+      const segments = norm.split("/");
+      if (segments.some((s) => s === "" || s === "." || s === "..")) {
+        violations.push(`"${entry.path}" has an unsafe path segment`);
+        return;
+      }
       if (!ALLOWED_ENTRY_PATTERNS.some((re) => re.test(norm))) {
         violations.push(`"${entry.path}" is outside files/, runs/, reports/`);
         return;

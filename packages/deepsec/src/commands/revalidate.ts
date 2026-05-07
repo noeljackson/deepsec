@@ -111,4 +111,9 @@ export async function revalidateCommand(opts: {
   console.log(
     `  ${GREEN}TP: ${result.truePositives}${RESET}  ${RED}FP: ${result.falsePositives}${RESET}  ${CYAN}Fixed: ${result.fixed}${RESET}  ${YELLOW}Uncertain: ${result.uncertain}${RESET}`,
   );
+  if (result.revalidated === 0 && !opts.force) {
+    console.log(
+      `  ${DIM}Tip: pass ${RESET}${BOLD}--force${RESET}${DIM} to revalidate findings again (e.g. after fixes).${RESET}`,
+    );
+  }
 }

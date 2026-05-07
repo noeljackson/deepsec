@@ -45,3 +45,7 @@ jobs:
       - run: pnpm knip
       - run: pnpm test:unit
       - run: pnpm test:bundle
+      # Typechecks .deepsec/deepsec.config.ts against the freshly bundled
+      # `dist/config.d.ts` — catches regressions where the published types
+      # leak references to workspace-internal `@deepsec/*` packages.
+      - run: pnpm typecheck:deepsec

@@ -8,6 +8,7 @@ import { resolveFiles } from "../file-sources.js";
 import { BOLD, CYAN, DIM, GREEN, RED, RESET, YELLOW } from "../formatters.js";
 import { renderPrComment } from "../pr-comment.js";
 import { assertAgentCredential } from "../preflight.js";
+import { renderQuotaMessage } from "../quota-message.js";
 import { resolveAgentType } from "../resolve-agent-type.js";
 import { resolveProjectId, resolveProjectIdForDirect } from "../resolve-project-id.js";
 
@@ -184,6 +185,22 @@ async function processStandardMode(opts: Parameters<typeof processCommand>[0]) {
   }
   console.log();
 
+  // Quota exhaustion is a fatal, run-stopping condition. Render the
+  // tailored remediation message before the generic "errored batches"
+  // banner so the user sees actionable guidance first, then exit non-zero
+  // — same fail-loud contract as a regular agent failure.
+  if (result.quotaExhausted) {
+    console.log(
+      renderQuotaMessage({
+        source: result.quotaExhausted.source,
+        rawMessage: result.quotaExhausted.rawMessage,
+        command: "process",
+        projectId,
+      }),
+    );
+    process.exit(1);
+  }
+
   // Standard-mode parity with direct-mode: a run that crashed agent
   // batches isn't a clean review. Print the runtime hint first so
   // operators see it on success runs, then fail-loud when applicable.
@@ -313,6 +330,18 @@ async function processDirectMode(opts: Parameters<typeof processCommand>[0]) {
   console.log(`  Findings: ${result.findingCount}`);
   if (result.errorBatchCount > 0) {
     console.log(`  ${RED}Errored batches: ${result.errorBatchCount}${RESET}`);
+  }
+
+  if (result.quotaExhausted) {
+    console.log(
+      renderQuotaMessage({
+        source: result.quotaExhausted.source,
+        rawMessage: result.quotaExhausted.rawMessage,
+        command: "process",
+        projectId,
+      }),
+    );
+    process.exit(1);
   }
 
   // Hard-fail when any batch threw — that means the agent itself

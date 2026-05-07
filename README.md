@@ -6,8 +6,9 @@ large-scale repos.
 `deepsec` is designed to surface hard-to-find issues that have been lurking in applications for a long time. It is configured to use the best models at maximum thinking levels, meaning scans can cost thousands or even tens-of-thousands of dollars for large codebases. Our customers have found the cost worth it for how quickly they were able to patch vulnerabilities that would have otherwise gone unfixed.
 
 For large codebases, work fans out across worker machines in parallel.
-Commands are idempotent — interrupt a job, restart it, and deepsec picks up
-where it left off.
+If a run is interrupted or errors out partway through, just re-run the same
+command — deepsec picks up where it left off, skipping files it already
+analyzed and only investigating the rest.
 
 ## Get started
 
@@ -66,22 +67,29 @@ If you feel like the `deepsec` should look at more parts of the code, give it [t
 
 ## AI provider
 
-When running locally, `deepsec` attempts to use your existing subscriptions
-when invoking claude or codex.
+When running locally, `deepsec` falls back to your existing `claude` /
+`codex` subscription if you've logged in on this machine. Subscriptions
+(Claude Pro/Max, ChatGPT Plus) are useful for evaluating deepsec but
+generally don't have enough headroom for full repo scans.
 
-For scaled usage on large code bases we recommend using Vercel AI Gateway or
-provider API keys. The AI Gateway has default quotas suitable for highly 
-concurrent research.
+For real scans, use Vercel AI Gateway. One key covers both Claude and
+Codex, and the gateway's default quotas are sized for highly concurrent
+research.
 
 ```
 AI_GATEWAY_API_KEY=vck_...
 ```
 
-That single key covers both Claude and Codex. See 
-[docs/vercel-setup.md](docs/vercel-setup.md) for getting a key and for 
-the Vercel Sandbox setup. To bypass the gateway, set `ANTHROPIC_AUTH_TOKEN` 
-+ `ANTHROPIC_BASE_URL` (or the OpenAI pair) explicitly. Explicit values 
-always win over the `AI_GATEWAY_API_KEY` expansion.
+See [docs/vercel-setup.md](docs/vercel-setup.md) for getting a key and
+for the Vercel Sandbox setup. To bypass the gateway, set
+`ANTHROPIC_AUTH_TOKEN` + `ANTHROPIC_BASE_URL` (or the OpenAI pair)
+explicitly. Explicit values always win over the `AI_GATEWAY_API_KEY`
+expansion.
+
+If a `process` or `revalidate` run halts because the upstream credential
+ran out of quota or credits, deepsec stops gracefully and tells you
+where to top up. Re-run the same command afterward and it picks up
+where it left off.
 
 ## Distributed execution (optional)
 

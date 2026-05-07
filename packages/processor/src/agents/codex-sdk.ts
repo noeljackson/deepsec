@@ -16,11 +16,13 @@ import {
   backoff,
   buildInvestigatePrompt,
   buildRevalidatePrompt,
+  classifyQuotaError,
   isTransientError,
   MAX_ATTEMPTS,
   parseInvestigateResults,
   parseRefusalReport,
   parseRevalidateVerdicts,
+  QuotaExhaustedError,
   REFUSAL_FOLLOWUP_PROMPT,
 } from "./shared.js";
 import type {
@@ -625,7 +627,7 @@ export class CodexAgentSdkPlugin implements AgentPlugin {
   type = "codex";
 
   async *investigate(params: InvestigateParams): AsyncGenerator<AgentProgress, InvestigateOutput> {
-    const { batch, projectRoot, promptTemplate, projectInfo, config } = params;
+    const { batch, projectRoot, promptTemplate, projectInfo, config, signal } = params;
     const model = (config.model as string) ?? DEFAULT_MODEL;
     const effort = (config.reasoningEffort as ModelReasoningEffort) ?? DEFAULT_EFFORT;
 
@@ -688,7 +690,7 @@ export class CodexAgentSdkPlugin implements AgentPlugin {
             modelReasoningEffort: effort,
             webSearchEnabled: false,
           });
-          const { events } = await thread.runStreamed(prompt);
+          const { events } = await thread.runStreamed(prompt, { signal });
 
           for await (const event of events as AsyncGenerator<ThreadEvent>) {
             switch (event.type) {
@@ -750,6 +752,21 @@ export class CodexAgentSdkPlugin implements AgentPlugin {
         }
 
         if (agentMessages.length > 0) break;
+        // Codex frequently exits silent on quota/auth errors — the SDK
+        // returns an empty `response.completed` and the error only lives in
+        // the wrapper-captured stderr. Read it BEFORE deciding to retry so
+        // a quota miss bails fast instead of burning all 3 attempts.
+        const stderrPeek = readStderrTail(invocation.stderrLog) ?? "";
+        const quotaSourceEarly =
+          classifyQuotaError(lastError, "codex") || classifyQuotaError(stderrPeek, "codex");
+        if (quotaSourceEarly) {
+          // Stash the stderr so the throw below can include it for ops.
+          if (stderrPeek) sdkMeta.codexStderr = stderrPeek;
+          throw new QuotaExhaustedError(
+            quotaSourceEarly,
+            lastError || stderrPeek || "codex silent quota exit",
+          );
+        }
         // Silent-failure retry: gateway returned response.completed with 0
         // tokens and no agent_message — codex CLI exited clean, but no work
         // happened. Retry as if it were a transient error.
@@ -795,6 +812,13 @@ export class CodexAgentSdkPlugin implements AgentPlugin {
           message: `Codex silent-exit stderr: ${stderrTail.slice(0, 1500)}`,
         };
         sdkMeta.codexStderr = stderrTail;
+        // Final-pass classification: if all retries finished and the
+        // stderr now carries a quota signature we missed mid-loop, throw
+        // the typed error so the processor stops launching new batches.
+        const quotaSourceFinal = classifyQuotaError(stderrTail, "codex");
+        if (quotaSourceFinal) {
+          throw new QuotaExhaustedError(quotaSourceFinal, stderrTail);
+        }
       }
       const refusal = await runRefusalFollowUp(codex, threadId, projectRoot, model);
       if (refusal?.refused) {
@@ -849,7 +873,7 @@ export class CodexAgentSdkPlugin implements AgentPlugin {
   }
 
   async *revalidate(params: RevalidateParams): AsyncGenerator<AgentProgress, RevalidateOutput> {
-    const { batch, projectRoot, projectInfo, config, force = false } = params;
+    const { batch, projectRoot, projectInfo, config, force = false, signal } = params;
     const model = (config.model as string) ?? DEFAULT_MODEL;
     const effort = (config.reasoningEffort as ModelReasoningEffort) ?? DEFAULT_EFFORT;
 
@@ -910,7 +934,7 @@ export class CodexAgentSdkPlugin implements AgentPlugin {
             modelReasoningEffort: effort,
             webSearchEnabled: false,
           });
-          const { events } = await thread.runStreamed(prompt);
+          const { events } = await thread.runStreamed(prompt, { signal });
 
           for await (const event of events as AsyncGenerator<ThreadEvent>) {
             switch (event.type) {
@@ -961,6 +985,18 @@ export class CodexAgentSdkPlugin implements AgentPlugin {
         }
 
         if (agentMessages.length > 0) break;
+        // See investigate() — read stderr first so we bail fast on quota
+        // misses instead of burning all 3 attempts.
+        const stderrPeek = readStderrTail(invocation.stderrLog) ?? "";
+        const quotaSourceEarly =
+          classifyQuotaError(lastError, "codex") || classifyQuotaError(stderrPeek, "codex");
+        if (quotaSourceEarly) {
+          if (stderrPeek) sdkMeta.codexStderr = stderrPeek;
+          throw new QuotaExhaustedError(
+            quotaSourceEarly,
+            lastError || stderrPeek || "codex silent quota exit",
+          );
+        }
         // Silent-failure retry: gateway returned response.completed with 0
         // tokens and no agent_message — codex CLI exited clean, but no work
         // happened. Retry as if it were a transient error.
@@ -997,6 +1033,10 @@ export class CodexAgentSdkPlugin implements AgentPlugin {
           message: `Codex silent-exit stderr: ${stderrTail.slice(0, 1500)}`,
         };
         sdkMeta.codexStderr = stderrTail;
+        const quotaSourceFinal = classifyQuotaError(stderrTail, "codex");
+        if (quotaSourceFinal) {
+          throw new QuotaExhaustedError(quotaSourceFinal, stderrTail);
+        }
       }
 
       const refusal = await runRefusalFollowUp(codex, threadId, projectRoot, model);

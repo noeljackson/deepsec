@@ -4,6 +4,7 @@ import { revalidate } from "@deepsec/processor";
 import { defaultModelForAgent } from "../agent-defaults.js";
 import { BOLD, CYAN, DIM, GREEN, RED, RESET, YELLOW } from "../formatters.js";
 import { assertAgentCredential } from "../preflight.js";
+import { renderQuotaMessage } from "../quota-message.js";
 import { resolveAgentType } from "../resolve-agent-type.js";
 import { resolveProjectId } from "../resolve-project-id.js";
 
@@ -111,6 +112,17 @@ export async function revalidateCommand(opts: {
   console.log(
     `  ${GREEN}TP: ${result.truePositives}${RESET}  ${RED}FP: ${result.falsePositives}${RESET}  ${CYAN}Fixed: ${result.fixed}${RESET}  ${YELLOW}Uncertain: ${result.uncertain}${RESET}`,
   );
+  if (result.quotaExhausted) {
+    console.log(
+      renderQuotaMessage({
+        source: result.quotaExhausted.source,
+        rawMessage: result.quotaExhausted.rawMessage,
+        command: "revalidate",
+        projectId,
+      }),
+    );
+    process.exit(1);
+  }
   if (result.revalidated === 0 && !opts.force) {
     console.log(
       `  ${DIM}Tip: pass ${RESET}${BOLD}--force${RESET}${DIM} to revalidate findings again (e.g. after fixes).${RESET}`,

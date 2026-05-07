@@ -22,11 +22,12 @@
     "test:e2e": "vitest run --project e2e",
     "test:e2e:live": "LIVE_AGENT=1 vitest run --project e2e",
     "test:bundle": "pnpm bundle && vitest run --project e2e e2e/bundle.test.ts",
+    "typecheck:deepsec": "pnpm -C .deepsec install --frozen-lockfile --silent && tsc -p .deepsec",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "knip": "knip",
-    "validate": "pnpm -r build && pnpm lint && pnpm knip && pnpm bundle && pnpm test"
+    "validate": "pnpm -r build && pnpm lint && pnpm knip && pnpm bundle && pnpm typecheck:deepsec && pnpm test"
   },
   "keywords": [
     "security",

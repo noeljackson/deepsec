@@ -1,6 +1,7 @@
-import { chmodSync, cpSync, mkdirSync, rmSync } from "node:fs";
+import { chmodSync, cpSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { generateDtsBundle } from "dts-bundle-generator";
 import { build } from "esbuild";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -52,6 +53,22 @@ await build({
   outfile: resolve(distDir, "config.mjs"),
   banner: { js: requireShim },
 });
+
+// Bundle config.d.ts into a single self-contained file. The runtime side is
+// already inlined by esbuild, but tsc would emit `from "@deepsec/core"`
+// re-exports — broken for consumers, since those workspace packages are not
+// published. dts-bundle-generator inlines all referenced types from internal
+// workspace packages.
+const dtsBundles = generateDtsBundle(
+  [
+    {
+      filePath: resolve(__dirname, "src/config.ts"),
+      output: { noBanner: true, exportReferencedTypes: false },
+    },
+  ],
+  { preferredConfigPath: resolve(__dirname, "tsconfig.dts.json") },
+);
+writeFileSync(resolve(distDir, "config.d.ts"), dtsBundles[0]);
 
 cpSync(resolve(repoRoot, "docs"), resolve(distDir, "docs"), { recursive: true });
 cpSync(resolve(repoRoot, "samples"), resolve(distDir, "samples"), {

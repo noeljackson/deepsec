@@ -48,6 +48,14 @@ describe("bundle e2e", () => {
     expect(stdout).toContain("process");
   });
 
+  it("config.d.ts is self-contained (no internal @deepsec/* re-exports)", () => {
+    const dts = fs.readFileSync(path.join(ROOT, "packages/deepsec/dist/config.d.ts"), "utf-8");
+    // Consumers install only `deepsec` from npm — `@deepsec/core` and
+    // `@deepsec/scanner` are workspace-internal. Any leaked re-export
+    // here breaks typing for `import { defineConfig } from "deepsec/config"`.
+    expect(dts).not.toMatch(/from\s+["']@deepsec\//);
+  });
+
   it("--version reports the current package version", () => {
     const { stdout, status } = runBundle(["--version"]);
     expect(status).toBe(0);

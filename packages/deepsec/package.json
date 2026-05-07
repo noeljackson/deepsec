@@ -1,6 +1,6 @@
 {
   "name": "deepsec",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "AI-powered vulnerability scanner for any codebase",
   "license": "Apache-2.0",
   "repository": {
@@ -27,7 +27,7 @@
   ],
   "scripts": {
     "build": "tsc --noEmit",
-    "bundle": "node build.mjs && tsc -p tsconfig.build.json",
+    "bundle": "pnpm --filter @deepsec/core --filter @deepsec/scanner build && node build.mjs",
     "prepack": "pnpm bundle",
     "prepublishOnly": "pnpm -w validate && node -e \"const fs=require('node:fs');for(const f of ['dist/cli.mjs','dist/config.mjs','dist/config.d.ts','dist/sandbox/request-proxy.mjs','dist/docs/getting-started.md','dist/samples/webapp/deepsec.config.ts','SKILL.md','README.md','LICENSE','NOTICE']){if(!fs.existsSync(f)){console.error('Missing: '+f);process.exit(1)}}console.log('Pre-publish checks passed.')\""
   },
@@ -47,6 +47,7 @@
     "@deepsec/scanner": "workspace:*",
     "commander": "^13.0.0",
     "dotenv": "^16.4.0",
+    "dts-bundle-generator": "^9.5.1",
     "esbuild": "^0.25.12"
   }
 }

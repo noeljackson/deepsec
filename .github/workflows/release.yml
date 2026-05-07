@@ -99,10 +99,17 @@ jobs:
       # npm exchanges the GitHub OIDC token for a publish credential at
       # publish time. No NPM_TOKEN / NODE_AUTH_TOKEN secret is consulted.
       #
-      # Note: --provenance is intentionally OFF. npm rejects provenance
-      # uploads from repos whose GitHub visibility is "internal" or "private"
-      # (E422 "Unsupported GitHub Actions source repository visibility").
-      # Add --provenance once the repo is flipped to "public".
+      # `--provenance` attaches a signed attestation linking the published
+      # tarball to this exact workflow run + commit SHA. Requires:
+      #   - the GitHub repo to be PUBLIC (npm 422s on private/internal repos),
+      #   - `id-token: write` on this job (set above),
+      #   - npm CLI ≥ 9.5 (the `npm install -g npm@latest` step above ensures
+      #     a recent enough release).
+      # The attestation is published to npm's transparency log and shows up
+      # on the package's npmjs.com page as a "Provenance" badge. We chose
+      # the CLI flag over `publishConfig.provenance` so an accidental
+      # laptop-side `npm publish` doesn't try to emit provenance without
+      # an OIDC token.
       - if: steps.ver.outputs.publish == 'true'
         working-directory: packages/deepsec
-        run: npm publish --access public
+        run: npm publish --access public --provenance

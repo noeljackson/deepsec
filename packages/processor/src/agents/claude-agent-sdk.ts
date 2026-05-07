@@ -4,11 +4,13 @@ import {
   backoff,
   buildInvestigatePrompt,
   buildRevalidatePrompt,
+  classifyQuotaError,
   isTransientError,
   MAX_ATTEMPTS,
   parseInvestigateResults,
   parseRefusalReport,
   parseRevalidateVerdicts,
+  QuotaExhaustedError,
   REFUSAL_FOLLOWUP_PROMPT,
 } from "./shared.js";
 import type {
@@ -170,9 +172,20 @@ export class ClaudeAgentSdkPlugin implements AgentPlugin {
   type = "claude-agent-sdk";
 
   async *investigate(params: InvestigateParams): AsyncGenerator<AgentProgress, InvestigateOutput> {
-    const { batch, projectRoot, promptTemplate, projectInfo, config } = params;
+    const { batch, projectRoot, promptTemplate, projectInfo, config, signal } = params;
     const model = (config.model as string) ?? "claude-opus-4-7";
     const maxTurns = (config.maxTurns as number) ?? 150;
+    // Bridge the processor-supplied AbortSignal to an AbortController the
+    // SDK can consume — the SDK API takes an `AbortController` instance,
+    // not a raw signal. The processor aborts the parent signal when one
+    // batch trips a `QuotaExhaustedError`, and that propagation cancels the
+    // in-flight HTTP request mid-stream rather than us waiting for the next
+    // polled message.
+    const abortController = new AbortController();
+    if (signal) {
+      if (signal.aborted) abortController.abort();
+      else signal.addEventListener("abort", () => abortController.abort(), { once: true });
+    }
 
     yield {
       type: "started",
@@ -218,11 +231,34 @@ export class ClaudeAgentSdkPlugin implements AgentPlugin {
               : {}),
             env: buildClaudeEnv(),
             sandbox: buildSandbox(),
+            abortController,
           },
         })) {
-          try {
-            const msg = message as Record<string, any>;
+          const msg = message as Record<string, any>;
 
+          // Structured quota signal — defined as a tagged enum in the
+          // SDK's own type definitions: `SDKAssistantMessageError =
+          // 'authentication_failed' | 'billing_error' | 'rate_limit'
+          // | 'invalid_request' | 'server_error' | 'unknown'
+          // | 'max_output_tokens'`. Both `SDKAssistantMessage` and
+          // `SDKAssistantMessageErrorMessage` carry it. When present,
+          // it's a definitive classification — no prose guessing — so we
+          // trust it ahead of `classifyQuotaError`. Hoisted ABOVE the
+          // inner per-message try/catch on purpose: that catch swallows
+          // exceptions to keep the message loop going on transient
+          // parsing glitches; a billing_error must escape.
+          if (msg.error === "billing_error") {
+            throw new QuotaExhaustedError(
+              "anthropic-credits",
+              `SDK error tag: billing_error${
+                Array.isArray(msg.errors) && msg.errors.length
+                  ? ` — ${String(msg.errors[0]).slice(0, 200)}`
+                  : ""
+              }`,
+            );
+          }
+
+          try {
             switch (msg.type) {
               case "system":
                 if (msg.subtype === "init") {
@@ -312,6 +348,13 @@ export class ClaudeAgentSdkPlugin implements AgentPlugin {
       }
 
       if (resultText) break;
+      // Quota beats every other classification — a 429 here is "wallet
+      // empty," and retrying just hits the same wall. Throw immediately so
+      // the processor can abort other in-flight batches.
+      const quotaSource = classifyQuotaError(lastError, "claude");
+      if (quotaSource) {
+        throw new QuotaExhaustedError(quotaSource, lastError);
+      }
       if (attempt >= MAX_ATTEMPTS || !isTransientError(lastError)) break;
       await backoff(attempt);
     }
@@ -358,9 +401,17 @@ export class ClaudeAgentSdkPlugin implements AgentPlugin {
   }
 
   async *revalidate(params: RevalidateParams): AsyncGenerator<AgentProgress, RevalidateOutput> {
-    const { batch, projectRoot, projectInfo, config, force = false } = params;
+    const { batch, projectRoot, projectInfo, config, force = false, signal } = params;
     const model = (config.model as string) ?? "claude-opus-4-7";
     const maxTurns = (config.maxTurns as number) ?? 150;
+
+    // See investigate() — bridges processor's abort signal into the SDK's
+    // expected AbortController shape.
+    const abortController = new AbortController();
+    if (signal) {
+      if (signal.aborted) abortController.abort();
+      else signal.addEventListener("abort", () => abortController.abort(), { once: true });
+    }
 
     const { prompt, totalFindings } = buildRevalidatePrompt({
       batch,
@@ -408,10 +459,22 @@ export class ClaudeAgentSdkPlugin implements AgentPlugin {
               : {}),
             env: buildClaudeEnv(),
             sandbox: buildSandbox(),
+            abortController,
           },
         })) {
+          const msg = message as Record<string, any>;
+          // Same structured billing_error short-circuit as investigate().
+          if (msg.error === "billing_error") {
+            throw new QuotaExhaustedError(
+              "anthropic-credits",
+              `SDK error tag: billing_error${
+                Array.isArray(msg.errors) && msg.errors.length
+                  ? ` — ${String(msg.errors[0]).slice(0, 200)}`
+                  : ""
+              }`,
+            );
+          }
           try {
-            const msg = message as Record<string, any>;
             if (msg.type === "assistant") {
               turnCount++;
               const toolUses =
@@ -460,6 +523,10 @@ export class ClaudeAgentSdkPlugin implements AgentPlugin {
       }
 
       if (resultText) break;
+      const quotaSource = classifyQuotaError(lastError, "claude");
+      if (quotaSource) {
+        throw new QuotaExhaustedError(quotaSource, lastError);
+      }
       if (attempt >= MAX_ATTEMPTS || !isTransientError(lastError)) break;
       await backoff(attempt);
     }

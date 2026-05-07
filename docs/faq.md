@@ -152,6 +152,17 @@ Yes:
 - `revalidate` only touches findings without a `revalidation` field
   unless `--force` is set.
 
+## What if a run errors out partway through?
+
+Just re-run the same command. `process` and `revalidate` are safe to
+re-run — files that already finished are kept (no double billing), and
+only files that didn't finish get picked up. Same is true after a
+Ctrl-C, a network blip, a transient model error, or a quota stop. No
+state to clean up; no flag to set.
+
+If you specifically want to redo work that already succeeded, that's
+what `--reinvestigate` (process) and `--force` (revalidate) are for.
+
 ## How do I add a matcher for my codebase?
 
 See [docs/writing-matchers.md](writing-matchers.md). Short version: hand

@@ -12,6 +12,15 @@ export interface InvestigateParams {
   promptTemplate: string;
   projectInfo: string;
   config: Record<string, unknown>;
+  /**
+   * Aborted by the processor when one batch trips a `QuotaExhaustedError`
+   * — every other in-flight batch is hitting the same empty quota, so
+   * letting them run wastes minutes. Plugins should pass this signal into
+   * the underlying SDK (claude-agent-sdk: `abortController`; codex-sdk:
+   * `runStreamed`'s `signal`) so the SDK terminates the in-flight HTTP
+   * request rather than waiting for the next polled message.
+   */
+  signal?: AbortSignal;
 }
 
 export interface InvestigateResult {
@@ -53,6 +62,8 @@ export interface RevalidateParams {
   config: Record<string, unknown>;
   /** When true, re-check findings that already have a revalidation verdict */
   force?: boolean;
+  /** See InvestigateParams.signal — same semantics for revalidation. */
+  signal?: AbortSignal;
 }
 
 export interface RevalidateVerdict {

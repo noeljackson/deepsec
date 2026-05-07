@@ -123,6 +123,14 @@ A rough cost guide (Opus, default settings):
 Costs swing 2–3x based on file complexity. Run `--limit 50` first to
 calibrate before committing to the full pass.
 
+### If a run errors out
+
+`process` is safe to re-run. If a batch fails (network blip, transient
+model error, quota exhausted, you hit Ctrl-C), just run the same command
+again — deepsec resumes, skipping files that already finished and
+re-investigating only the ones that didn't. Nothing to clean up. Same
+applies to `revalidate`.
+
 For a cheaper backend:
 
 ```bash

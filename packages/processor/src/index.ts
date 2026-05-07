@@ -19,6 +19,7 @@ import { noiseScore, readTechJson } from "@deepsec/scanner";
 import { ClaudeAgentSdkPlugin } from "./agents/claude-agent-sdk.js";
 import { CodexAgentSdkPlugin } from "./agents/codex-sdk.js";
 import { AgentRegistry } from "./agents/registry.js";
+import { QuotaExhaustedError, type QuotaSource } from "./agents/shared.js";
 import type {
   AgentPlugin,
   AgentProgress,
@@ -33,6 +34,13 @@ import { languagesForBatch } from "./prompt/file-language.js";
 export { ClaudeAgentSdkPlugin } from "./agents/claude-agent-sdk.js";
 export { CodexAgentSdkPlugin } from "./agents/codex-sdk.js";
 export { AgentRegistry } from "./agents/registry.js";
+export {
+  classifyQuotaError,
+  isUsingAiGateway,
+  type QuotaAgentHint,
+  QuotaExhaustedError,
+  type QuotaSource,
+} from "./agents/shared.js";
 export type { AgentPlugin, AgentProgress } from "./agents/types.js";
 export { batchCandidates } from "./batch.js";
 export { enrich } from "./enrich.js";
@@ -120,6 +128,15 @@ export async function process(params: {
    * crashed CLI). CI gates on this so a silent fail doesn't pass.
    */
   errorBatchCount: number;
+  /**
+   * Set when one of the batches threw `QuotaExhaustedError`. Once any
+   * batch hits this, every subsequent API call against the same credential
+   * will fail the same way, so the processor aborts in-flight batches and
+   * stops launching new ones. The CLI uses `quotaExhausted` to print a
+   * remediation message tailored to the source (subscription / direct
+   * provider / gateway).
+   */
+  quotaExhausted?: { source: QuotaSource; rawMessage: string };
 }> {
   const { projectId, agentType = "claude-agent-sdk", config = {}, reinvestigate = false } = params;
   // We deliberately don't default `promptTemplate` to DEFAULT_PROMPT_TEMPLATE
@@ -502,6 +519,15 @@ export async function process(params: {
   let batchesInFlight = 0;
   const concurrency = params.concurrency ?? defaultConcurrency();
 
+  // Quota cancellation: when one batch throws QuotaExhaustedError, every
+  // other in-flight batch is using the same exhausted credential and will
+  // fail on its next API call. Aborting the controller cancels the SDK's
+  // in-flight HTTP request so workers exit immediately instead of waiting
+  // for a polling tick. The captured `quotaExhausted` is returned to the
+  // caller so the CLI can render a tailored remediation message.
+  const quotaAbort = new AbortController();
+  let quotaExhausted: { source: QuotaSource; rawMessage: string } | undefined;
+
   async function processBatch(batch: FileRecord[], i: number) {
     batchesInFlight++;
     emitProgress({
@@ -525,6 +551,7 @@ export async function process(params: {
         promptTemplate: buildBatchPrompt(batch),
         projectInfo: projectInfoForAgent,
         config,
+        signal: quotaAbort.signal,
       });
 
       let result = await gen.next();
@@ -658,6 +685,15 @@ export async function process(params: {
       batchesInFlight--;
       batchesCompleted++;
       batchesFailed++;
+      // Capture quota exhaustion exactly once: the first batch to trip
+      // wins, and subsequent batches that also throw QuotaExhaustedError
+      // (because they were already in-flight against the same empty
+      // credential) get their classifier silently dropped — no point
+      // logging "quota exhausted" N times. The abort below cancels them.
+      if (err instanceof QuotaExhaustedError && !quotaExhausted) {
+        quotaExhausted = { source: err.source, rawMessage: err.rawMessage };
+        quotaAbort.abort(err);
+      }
       for (const record of batch) {
         record.status = "error";
         record.lockedByRunId = undefined;
@@ -676,6 +712,9 @@ export async function process(params: {
   if (concurrency <= 1) {
     // Sequential
     for (let i = 0; i < batches.length; i++) {
+      // Stop pulling new batches once any earlier batch has tripped quota
+      // — the credential is empty for the whole run.
+      if (quotaAbort.signal.aborted) break;
       await processBatch(batches[i], i);
     }
   } else {
@@ -683,6 +722,7 @@ export async function process(params: {
     let nextIdx = 0;
     async function worker() {
       while (nextIdx < batches.length) {
+        if (quotaAbort.signal.aborted) return;
         const idx = nextIdx++;
         await processBatch(batches[idx], idx);
       }
@@ -702,7 +742,9 @@ export async function process(params: {
 
   emitProgress({
     type: "all_complete",
-    message: `Processing complete: ${totalAnalyses} analyses, ${totalFindings} findings${batchesFailed > 0 ? `, ${batchesFailed} batch(es) failed` : ""}`,
+    message: quotaExhausted
+      ? `Processing stopped: ${quotaExhausted.source} quota/credits exhausted (${totalAnalyses} analyses, ${batchesFailed} batch(es) failed before stop)`
+      : `Processing complete: ${totalAnalyses} analyses, ${totalFindings} findings${batchesFailed > 0 ? `, ${batchesFailed} batch(es) failed` : ""}`,
   });
 
   return {
@@ -710,6 +752,7 @@ export async function process(params: {
     analysisCount: totalAnalyses,
     findingCount: totalFindings,
     errorBatchCount: batchesFailed,
+    quotaExhausted,
   };
 }
 
@@ -751,6 +794,8 @@ export async function revalidate(params: {
   falsePositives: number;
   fixed: number;
   uncertain: number;
+  /** Same semantics as `process()` — see that return type. */
+  quotaExhausted?: { source: QuotaSource; rawMessage: string };
 }> {
   const {
     projectId,
@@ -890,6 +935,10 @@ export async function revalidate(params: {
 
   const batches = batchCandidates(toRevalidate, batchSize);
 
+  // Same quota-cancellation pattern as process(); see that block for why.
+  const quotaAbort = new AbortController();
+  let quotaExhausted: { source: QuotaSource; rawMessage: string } | undefined;
+
   async function revalidateBatch(batch: FileRecord[], idx: number) {
     batchesInFlight++;
     const findingCount = batch.reduce(
@@ -910,6 +959,7 @@ export async function revalidate(params: {
         projectInfo,
         config,
         force,
+        signal: quotaAbort.signal,
       });
 
       let result = await gen.next();
@@ -1016,6 +1066,10 @@ export async function revalidate(params: {
     } catch (err) {
       batchesInFlight--;
       batchesCompleted++;
+      if (err instanceof QuotaExhaustedError && !quotaExhausted) {
+        quotaExhausted = { source: err.source, rawMessage: err.rawMessage };
+        quotaAbort.abort(err);
+      }
       emitProgress({
         type: "batch_complete",
         message: `Batch ${idx + 1}/${batches.length} failed: ${err instanceof Error ? err.message : String(err)} (${batchesInFlight} in flight, ${batchesCompleted}/${batches.length} done)`,
@@ -1027,12 +1081,14 @@ export async function revalidate(params: {
 
   if (concurrency <= 1) {
     for (let i = 0; i < batches.length; i++) {
+      if (quotaAbort.signal.aborted) break;
       await revalidateBatch(batches[i], i);
     }
   } else {
     let nextIdx = 0;
     async function worker() {
       while (nextIdx < batches.length) {
+        if (quotaAbort.signal.aborted) return;
         const idx = nextIdx++;
         await revalidateBatch(batches[idx], idx);
       }
@@ -1053,7 +1109,9 @@ export async function revalidate(params: {
 
   emitProgress({
     type: "all_complete",
-    message: `Revalidation complete: ${totalRevalidated} findings — TP: ${totalTP}, FP: ${totalFP}, Fixed: ${totalFixed}, Uncertain: ${totalUncertain}`,
+    message: quotaExhausted
+      ? `Revalidation stopped: ${quotaExhausted.source} quota/credits exhausted (${totalRevalidated} verdicts before stop)`
+      : `Revalidation complete: ${totalRevalidated} findings — TP: ${totalTP}, FP: ${totalFP}, Fixed: ${totalFixed}, Uncertain: ${totalUncertain}`,
   });
 
   return {
@@ -1063,5 +1121,6 @@ export async function revalidate(params: {
     falsePositives: totalFP,
     fixed: totalFixed,
     uncertain: totalUncertain,
+    quotaExhausted,
   };
 }

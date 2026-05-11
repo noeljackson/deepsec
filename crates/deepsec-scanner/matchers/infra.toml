@@ -1,0 +1,67 @@
+[[matcher]]
+slug = "dockerfile-mutable-tag"
+description = "FROM image uses mutable tag (latest, version-less)"
+noise_tier = "precise"
+file_patterns = ["**/Dockerfile", "**/Dockerfile.*", "**/*.Dockerfile"]
+patterns = [
+  "(?im)^FROM\\s+[\\w./-]+:latest\\b",
+  "(?im)^FROM\\s+[\\w./-]+\\s*$",
+]
+label = "Dockerfile FROM mutable tag"
+
+[[matcher]]
+slug = "dockerfile-run-as-root"
+description = "Dockerfile leaves root as final user"
+noise_tier = "precise"
+file_patterns = ["**/Dockerfile", "**/Dockerfile.*", "**/*.Dockerfile"]
+patterns = [
+  "(?im)^USER\\s+root\\b",
+]
+suppress_patterns = ["(?im)^USER\\s+(?!root)\\w+"]
+label = "Dockerfile USER root"
+
+[[matcher]]
+slug = "dockerfile-curl-pipe"
+description = "curl | sh in Dockerfile RUN"
+noise_tier = "precise"
+file_patterns = ["**/Dockerfile", "**/Dockerfile.*", "**/*.Dockerfile"]
+patterns = [
+  "(?i)\\b(?:curl|wget)\\s+[^|]+\\|\\s*(?:sh|bash)",
+]
+label = "Dockerfile RUN curl | sh"
+
+[[matcher]]
+slug = "terraform-iam-wildcard"
+description = "IAM policy uses wildcard Action / Resource"
+noise_tier = "precise"
+file_patterns = ["**/*.tf", "**/*.tf.json"]
+patterns = [
+  "(?i)\"Action\"\\s*:\\s*\"\\*\"",
+  "(?i)\"Resource\"\\s*:\\s*\"\\*\"",
+  "(?i)\"Effect\"\\s*:\\s*\"Allow\"[^}]*\"Principal\"\\s*:\\s*\"\\*\"",
+]
+label = "Terraform IAM wildcard"
+
+[[matcher]]
+slug = "github-workflow-pwn-request"
+description = "GitHub Action uses pull_request_target with checkout of PR head"
+noise_tier = "precise"
+file_patterns = [".github/workflows/*.yml", ".github/workflows/*.yaml"]
+patterns = [
+  "(?im)^\\s*on\\s*:\\s*\\n[^#]*pull_request_target",
+]
+require_content = ["actions/checkout"]
+label = "pull_request_target with PR-head checkout"
+
+[[matcher]]
+slug = "k8s-privileged-pod"
+description = "Kubernetes pod with privileged: true or hostNetwork"
+noise_tier = "precise"
+file_patterns = ["**/*.yaml", "**/*.yml"]
+patterns = [
+  "(?i)privileged\\s*:\\s*true",
+  "(?i)hostNetwork\\s*:\\s*true",
+  "(?i)hostPID\\s*:\\s*true",
+]
+require_content = ["kind: (?:Pod|Deployment|StatefulSet|DaemonSet)"]
+label = "Kubernetes privileged container"

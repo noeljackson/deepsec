@@ -1,0 +1,49 @@
+[[matcher]]
+slug = "axum-handler"
+description = "Axum route handler"
+noise_tier = "noisy"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "(?i)\\bRouter::new\\s*\\(\\s*\\)",
+  "(?i)\\.route\\s*\\(\\s*\"/[^\"]*\"\\s*,",
+]
+require_content = ["axum"]
+snippet_after = 12
+requires = { tech = ["axum"] }
+label = "Axum route"
+
+[[matcher]]
+slug = "actix-handler"
+description = "Actix handler"
+noise_tier = "noisy"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "(?i)#\\[(?:get|post|put|delete|patch)\\s*\\(\\s*\"/",
+  "(?i)\\.route\\s*\\(\\s*\"/[^\"]*\"\\s*,\\s*web::(?:get|post|put|delete)",
+]
+require_content = ["actix"]
+snippet_after = 12
+requires = { tech = ["actix"] }
+label = "Actix handler"
+
+[[matcher]]
+slug = "rust-unsafe-block"
+description = "Unsafe block — manual audit warranted"
+noise_tier = "noisy"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "(?i)\\bunsafe\\s*\\{",
+]
+snippet_after = 8
+label = "unsafe block"
+
+[[matcher]]
+slug = "rust-cmd-injection"
+description = "std::process::Command with concatenated argv"
+noise_tier = "normal"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "(?i)Command::new\\s*\\([^)]*\\)\\s*\\.arg\\s*\\(\\s*&?format!",
+  "(?i)\\.arg\\s*\\(\\s*&?req\\.",
+]
+label = "shell-style command built from input"

@@ -1,0 +1,69 @@
+[[matcher]]
+slug = "go-http-handler"
+description = "Go net/http handler"
+noise_tier = "noisy"
+file_patterns = ["**/*.go"]
+patterns = [
+  "(?i)\\bfunc\\s+\\w+\\s*\\(\\s*\\w+\\s+http\\.ResponseWriter\\s*,\\s*\\w+\\s+\\*http\\.Request",
+  "(?i)\\bhttp\\.HandleFunc\\s*\\(",
+]
+snippet_after = 12
+label = "Go http handler"
+
+[[matcher]]
+slug = "go-gin-route"
+description = "Gin route binding"
+noise_tier = "noisy"
+file_patterns = ["**/*.go"]
+patterns = [
+  "(?i)\\b(?:r|router|engine)\\.(?:GET|POST|PUT|PATCH|DELETE|Any)\\s*\\(",
+]
+require_content = ["gin-gonic/gin"]
+snippet_after = 12
+requires = { tech = ["gin"] }
+label = "Gin route"
+
+[[matcher]]
+slug = "go-echo-route"
+description = "Echo route binding"
+noise_tier = "noisy"
+file_patterns = ["**/*.go"]
+patterns = [
+  "(?i)\\b(?:e|echo)\\.(?:GET|POST|PUT|PATCH|DELETE|Any)\\s*\\(",
+]
+require_content = ["labstack/echo"]
+snippet_after = 12
+requires = { tech = ["echo"] }
+label = "Echo route"
+
+[[matcher]]
+slug = "go-sql-raw"
+description = "database/sql query built with fmt.Sprintf or string concat"
+noise_tier = "normal"
+file_patterns = ["**/*.go"]
+patterns = [
+  "(?i)\\b(?:Query|Exec)(?:Context)?\\s*\\(\\s*[^,)]*fmt\\.Sprintf",
+  "(?i)\\b(?:Query|Exec)(?:Context)?\\s*\\(\\s*[`\"][^`\"]*\\+",
+]
+label = "Go SQL built via Sprintf/concat"
+
+[[matcher]]
+slug = "go-command-injection"
+description = "exec.Command with concatenated input"
+noise_tier = "normal"
+file_patterns = ["**/*.go"]
+patterns = [
+  "(?i)\\bexec\\.Command\\s*\\([^)]*\\+",
+  "(?i)\\bexec\\.CommandContext\\s*\\([^)]*\\+",
+]
+label = "exec.Command with concatenated input"
+
+[[matcher]]
+slug = "go-ssrf"
+description = "http.Get with user-supplied URL"
+noise_tier = "noisy"
+file_patterns = ["**/*.go"]
+patterns = [
+  "(?i)\\bhttp\\.(?:Get|Post|NewRequest)\\s*\\([^)]*(?:r\\.URL|c\\.Param|c\\.Query|c\\.PostForm)",
+]
+label = "Go outbound HTTP from request input"

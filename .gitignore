@@ -11,3 +11,6 @@ next-env.d.ts
 .claude
 linear-*
 plans/
+target/
+**/*.rs.bk
+Cargo.lock.bak

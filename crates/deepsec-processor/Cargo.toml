@@ -1,0 +1,23 @@
+[package]
+name = "deepsec-processor"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "AI enrichment pipeline (multi-backend) for deepsec."
+
+[dependencies]
+deepsec-core.workspace = true
+deepsec-scanner.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+tokio.workspace = true
+reqwest.workspace = true
+futures.workspace = true
+async-trait.workspace = true
+time.workspace = true
+tracing.workspace = true
+fs-err.workspace = true
+indexmap.workspace = true
+regex.workspace = true

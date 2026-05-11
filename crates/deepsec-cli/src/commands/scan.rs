@@ -1,8 +1,9 @@
 use crate::config_loader::Context;
+use crate::file_sources::{FileSourceArgs, resolve};
 use anyhow::Result;
 use clap::Args as ClapArgs;
 use colored::Colorize;
-use deepsec_scanner::{ScanOptions, scan};
+use deepsec_scanner::{ScanOptions, scan, scan_files};
 
 #[derive(Debug, ClapArgs)]
 pub struct Args {
@@ -18,6 +19,17 @@ pub struct Args {
     /// Skip these matcher slugs (comma-separated).
     #[arg(long)]
     pub skip_matchers: Option<String>,
+
+    /// Explicit file list (repeatable or comma-separated). Mutually
+    /// exclusive with --files-from / --diff.
+    #[arg(long, value_delimiter = ',')]
+    pub files: Option<Vec<String>>,
+    /// Read file paths from this file ("-" reads stdin).
+    #[arg(long)]
+    pub files_from: Option<std::path::PathBuf>,
+    /// Scan only files changed vs this git ref (e.g. `origin/main`).
+    #[arg(long)]
+    pub diff: Option<String>,
 }
 
 pub fn run(args: Args, ctx: &Context) -> Result<()> {
@@ -30,12 +42,12 @@ pub fn run(args: Args, ctx: &Context) -> Result<()> {
     let mut only: Vec<String> = args
         .matchers
         .as_deref()
-        .map(split_csv)
+        .map(super::scan_split_csv)
         .unwrap_or_default();
     let mut exclude: Vec<String> = args
         .skip_matchers
         .as_deref()
-        .map(split_csv)
+        .map(super::scan_split_csv)
         .unwrap_or_default();
     if let Some(cfg) = &ctx.config {
         if only.is_empty() {
@@ -48,12 +60,40 @@ pub fn run(args: Args, ctx: &Context) -> Result<()> {
 
     let opts = ScanOptions {
         project_id: args.project_id.clone(),
-        root,
+        root: root.clone(),
         data_root: ctx.data_root.clone(),
         matcher_only: only,
         matcher_exclude: exclude,
         github_url: proj.decl.github_url.clone(),
     };
+
+    let resolved = resolve(
+        FileSourceArgs {
+            files: args.files.as_deref(),
+            files_from: args.files_from.as_deref(),
+            diff: args.diff.as_deref(),
+        },
+        &root,
+    )?;
+
+    if let Some(r) = resolved {
+        let out = scan_files(&opts, &r.files, &r.source)?;
+        println!(
+            "{} run={} mode=files source={} files={} candidates={}",
+            "scan".bold().green(),
+            out.run_id,
+            r.source,
+            out.files_scanned,
+            out.candidate_count
+        );
+        println!("  tech tags: {}", out.detected.tags.join(", "));
+        println!(
+            "  matchers active={} skipped={}",
+            out.active_matchers.len(),
+            out.skipped_matchers.len()
+        );
+        return Ok(());
+    }
 
     let out = scan(&opts)?;
     println!(
@@ -79,11 +119,4 @@ pub fn run(args: Args, ctx: &Context) -> Result<()> {
         }
     }
     Ok(())
-}
-
-fn split_csv(s: &str) -> Vec<String> {
-    s.split(',')
-        .map(|t| t.trim().to_string())
-        .filter(|s| !s.is_empty())
-        .collect()
 }

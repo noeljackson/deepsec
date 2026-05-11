@@ -34,6 +34,16 @@ pub struct ProcessOptions {
     pub project_info: Option<String>,
     pub prompt_append: Option<String>,
     pub detected: Option<DetectedTech>,
+    /// Direct mode: process exactly these file paths, regardless of
+    /// their current `status` (overrides the pending/error filter).
+    /// Used by `process --diff` and `process --files`.
+    pub direct_files: Option<Vec<String>>,
+    /// Direct mode source label, e.g. `git-diff:origin/main`. Recorded
+    /// in `RunMeta.processorConfig.source`.
+    pub direct_source: Option<String>,
+    /// Wave marker. When set, files that already have an analysis
+    /// entry carrying this marker (and the same agent type) are skipped.
+    pub reinvestigate_marker: Option<u32>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -74,12 +84,17 @@ pub async fn run_process(opts: ProcessOptions) -> Result<ProcessOutcome, Process
         opts.project_root.to_string_lossy().as_ref(),
         RunType::Process,
     );
+    let direct_mode = opts.direct_files.is_some();
     meta.processor_config = Some(ProcessorConfig {
         agent_type: opts.backend.kind().as_str().into(),
         model: opts.backend.model().into(),
         model_config: IndexMap::new(),
-        invocation_mode: Some(InvocationMode::Scan),
-        source: None,
+        invocation_mode: Some(if direct_mode {
+            InvocationMode::Direct
+        } else {
+            InvocationMode::Scan
+        }),
+        source: opts.direct_source.clone(),
     });
     write_run_meta(&opts.data_root, &meta)?;
 
@@ -87,11 +102,20 @@ pub async fn run_process(opts: ProcessOptions) -> Result<ProcessOutcome, Process
 
     let only: HashSet<&str> = opts.only_slugs.iter().map(String::as_str).collect();
     let skip: HashSet<&str> = opts.skip_slugs.iter().map(String::as_str).collect();
+    let direct_set: Option<HashSet<&str>> = opts
+        .direct_files
+        .as_ref()
+        .map(|v| v.iter().map(String::as_str).collect());
 
     let mut work: Vec<FileRecord> = records
         .into_iter()
-        .filter(|r| !r.candidates.is_empty())
-        .filter(|r| matches!(r.status, FileStatus::Pending | FileStatus::Error))
+        .filter(|r| {
+            if let Some(set) = &direct_set {
+                return set.contains(r.file_path.as_str());
+            }
+            !r.candidates.is_empty()
+                && matches!(r.status, FileStatus::Pending | FileStatus::Error)
+        })
         .filter(|r| {
             opts.filter_prefix
                 .as_deref()
@@ -110,6 +134,17 @@ pub async fn run_process(opts: ProcessOptions) -> Result<ProcessOutcome, Process
                 return true;
             }
             r.candidates.iter().any(|c| !skip.contains(c.vuln_slug.as_str()))
+        })
+        .filter(|r| {
+            // reinvestigate wave: skip files already analyzed at this wave
+            let Some(wave) = opts.reinvestigate_marker else {
+                return true;
+            };
+            !r.analysis_history.iter().any(|a| {
+                a.reinvestigate_marker == Some(wave)
+                    && a.agent_type == opts.backend.kind().as_str()
+                    && a.phase != Some(deepsec_core::AnalysisPhase::Revalidate)
+            })
         })
         .collect();
 
@@ -251,7 +286,7 @@ pub async fn run_process(opts: ProcessOptions) -> Result<ProcessOutcome, Process
                         usage: Some(per_file_usage.clone()),
                         refusal: None,
                         codex_stderr: None,
-                        reinvestigate_marker: None,
+                        reinvestigate_marker: opts.reinvestigate_marker,
                     });
                     rec.status = FileStatus::Analyzed;
                     rec.locked_by_run_id = None;

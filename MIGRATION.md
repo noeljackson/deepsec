@@ -136,45 +136,32 @@ no Rust analogue. If you need fan-out across machines, run the Rust
 |--------------------------------------|-----------------------------------|
 | `deepsec init`                        | `deepsec init`                     |
 | `deepsec init-project`                | `deepsec init-project`             |
-| `deepsec scan`                        | `deepsec scan`                     |
-| `deepsec process`                     | `deepsec process`                  |
+| `deepsec scan`                        | `deepsec scan` (+ `--diff`, `--files`, `--files-from`) |
+| `deepsec process`                     | `deepsec process` (+ `--concurrency`, `--diff`, `--reinvestigate`) |
 | `deepsec revalidate`                  | `deepsec revalidate`               |
 | `deepsec triage`                      | `deepsec triage`                   |
-| `deepsec enrich` (git committers)     | not yet ported                    |
+| `deepsec enrich`                      | `deepsec enrich`                   |
 | `deepsec status`                      | `deepsec status`                   |
 | `deepsec report`                      | `deepsec report`                   |
 | `deepsec metrics`                     | `deepsec metrics`                  |
-| `deepsec export`                      | use `deepsec report --run-id ...` |
-| `deepsec sandbox-*`                   | dropped (see Sandbox above)       |
+| `deepsec export`                      | `deepsec export`                   |
+| `deepsec pr-comment` (helper)         | `deepsec pr-comment`               |
+| `deepsec data-commit` (helper)        | `deepsec data-commit`              |
+| `deepsec preflight` (helper)          | `deepsec preflight`                |
+| `deepsec sandbox-*`                   | dropped (Vercel-specific)          |
 
 ## Known gaps vs. TS
 
-- **Plugin system**: no JS-loaded plugins. Custom matchers must be
-  TOML; custom notifiers / ownership providers / executors are not
-  ported. Re-implement as Rust crates that depend on `deepsec-core`
-  and embed the binary.
-- **Matcher count**: ~80 bundled vs. ~200 in TS. Most omitted matchers
-  were narrow framework-specific helpers — add them via `extra_paths`.
-- **Sandbox orchestration**: dropped (Vercel-specific).
-- **Ownership oracle**: data shape and storage are wired up
-  (`FileRecord.gitInfo.ownership`) but no provider integration ships.
-  Implement against your internal oracle and write the JSON in a
-  follow-up step.
-- **Codex stderr capture**: the `codex_stderr` field exists on
-  `AnalysisEntry` for forensic forward-compat but is never populated
-  (the Rust port talks HTTP directly; there is no Codex subprocess).
+These remaining gaps are intentional architecture choices, not pending
+work:
 
-## What's now closed
-
-- **Concurrency**: process supports `--concurrency N` (default 4),
-  using `tokio::sync::Semaphore` + `FuturesUnordered`. Verified
-  end-to-end (300ms per batch, 8 batches → 325ms with concurrency=8
-  vs 2442ms serial). Quota-exhausted errors set a shared cancel flag
-  so in-flight batches abort.
-- **Git enrichment**: `deepsec enrich --project-id <id>` shells out to
-  `git log` and populates `FileRecord.gitInfo.recentCommitters`.
-- **Refusal envelope**: backends now propagate a `"refusal"` field in
-  the model response as an error; the process loop records it into
-  `AnalysisEntry.refusal` and marks the file as `error` status.
-- **`export` command**: filtered JSON export with `--min-severity`,
-  `--run-id`, `--verdict`, `--slug`, `--prefix`, `--output`.
+- **JS plugin loader**: dropped on purpose. Custom matchers are TOML
+  via `[matchers].extra_paths`; custom notifiers / ownership providers
+  are out of scope for the binary and should be implemented as
+  downstream wrappers around `deepsec export`.
+- **Vercel-Sandbox orchestrator**: dropped. Wrap `deepsec` in
+  whatever fan-out you already use (GitHub Actions matrix, Kubernetes
+  Jobs, Buildkite parallel groups, etc.).
+- **Bundled matcher count**: 82 in Rust vs ~200 in TS. The dropped
+  matchers were narrow framework-specific helpers; add them yourself
+  via `extra_paths` or contribute upstream.

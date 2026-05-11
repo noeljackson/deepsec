@@ -1,141 +1,59 @@
 # Configuration reference
 
-deepsec reads `deepsec.config.{ts,mjs,js,cjs}` from the current working
-directory, walking up. The CLI inherits whatever the file declares.
+`deepsec` reads `deepsec.config.toml` from the current working directory,
+walking up. Alternate names also accepted: `.deepsec/config.toml` and
+`deepsec.toml`. Pass `--config <path>` to override the search.
 
-```ts
-import { defineConfig } from "deepsec/config";
-import myPlugin from "@my-org/deepsec-plugin-foo";
+## Top-level
 
-export default defineConfig({
-  projects: [
-    { id: "my-app", root: "../my-app" },
-    { id: "service", root: "../service", githubUrl: "https://github.com/me/service/blob/main" },
-  ],
-  plugins: [myPlugin()],
-});
+```toml
+# Default AI backend when --agent is not passed.
+default_agent = "anthropic"          # or "openai"
+
+# Override the on-disk data root. Default: "data". Relative paths are
+# resolved against the directory containing this config file.
+# data_dir = "data"
+
+[matchers]
+# Whitelist of matcher slugs to run. Empty = run everything bundled.
+only = []
+# Blacklist of matcher slugs.
+exclude = []
+# Extra matcher TOML files (paths relative to this config).
+extra_paths = []
 ```
 
-For a fully-worked example exercising every common field
-(`infoMarkdown`, `promptAppend`, `priorityPaths`, an inline plugin),
-see [`samples/webapp/deepsec.config.ts`](../samples/webapp/deepsec.config.ts).
+## Projects
 
-## Top-level fields
+At least one `[[projects]]` entry is required.
 
-| Field | Type | Purpose |
-|---|---|---|
-| `projects` | `ProjectDeclaration[]` | The codebases deepsec knows about. |
-| `plugins` | `DeepsecPlugin[]` | Loaded in order; later plugins override single-slot capabilities. |
-| `matchers` | `{ only?: string[]; exclude?: string[] }` | Filter the matcher set used by `scan`. |
-| `defaultAgent` | `string` | Default `--agent` value (`codex` or `claude`). See [models.md](models.md). |
-| `dataDir` | `string` | Override the `data/` directory. Defaults to `./data`. |
+```toml
+[[projects]]
+id            = "myproj"             # used by --project-id
+root          = "."                  # absolute, or relative to this config
+github_url    = "https://github.com/acme/repo/blob/main"
 
-## ProjectDeclaration
+# Inline prompt context surfaced to the agent. Optional.
+info_markdown = """
+This service handles payments. Tenants are identified by `org_id` in JWT.
+"""
 
-| Field | Type | Required | Purpose |
-|---|---|---|---|
-| `id` | `string` | yes | Used as `--project-id` and the data directory name (`data/<id>/`). |
-| `root` | `string` | yes | Absolute or relative path to the codebase. |
-| `githubUrl` | `string` | no | `https://github.com/owner/repo/blob/branch` — used in exports for clickable links. Auto-detected from `git remote` when omitted. |
-| `infoMarkdown` | `string` | no | Repo context injected into AI prompts. Overrides `data/<id>/INFO.md` if both are present. |
-| `promptAppend` | `string` | no | Free-form text appended to the system prompt for this project. |
-| `priorityPaths` | `string[]` | no | Path prefixes to process first. |
+# Appended verbatim to the system prompt.
+prompt_append = "Pay extra attention to /api/admin/*."
 
-## INFO.md
-
-If `infoMarkdown` isn't set in the config, deepsec looks for
-`data/<id>/INFO.md` and injects its contents into the prompt for
-`process`, `triage`, and `revalidate`. A few hundred words of repo
-context (what the codebase does, the auth shape, the threat model,
-known false-positive sources) is the right length. See
-[getting-started.md](getting-started.md) for a coding-agent prompt that
-writes a good INFO.md.
-
-## Matcher filtering
-
-```ts
-matchers: {
-  only: ["sql-injection", "auth-bypass"],   // run *only* these
-  exclude: ["framework-internal-header"],    // skip these
-}
+# Files under these prefixes are investigated first.
+priority_paths = ["src/api/admin/", "src/lib/auth/"]
 ```
-
-If `only` is set, `exclude` is ignored. CLI flag `--matchers <slugs>`
-overrides the config when both are present.
-
-## Plugin order
-
-Plugins are evaluated in array order:
-
-```ts
-plugins: [genericPlugin(), orgPlugin()]
-```
-
-For `matchers`, `notifiers`, `agents`: additive — both plugins'
-contributions are registered.
-
-For `ownership`, `people`, `executor`: last-write-wins — `orgPlugin()`'s
-provider replaces `genericPlugin()`'s.
-
-## Per-project config files
-
-Some legacy fields still live in `data/<id>/config.json`:
-
-```json
-{
-  "priorityPaths": ["app/api/", "lib/"],
-  "promptAppend": "Pay extra attention to the booking flow.",
-  "ignorePaths": ["**/legacy/**"]
-}
-```
-
-This is read by `scan` and by the AI agents. It overrides the same fields
-on the project declaration if both are present.
 
 ## Environment variables
 
-deepsec reads these from `.env.local` (loaded automatically by the CLI) or
-from the process environment.
+| Variable              | Used by                  | Purpose                              |
+|-----------------------|--------------------------|--------------------------------------|
+| `ANTHROPIC_API_KEY`   | `--agent anthropic`      | Bearer key for Anthropic API         |
+| `ANTHROPIC_BASE_URL`  | `--agent anthropic`      | Override (default `api.anthropic.com`) |
+| `OPENAI_API_KEY`      | `--agent openai`         | Bearer key for OpenAI API            |
+| `OPENAI_BASE_URL`     | `--agent openai`         | Override (Azure, OpenRouter, vLLM, …) |
+| `DEEPSEC_DATA_ROOT`   | all                      | Override `data/` mirror location     |
+| `DEEPSEC_CONFIG`      | all                      | Override config file lookup          |
 
-### Required
-
-You need either the one-line shortcut **or** an explicit token for the
-backend you're using.
-
-| Var | Used by | Purpose |
-|---|---|---|
-| `AI_GATEWAY_API_KEY` | all AI commands | Shortcut. Expands at CLI startup into `ANTHROPIC_AUTH_TOKEN` / `OPENAI_API_KEY` / `ANTHROPIC_BASE_URL` / `OPENAI_BASE_URL` — one key covers both Claude and Codex through Vercel AI Gateway. Any of those four vars set explicitly takes precedence. Falls back to `VERCEL_OIDC_TOKEN` (from `vercel env pull`) when unset, so users already authenticated for Sandbox don't need a separate gateway key. |
-| `ANTHROPIC_AUTH_TOKEN` | `process`, `revalidate`, `triage` (Claude backend) | API token for the Claude Agent SDK. AI Gateway-issued or Anthropic-issued. Set this if you don't use `AI_GATEWAY_API_KEY`. |
-| `ANTHROPIC_BASE_URL` | same | Default (when `AI_GATEWAY_API_KEY` is set): `https://ai-gateway.vercel.sh`. Set to `https://api.anthropic.com` for direct Anthropic. |
-
-### Optional
-
-| Var | Used by | Purpose |
-|---|---|---|
-| `OPENAI_API_KEY` | `--agent codex` | Codex SDK token. Unset is fine if `AI_GATEWAY_API_KEY` is set, or if Codex routes through AI Gateway with the Anthropic token. |
-| `OPENAI_BASE_URL` | `--agent codex` | Default (when `AI_GATEWAY_API_KEY` is set): `https://ai-gateway.vercel.sh/v1`. |
-| `DEEPSEC_AGENT_DEBUG` | both backends | Set to `1` to enable verbose agent logging. |
-| `DEEPSEC_DATA_ROOT` | core | Override the data directory location. Equivalent to `dataDir` in config. |
-
-### Plugin-specific
-
-Each plugin documents its own env vars in its README.
-
-## Project-config gating example
-
-For a monorepo where most projects shouldn't get an organization plugin:
-
-```ts
-const projectId = process.argv[process.argv.indexOf("--project-id") + 1];
-const isInternal = projectId?.startsWith("internal-") ?? false;
-
-export default defineConfig({
-  projects: [
-    { id: "internal-api", root: "../api" },
-    { id: "open-source-app", root: "../app" },
-  ],
-  plugins: isInternal ? [orgPlugin()] : [],
-});
-```
-
-The config file is real TypeScript. Any logic at module-load time works.
+Validate everything resolves with `deepsec preflight`.

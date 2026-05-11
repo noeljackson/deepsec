@@ -1,8 +1,10 @@
 use clap::{Parser, Subcommand};
 
 mod backend;
-mod config_loader;
 mod commands;
+mod config_loader;
+mod file_sources;
+mod preflight;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -52,6 +54,12 @@ enum Cmd {
     Enrich(commands::enrich::Args),
     /// Aggregate metrics across all runs.
     Metrics(commands::metrics::Args),
+    /// Render a PR comment markdown for net-new findings.
+    PrComment(commands::pr_comment::Args),
+    /// `git add data/ && git commit` the on-disk mirror.
+    DataCommit(commands::data_commit::Args),
+    /// Validate environment for the chosen backend.
+    Preflight(commands::preflight::Args),
     /// Print bundled matcher slugs.
     ListMatchers,
 }
@@ -81,6 +89,9 @@ async fn dispatch(cli: Cli) -> anyhow::Result<()> {
         Cmd::Export(a) => commands::export::run(a, &ctx),
         Cmd::Enrich(a) => commands::enrich::run(a, &ctx),
         Cmd::Metrics(a) => commands::metrics::run(a, &ctx),
+        Cmd::PrComment(a) => commands::pr_comment::run(a, &ctx),
+        Cmd::DataCommit(a) => commands::data_commit::run(a, &ctx),
+        Cmd::Preflight(a) => commands::preflight::run(a, &ctx),
         Cmd::ListMatchers => commands::list_matchers::run(),
     }
 }

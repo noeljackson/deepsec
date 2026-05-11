@@ -22,6 +22,7 @@ pub struct Args {
 pub async fn run(args: Args, ctx: &Context) -> Result<()> {
     let proj = ctx.project(&args.project_id)?;
     let default_agent = ctx.config.as_ref().and_then(|c| c.default_agent.as_deref());
+    crate::preflight::check(args.agent.as_deref().or(default_agent))?;
     let backend = resolve_backend(args.agent.as_deref(), args.model.as_deref(), default_agent)?;
     let opts = TriageOptions {
         project_id: args.project_id.clone(),

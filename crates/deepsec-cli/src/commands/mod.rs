@@ -1,9 +1,12 @@
+pub mod data_commit;
 pub mod enrich;
 pub mod export;
 pub mod init;
 pub mod init_project;
 pub mod list_matchers;
 pub mod metrics;
+pub mod pr_comment;
+pub mod preflight;
 pub mod process;
 pub mod report;
 pub mod revalidate;

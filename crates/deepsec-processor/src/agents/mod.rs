@@ -151,14 +151,14 @@ pub trait AgentBackend: Send + Sync {
     ) -> Result<(TriagedFinding, Usage, u64), ProcessorError>;
 }
 
-pub fn make_backend(choice: BackendChoice) -> Box<dyn AgentBackend> {
+pub fn make_backend(choice: BackendChoice) -> std::sync::Arc<dyn AgentBackend> {
     match choice.kind {
-        AgentBackendKind::Anthropic => Box::new(anthropic::AnthropicBackend::new(
+        AgentBackendKind::Anthropic => std::sync::Arc::new(anthropic::AnthropicBackend::new(
             choice.api_key,
             choice.model,
             choice.base_url,
         )),
-        AgentBackendKind::OpenAi => Box::new(openai::OpenAiBackend::new(
+        AgentBackendKind::OpenAi => std::sync::Arc::new(openai::OpenAiBackend::new(
             choice.api_key,
             choice.model,
             choice.base_url,

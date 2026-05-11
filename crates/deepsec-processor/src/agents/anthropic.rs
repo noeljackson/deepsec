@@ -132,6 +132,9 @@ impl AgentBackend for AnthropicBackend {
         let mut results = Vec::new();
         if let Some(json_str) = extract_json(&text) {
             if let Ok(env) = serde_json::from_str::<ResponseEnvelope>(json_str) {
+                if let Some(reason) = env.refusal {
+                    return Err(ProcessorError::Backend(format!("refusal: {reason}")));
+                }
                 let mut by_file: std::collections::HashMap<String, Vec<_>> =
                     std::collections::HashMap::new();
                 for ef in env.findings {

@@ -19,6 +19,9 @@ pub struct Args {
     /// Files-per-batch sent to the model.
     #[arg(long, default_value_t = 5)]
     pub batch_size: usize,
+    /// Max concurrent in-flight batches.
+    #[arg(long, default_value_t = 4)]
+    pub concurrency: usize,
     /// Cap total files processed.
     #[arg(long)]
     pub limit: Option<usize>,
@@ -45,6 +48,7 @@ pub async fn run(args: Args, ctx: &Context) -> Result<()> {
         data_root: ctx.data_root.clone(),
         backend,
         batch_size: args.batch_size,
+        concurrency: args.concurrency,
         limit: args.limit,
         filter_prefix: args.filter,
         only_slugs: args

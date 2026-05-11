@@ -9,6 +9,7 @@ pub struct ResponseEnvelope {
     #[serde(default)]
     pub findings: Vec<EnvelopeFinding>,
     #[serde(default)]
+    #[allow(dead_code)]
     pub refusal: Option<String>,
 }
 

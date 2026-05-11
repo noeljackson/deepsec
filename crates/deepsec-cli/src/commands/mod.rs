@@ -1,3 +1,5 @@
+pub mod enrich;
+pub mod export;
 pub mod init;
 pub mod init_project;
 pub mod list_matchers;

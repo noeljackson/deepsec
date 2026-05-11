@@ -44,8 +44,12 @@ enum Cmd {
     Triage(commands::triage::Args),
     /// Show pending / analyzed counts and recent runs.
     Status(commands::status::Args),
-    /// Render a project report (markdown + JSON).
+    /// Render a project report (markdown + JSON + CSV).
     Report(commands::report::Args),
+    /// Filtered JSON export of findings.
+    Export(commands::export::Args),
+    /// Enrich FileRecords with git committer history.
+    Enrich(commands::enrich::Args),
     /// Aggregate metrics across all runs.
     Metrics(commands::metrics::Args),
     /// Print bundled matcher slugs.
@@ -74,6 +78,8 @@ async fn dispatch(cli: Cli) -> anyhow::Result<()> {
         Cmd::Triage(a) => commands::triage::run(a, &ctx).await,
         Cmd::Status(a) => commands::status::run(a, &ctx),
         Cmd::Report(a) => commands::report::run(a, &ctx),
+        Cmd::Export(a) => commands::export::run(a, &ctx),
+        Cmd::Enrich(a) => commands::enrich::run(a, &ctx),
         Cmd::Metrics(a) => commands::metrics::run(a, &ctx),
         Cmd::ListMatchers => commands::list_matchers::run(),
     }

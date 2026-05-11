@@ -10,6 +10,7 @@
 
 pub mod agents;
 pub mod batch;
+pub mod enrich;
 pub mod prompt;
 pub mod process;
 pub mod revalidate;
@@ -22,6 +23,7 @@ pub use agents::{
     TriageInput, TriagedFinding, Usage,
 };
 pub use batch::batch_records;
+pub use enrich::{EnrichOptions, EnrichOutcome, run_enrich};
 pub use errors::{ProcessorError, QuotaExhausted};
 pub use process::{ProcessOptions, ProcessOutcome, run_process};
 pub use prompt::{CORE_PROMPT, assemble_prompt};

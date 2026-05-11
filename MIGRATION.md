@@ -153,13 +153,28 @@ no Rust analogue. If you need fan-out across machines, run the Rust
   TOML; custom notifiers / ownership providers / executors are not
   ported. Re-implement as Rust crates that depend on `deepsec-core`
   and embed the binary.
-- **Matcher count**: ~55 bundled vs. ~200 in TS. Most omitted matchers
+- **Matcher count**: ~80 bundled vs. ~200 in TS. Most omitted matchers
   were narrow framework-specific helpers — add them via `extra_paths`.
 - **Sandbox orchestration**: dropped (Vercel-specific).
-- **Concurrency**: process runs serially per batch. The TS code had
-  a worker pool with stale-lock reclaim; the Rust port has the lock
-  fields but processes one batch at a time. Add `tokio` concurrency
-  when scale demands it.
-- **Codex stderr capture / refusal envelope**: data fields are present
-  in `AnalysisEntry` but not populated.
-- **Git enrichment + ownership oracle**: not ported.
+- **Ownership oracle**: data shape and storage are wired up
+  (`FileRecord.gitInfo.ownership`) but no provider integration ships.
+  Implement against your internal oracle and write the JSON in a
+  follow-up step.
+- **Codex stderr capture**: the `codex_stderr` field exists on
+  `AnalysisEntry` for forensic forward-compat but is never populated
+  (the Rust port talks HTTP directly; there is no Codex subprocess).
+
+## What's now closed
+
+- **Concurrency**: process supports `--concurrency N` (default 4),
+  using `tokio::sync::Semaphore` + `FuturesUnordered`. Verified
+  end-to-end (300ms per batch, 8 batches → 325ms with concurrency=8
+  vs 2442ms serial). Quota-exhausted errors set a shared cancel flag
+  so in-flight batches abort.
+- **Git enrichment**: `deepsec enrich --project-id <id>` shells out to
+  `git log` and populates `FileRecord.gitInfo.recentCommitters`.
+- **Refusal envelope**: backends now propagate a `"refusal"` field in
+  the model response as an error; the process loop records it into
+  `AnalysisEntry.refusal` and marks the file as `error` status.
+- **`export` command**: filtered JSON export with `--min-severity`,
+  `--run-id`, `--verdict`, `--slug`, `--prefix`, `--output`.

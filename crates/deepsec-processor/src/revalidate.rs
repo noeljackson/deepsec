@@ -13,7 +13,7 @@ pub struct RevalidateOptions {
     pub project_id: String,
     pub project_root: PathBuf,
     pub data_root: DataRoot,
-    pub backend: Box<dyn AgentBackend>,
+    pub backend: std::sync::Arc<dyn AgentBackend>,
     pub filter_prefix: Option<String>,
     pub force: bool,
 }

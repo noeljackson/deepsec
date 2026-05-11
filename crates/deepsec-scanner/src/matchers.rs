@@ -279,6 +279,7 @@ pub const BUILTIN_MATCHERS: &[(&str, &str)] = &[
     ("rust.toml", include_str!("../matchers/rust.toml")),
     ("infra.toml", include_str!("../matchers/infra.toml")),
     ("ai.toml", include_str!("../matchers/ai.toml")),
+    ("extras.toml", include_str!("../matchers/extras.toml")),
 ];
 
 pub fn load_builtin() -> Result<Vec<Matcher>, MatcherError> {

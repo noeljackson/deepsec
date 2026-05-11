@@ -5,7 +5,7 @@ pub fn resolve_backend(
     agent_arg: Option<&str>,
     model_arg: Option<&str>,
     default: Option<&str>,
-) -> Result<Box<dyn AgentBackend>> {
+) -> Result<std::sync::Arc<dyn AgentBackend>> {
     let raw = agent_arg
         .or(default)
         .unwrap_or("anthropic");

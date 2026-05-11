@@ -31,7 +31,7 @@ pub use store::{
 };
 pub use types::{
     AnalysisEntry, AnalysisPhase, CandidateMatch, Confidence, Exploitability, FileRecord,
-    FileStatus, Finding, GitInfo, Impact, OwnershipApprover, OwnershipContributor, OwnershipData,
-    OwnershipEscalationTeam, ProjectConfig, RefusalReport, Revalidation, RevalidationVerdict,
-    Severity, Triage, TriagePriority, Usage,
+    FileStatus, Finding, GitCommitter, GitInfo, Impact, OwnershipApprover, OwnershipContributor,
+    OwnershipData, OwnershipEscalationTeam, ProjectConfig, RefusalReport, Revalidation,
+    RevalidationVerdict, Severity, Triage, TriagePriority, Usage,
 };

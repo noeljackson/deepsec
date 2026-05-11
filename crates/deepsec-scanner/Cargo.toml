@@ -24,3 +24,6 @@ fs-err.workspace = true
 once_cell.workspace = true
 rayon.workspace = true
 indexmap.workspace = true
+
+[dev-dependencies]
+tempfile = "3"

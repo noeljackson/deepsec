@@ -1,7 +1,7 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Severity {
     #[serde(rename = "CRITICAL")]
     Critical,
@@ -15,6 +15,20 @@ pub enum Severity {
     Bug,
     #[serde(rename = "LOW")]
     Low,
+}
+
+// Hand-rolled Ord so sort/BTreeMap iteration matches `rank()` — i.e.
+// higher severity sorts *higher*, not by variant declaration order.
+impl PartialOrd for Severity {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Severity {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.rank().cmp(&other.rank())
+    }
 }
 
 impl Severity {

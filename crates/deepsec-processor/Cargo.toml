@@ -21,3 +21,7 @@ tracing.workspace = true
 fs-err.workspace = true
 indexmap.workspace = true
 regex.workspace = true
+
+[dev-dependencies]
+tempfile = "3"
+tokio = { version = "1", features = ["full", "test-util"] }

@@ -91,6 +91,96 @@ fn read_files_from(path: &Path) -> Result<Vec<String>> {
     Ok(body.lines().map(str::to_string).collect())
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    fn cli<'a>(items: &'a [&str]) -> Vec<String> {
+        items.iter().map(|s| (*s).to_string()).collect()
+    }
+
+    #[test]
+    fn no_flags_returns_none() {
+        let r = resolve(
+            FileSourceArgs {
+                files: None,
+                files_from: None,
+                diff: None,
+            },
+            Path::new("/tmp"),
+        )
+        .unwrap();
+        assert!(r.is_none());
+    }
+
+    #[test]
+    fn files_dedupes_and_normalizes() {
+        let v = cli(&["src/a.ts", "src/a.ts", "src/b.ts", "  ", "src\\c.ts"]);
+        let r = resolve(
+            FileSourceArgs {
+                files: Some(&v),
+                files_from: None,
+                diff: None,
+            },
+            Path::new("/tmp"),
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(r.source, "files:cli");
+        assert_eq!(r.files, vec!["src/a.ts", "src/b.ts", "src/c.ts"]);
+    }
+
+    #[test]
+    fn mutually_exclusive_flags_error() {
+        let v = cli(&["a"]);
+        let p = PathBuf::from("/tmp/list");
+        let e = resolve(
+            FileSourceArgs {
+                files: Some(&v),
+                files_from: Some(&p),
+                diff: None,
+            },
+            Path::new("/tmp"),
+        );
+        assert!(e.is_err());
+    }
+
+    #[test]
+    fn files_from_reads_a_file() {
+        let d = tempfile::tempdir().unwrap();
+        let p = d.path().join("list.txt");
+        fs_err::write(&p, "src/a.ts\nsrc/b.ts\n").unwrap();
+        let r = resolve(
+            FileSourceArgs {
+                files: None,
+                files_from: Some(&p),
+                diff: None,
+            },
+            Path::new("/tmp"),
+        )
+        .unwrap()
+        .unwrap();
+        assert!(r.source.starts_with("files-from:"));
+        assert_eq!(r.files, vec!["src/a.ts", "src/b.ts"]);
+    }
+
+    #[test]
+    fn diff_against_missing_ref_errors() {
+        let d = tempfile::tempdir().unwrap();
+        // No git repo here, so `git diff <bogus>` will fail.
+        let e = resolve(
+            FileSourceArgs {
+                files: None,
+                files_from: None,
+                diff: Some("definitely-not-a-real-ref"),
+            },
+            d.path(),
+        );
+        assert!(e.is_err());
+    }
+}
+
 fn git_diff_files(repo_root: &Path, spec: &str) -> Result<Vec<String>> {
     let out = Command::new("git")
         .arg("-C")

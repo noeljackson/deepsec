@@ -13,6 +13,9 @@ path = "src/main.rs"
 assert_cmd = "2"
 tempfile = "3"
 predicates = "3"
+fs-err.workspace = true
+walkdir.workspace = true
+serde_json.workspace = true
 
 [dependencies]
 deepsec-core.workspace = true

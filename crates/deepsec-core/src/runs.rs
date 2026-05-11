@@ -189,6 +189,9 @@ pub fn list_runs(root: &DataRoot, project_id: &str) -> Result<Vec<RunMeta>, Stor
             out.push(meta);
         }
     }
-    out.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+    // Newest first. Sort by `run_id` (a "YYYYMMDDHHMMSS-XXXX" timestamp +
+    // nonce) so ordering is stable across runs created in the same
+    // millisecond and intuitively correct even if a meta was backdated.
+    out.sort_by(|a, b| b.run_id.cmp(&a.run_id));
     Ok(out)
 }

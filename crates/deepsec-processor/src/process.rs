@@ -70,6 +70,9 @@ enum BatchResult {
         paths: Vec<String>,
         reason: String,
     },
+    Cancelled {
+        paths: Vec<String>,
+    },
     Error {
         paths: Vec<String>,
         error: String,
@@ -199,17 +202,11 @@ pub async fn run_process(opts: ProcessOptions) -> Result<ProcessOutcome, Process
         let cancel = cancelled.clone();
         futs.push(async move {
             if cancel.load(Ordering::Acquire) {
-                return BatchResult::Error {
-                    paths,
-                    error: "cancelled".into(),
-                };
+                return BatchResult::Cancelled { paths };
             }
             let _permit = sem.acquire().await.unwrap();
             if cancel.load(Ordering::Acquire) {
-                return BatchResult::Error {
-                    paths,
-                    error: "cancelled".into(),
-                };
+                return BatchResult::Cancelled { paths };
             }
             match backend.investigate(&invoke).await {
                 Ok(out) => BatchResult::Ok { paths, output: out },
@@ -300,6 +297,11 @@ pub async fn run_process(opts: ProcessOptions) -> Result<ProcessOutcome, Process
                 outcome.quota_exhausted = true;
                 outcome.error_batch_count += 1;
                 tracing::warn!("quota exhausted: {detail}");
+                release_locks(&opts.data_root, &opts.project_id, &paths, FileStatus::Pending)?;
+            }
+            BatchResult::Cancelled { paths } => {
+                // Batches cancelled by an upstream quota signal go back
+                // to pending so the user can retry.
                 release_locks(&opts.data_root, &opts.project_id, &paths, FileStatus::Pending)?;
             }
             BatchResult::Refusal { paths, reason } => {

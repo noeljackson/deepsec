@@ -102,3 +102,118 @@ impl DeepsecConfig {
         self.projects.iter().find(|p| p.id == id)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn parses_minimal_config() {
+        let body = r#"
+default_agent = "openai"
+
+[[projects]]
+id = "p"
+root = "."
+"#;
+        let cfg: DeepsecConfig = toml::from_str(body).unwrap();
+        assert_eq!(cfg.default_agent.as_deref(), Some("openai"));
+        assert_eq!(cfg.projects.len(), 1);
+        assert_eq!(cfg.find_project("p").unwrap().root, ".");
+        assert!(cfg.find_project("nonexistent").is_none());
+    }
+
+    #[test]
+    fn parses_full_config() {
+        let body = r#"
+default_agent = "anthropic"
+data_dir = "my-data"
+
+[matchers]
+only = ["a", "b"]
+exclude = ["c"]
+extra_paths = ["./x.toml"]
+
+[[projects]]
+id = "first"
+root = "./apps/first"
+github_url = "https://github.com/o/r/blob/main"
+info_markdown = """
+ctx
+"""
+prompt_append = "be careful"
+priority_paths = ["src/", "lib/"]
+
+[[projects]]
+id = "second"
+root = "/abs/path"
+"#;
+        let cfg: DeepsecConfig = toml::from_str(body).unwrap();
+        assert_eq!(cfg.data_dir.as_deref(), Some("my-data"));
+        assert_eq!(cfg.matchers.only, vec!["a", "b"]);
+        assert_eq!(cfg.matchers.exclude, vec!["c"]);
+        assert_eq!(cfg.matchers.extra_paths, vec!["./x.toml"]);
+        assert_eq!(cfg.projects.len(), 2);
+        let p = cfg.find_project("first").unwrap();
+        assert_eq!(
+            p.github_url.as_deref(),
+            Some("https://github.com/o/r/blob/main")
+        );
+        assert_eq!(p.priority_paths, vec!["src/", "lib/"]);
+        assert!(p.info_markdown.as_deref().unwrap().contains("ctx"));
+    }
+
+    #[test]
+    fn rejects_unknown_fields() {
+        let body = r#"
+default_agent = "openai"
+totally_not_a_field = "x"
+
+[[projects]]
+id = "p"
+root = "."
+"#;
+        // deny_unknown_fields is set on DeepsecConfig.
+        let r: Result<DeepsecConfig, _> = toml::from_str(body);
+        assert!(r.is_err());
+    }
+
+    #[test]
+    fn no_projects_returns_error() {
+        let dir = tempdir().unwrap();
+        let p = dir.path().join("deepsec.config.toml");
+        fs_err::write(&p, "default_agent = \"anthropic\"\n").unwrap();
+        let r = load_config(&p);
+        assert!(matches!(r, Err(ConfigError::NoProjects)));
+    }
+
+    #[test]
+    fn find_config_file_walks_up_from_subdir() {
+        let dir = tempdir().unwrap();
+        let cfg_path = dir.path().join("deepsec.config.toml");
+        fs_err::write(&cfg_path, "[[projects]]\nid = \"x\"\nroot = \".\"\n").unwrap();
+        let nested = dir.path().join("a").join("b").join("c");
+        fs_err::create_dir_all(&nested).unwrap();
+        let found = find_config_file(&nested).expect("walked up");
+        assert_eq!(found, cfg_path);
+    }
+
+    #[test]
+    fn find_config_file_returns_none_when_absent() {
+        let dir = tempdir().unwrap();
+        let r = find_config_file(dir.path());
+        assert!(r.is_none());
+    }
+
+    #[test]
+    fn find_config_file_finds_dot_deepsec_variant() {
+        let dir = tempdir().unwrap();
+        let inner = dir.path().join(".deepsec");
+        fs_err::create_dir_all(&inner).unwrap();
+        let cfg_path = inner.join("config.toml");
+        fs_err::write(&cfg_path, "[[projects]]\nid = \"x\"\nroot = \".\"\n").unwrap();
+        let found = find_config_file(dir.path()).expect("found via .deepsec/");
+        assert_eq!(found, cfg_path);
+    }
+}

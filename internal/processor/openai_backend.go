@@ -20,9 +20,10 @@ import (
 // DeepSeek, vLLM, Together, Groq, llama.cpp, … The capability flags on
 // the profile drive which output mode + tool-use shape we use.
 type OpenAICompatibleBackend struct {
-	profile *providers.Profile
-	client  openai.Client
-	model   string
+	profile  *providers.Profile
+	client   openai.Client
+	model    string
+	settings ModelSettings
 }
 
 func NewOpenAICompatibleBackend(profile *providers.Profile, model, apiKey string) *OpenAICompatibleBackend {
@@ -37,6 +38,27 @@ func NewOpenAICompatibleBackend(profile *providers.Profile, model, apiKey string
 		profile: profile,
 		client:  openai.NewClient(opts...),
 		model:   model,
+	}
+}
+
+// WithSettings returns the backend with sampling parameters pinned.
+// Nil fields fall back to provider defaults.
+func (b *OpenAICompatibleBackend) WithSettings(s ModelSettings) *OpenAICompatibleBackend {
+	b.settings = s
+	return b
+}
+
+// applySettings populates Temperature/TopP/Seed on chat-completion
+// params when the caller pinned them.
+func (b *OpenAICompatibleBackend) applySettings(p *openai.ChatCompletionNewParams) {
+	if b.settings.Temperature != nil {
+		p.Temperature = openai.Float(*b.settings.Temperature)
+	}
+	if b.settings.TopP != nil {
+		p.TopP = openai.Float(*b.settings.TopP)
+	}
+	if b.settings.Seed != nil {
+		p.Seed = openai.Int(*b.settings.Seed)
 	}
 }
 
@@ -55,6 +77,7 @@ func (b *OpenAICompatibleBackend) Investigate(ctx context.Context, batch *Invest
 		},
 	}
 	b.applyStructuredOutputForInvestigate(&params)
+	b.applySettings(&params)
 
 	resp, err := b.client.Chat.Completions.New(ctx, params)
 	if err != nil {
@@ -100,6 +123,7 @@ func (b *OpenAICompatibleBackend) Revalidate(ctx context.Context, in *Revalidate
 		},
 	}
 	b.applyStructuredOutputForRevalidate(&params)
+	b.applySettings(&params)
 
 	resp, err := b.client.Chat.Completions.New(ctx, params)
 	if err != nil {
@@ -132,6 +156,7 @@ func (b *OpenAICompatibleBackend) Triage(ctx context.Context, in *TriageInput) (
 		},
 	}
 	b.applyStructuredOutputForTriage(&params)
+	b.applySettings(&params)
 	resp, err := b.client.Chat.Completions.New(ctx, params)
 	if err != nil {
 		if isOpenAIQuotaErr(err) {

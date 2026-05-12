@@ -1,0 +1,126 @@
+{
+  "filePath": "packages/scanner/src/matchers/swift-vapor-route.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        39
+      ],
+      "snippet": "        {\n          regex: /\\bgrouped\\s*\\(\\s*\\w+\\.[A-Za-z]+\\(\\)\\s*\\)/,\n          label: \".grouped(Middleware()) auth scope\",\n        },\n        { regex: /\\breq\\.(?:parameters|query|content|auth|headers)\\b/, label: \"req.* accessor\" },",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  requires: { tech: [\"vapor\"] },\n  examples: [\n    `app.get(\"hello\") { req in return \"hi\" }`,\n    `app.post(\"users\") { req async throws -> User in }`,\n    `app.put(\"users\", \":id\") { req in }`,",
+      "matchedPattern": "HTTP entry point: app method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  examples: [\n    `app.get(\"hello\") { req in return \"hi\" }`,\n    `app.post(\"users\") { req async throws -> User in }`,\n    `app.put(\"users\", \":id\") { req in }`,\n    `app.patch(\"users\", \":id\") { req in }`,",
+      "matchedPattern": "HTTP entry point: app method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    `app.get(\"hello\") { req in return \"hi\" }`,\n    `app.post(\"users\") { req async throws -> User in }`,\n    `app.put(\"users\", \":id\") { req in }`,\n    `app.patch(\"users\", \":id\") { req in }`,\n    `app.delete(\"users\", \":id\") { req in }`,",
+      "matchedPattern": "HTTP entry point: app method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    `app.post(\"users\") { req async throws -> User in }`,\n    `app.put(\"users\", \":id\") { req in }`,\n    `app.patch(\"users\", \":id\") { req in }`,\n    `app.delete(\"users\", \":id\") { req in }`,\n    `app.on(.POST, \"upload\", body: .stream) { req in }`,",
+      "matchedPattern": "HTTP entry point: app method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "    `app.put(\"users\", \":id\") { req in }`,\n    `app.patch(\"users\", \":id\") { req in }`,\n    `app.delete(\"users\", \":id\") { req in }`,\n    `app.on(.POST, \"upload\", body: .stream) { req in }`,\n    `let protected = app.grouped(User.guardMiddleware())`,",
+      "matchedPattern": "HTTP entry point: app method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"swift-vapor-route\",\n  description: \"Swift Vapor route registrations (gated on Vapor)\",\n  filePatterns: [\"**/*.swift\"],\n  requires: { tech: [\"vapor\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.477Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "fabb678b64ad55d8953e0abe691b55744a9926c3a09a4a1c23b83388ebd27d6b",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-5ae71a3d1b833445",
+      "investigatedAt": "2026-05-06T21:50:03.252Z",
+      "durationMs": 11145,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-2ffb-7402-b151-ca739f5e7e5f",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.079966,
+      "usage": {
+        "inputTokens": 10780,
+        "outputTokens": 455,
+        "cacheReadInputTokens": 24832,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      }
+    },
+    {
+      "runId": "20260506215247-339bb41812196c7b",
+      "investigatedAt": "2026-05-06T21:53:42.602Z",
+      "durationMs": 8625.6,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8dbb-7fb1-8d2a-e3566e1d1ef2",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.063703,
+      "usage": {
+        "inputTokens": 8334.6,
+        "outputTokens": 444.2,
+        "cacheReadInputTokens": 17408,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:42.605Z"
+  },
+  "status": "analyzed"
+}

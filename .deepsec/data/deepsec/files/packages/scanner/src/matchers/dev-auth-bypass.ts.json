@@ -1,0 +1,284 @@
+{
+  "filePath": "packages/scanner/src/matchers/dev-auth-bypass.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        30,
+        31,
+        34
+      ],
+      "snippet": "      // NODE_ENV guards around auth\n      {\n        regex: /NODE_ENV.*(?:development|test).*(?:skip|bypass|disable|return|mock).*auth/i,\n        label: \"Auth skipped in development/test — check production guard\",\n      },",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"dev-auth-bypass\",\n  description:\n    \"Development auth bypasses — dev endpoints, NODE_ENV guards, test tokens in production\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        30
+      ],
+      "snippet": "      // NODE_ENV guards around auth\n      {\n        regex: /NODE_ENV.*(?:development|test).*(?:skip|bypass|disable|return|mock).*auth/i,\n        label: \"Auth skipped in development/test — check production guard\",\n      },",
+      "matchedPattern": "Auth skipped in development/test — check production guard"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        34
+      ],
+      "snippet": "      },\n      {\n        regex: /(?:skip|bypass|disable|mock).*auth.*NODE_ENV/i,\n        label: \"Auth bypass gated by NODE_ENV — check production guard\",\n      },",
+      "matchedPattern": "Auth bypass gated by NODE_ENV — check production guard"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        21,
+        23,
+        50,
+        51,
+        54
+      ],
+      "snippet": "    `router.get(\"/dev/login\", handler);`,\n    `app.post(\"/test/auth/login\", handler);`,\n    `if (NODE_ENV === \"development\") return skipAuthMiddleware();`,\n    `if (NODE_ENV === \"test\") return mockAuthResponse();`,\n    `function shouldBypassAuth() { return skipAuthHandler() && NODE_ENV; }`,",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "    `router.get(\"/dev/login\", handler);`,\n    `app.post(\"/test/auth/login\", handler);`,\n    `if (NODE_ENV === \"development\") return skipAuthMiddleware();`,\n    `if (NODE_ENV === \"test\") return mockAuthResponse();`,\n    `function shouldBypassAuth() { return skipAuthHandler() && NODE_ENV; }`,",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "  res.json({ token: \"dev-token\" });\n});`,\n    `router.get(\"/dev/login\", handler);`,\n    `app.post(\"/test/auth/login\", handler);`,\n    `if (NODE_ENV === \"development\") return skipAuthMiddleware();`,",
+      "matchedPattern": "HTTP entry point: router method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `app.post(\"/auth/dev\", (req, res) => {\n  res.json({ token: \"dev-token\" });\n});`,",
+      "matchedPattern": "HTTP entry point: app method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "});`,\n    `router.get(\"/dev/login\", handler);`,\n    `app.post(\"/test/auth/login\", handler);`,\n    `if (NODE_ENV === \"development\") return skipAuthMiddleware();`,\n    `if (NODE_ENV === \"test\") return mockAuthResponse();`,",
+      "matchedPattern": "HTTP entry point: app method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "secret-in-log",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "    `app.post(\"/auth/dev\", (req, res) => {\n  res.json({ token: \"dev-token\" });\n});`,",
+      "matchedPattern": "Secret variable in log statement"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `app.post(\"/auth/dev\", (req, res) => {\n  res.json({ token: \"dev-token\" });\n});`,",
+      "matchedPattern": "Dev/test auth endpoint — may be reachable in production"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "  res.json({ token: \"dev-token\" });\n});`,\n    `router.get(\"/dev/login\", handler);`,\n    `app.post(\"/test/auth/login\", handler);`,\n    `if (NODE_ENV === \"development\") return skipAuthMiddleware();`,",
+      "matchedPattern": "Dev/test auth endpoint — may be reachable in production"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "});`,\n    `router.get(\"/dev/login\", handler);`,\n    `app.post(\"/test/auth/login\", handler);`,\n    `if (NODE_ENV === \"development\") return skipAuthMiddleware();`,\n    `if (NODE_ENV === \"test\") return mockAuthResponse();`,",
+      "matchedPattern": "Dev/test auth endpoint — may be reachable in production"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "    `router.get(\"/dev/login\", handler);`,\n    `app.post(\"/test/auth/login\", handler);`,\n    `if (NODE_ENV === \"development\") return skipAuthMiddleware();`,\n    `if (NODE_ENV === \"test\") return mockAuthResponse();`,\n    `function shouldBypassAuth() { return skipAuthHandler() && NODE_ENV; }`,",
+      "matchedPattern": "Auth skipped in development/test — check production guard"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "    `app.post(\"/test/auth/login\", handler);`,\n    `if (NODE_ENV === \"development\") return skipAuthMiddleware();`,\n    `if (NODE_ENV === \"test\") return mockAuthResponse();`,\n    `function shouldBypassAuth() { return skipAuthHandler() && NODE_ENV; }`,\n    `if (isDev) {",
+      "matchedPattern": "Auth skipped in development/test — check production guard"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        50
+      ],
+      "snippet": "      {\n        regex:\n          /NODE_ENV.{0,40}(?:development|test).{0,80}(?:skip|bypass|disable|return|mock).{0,40}auth/i,\n        label: \"Auth skipped in development/test — check production guard\",\n      },",
+      "matchedPattern": "Auth skipped in development/test — check production guard"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "    `if (NODE_ENV === \"development\") return skipAuthMiddleware();`,\n    `if (NODE_ENV === \"test\") return mockAuthResponse();`,\n    `function shouldBypassAuth() { return skipAuthHandler() && NODE_ENV; }`,\n    `if (isDev) {\n  ctx.user = { id: 1, role: \"admin\" };",
+      "matchedPattern": "Auth bypass gated by NODE_ENV — check production guard"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        54
+      ],
+      "snippet": "      },\n      {\n        regex: /(?:skip|bypass|disable|mock).{0,40}auth.{0,80}NODE_ENV/i,\n        label: \"Auth bypass gated by NODE_ENV — check production guard\",\n      },",
+      "matchedPattern": "Auth bypass gated by NODE_ENV — check production guard"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "    `if (NODE_ENV === \"test\") return mockAuthResponse();`,\n    `function shouldBypassAuth() { return skipAuthHandler() && NODE_ENV; }`,\n    `if (isDev) {\n  ctx.user = { id: 1, role: \"admin\" };\n}`,",
+      "matchedPattern": "Auth conditional on isDev/isTest flag — fails open risk"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        27
+      ],
+      "snippet": "  ctx.user = { id: 1, role: \"admin\" };\n}`,\n    `if (IS_TEST) return adminUser;`,\n    `const token = headers.get(\"test-token\") || \"\";`,\n    `if (apiKey === \"test_api_key_12345\") return ok();`,",
+      "matchedPattern": "Auth conditional on isDev/isTest flag — fails open risk"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        28
+      ],
+      "snippet": "}`,\n    `if (IS_TEST) return adminUser;`,\n    `const token = headers.get(\"test-token\") || \"\";`,\n    `if (apiKey === \"test_api_key_12345\") return ok();`,\n    `const session = createMockSession({ userId: 1 });`,",
+      "matchedPattern": "Test token/secret reference — may be accepted in production"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        29
+      ],
+      "snippet": "    `if (IS_TEST) return adminUser;`,\n    `const token = headers.get(\"test-token\") || \"\";`,\n    `if (apiKey === \"test_api_key_12345\") return ok();`,\n    `const session = createMockSession({ userId: 1 });`,\n    `await autoLogin(req);`,",
+      "matchedPattern": "Test token/secret reference — may be accepted in production"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "    `app.post(\"/test/auth/login\", handler);`,\n    `if (NODE_ENV === \"development\") return skipAuthMiddleware();`,\n    `if (NODE_ENV === \"test\") return mockAuthResponse();`,\n    `function shouldBypassAuth() { return skipAuthHandler() && NODE_ENV; }`,\n    `if (isDev) {",
+      "matchedPattern": "Mock session/auth pattern — check production guard"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        30
+      ],
+      "snippet": "    `const token = headers.get(\"test-token\") || \"\";`,\n    `if (apiKey === \"test_api_key_12345\") return ok();`,\n    `const session = createMockSession({ userId: 1 });`,\n    `await autoLogin(req);`,\n    `useFakeAuth(req);`,",
+      "matchedPattern": "Mock session/auth pattern — check production guard"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        31
+      ],
+      "snippet": "    `if (apiKey === \"test_api_key_12345\") return ok();`,\n    `const session = createMockSession({ userId: 1 });`,\n    `await autoLogin(req);`,\n    `useFakeAuth(req);`,\n  ],",
+      "matchedPattern": "Mock session/auth pattern — check production guard"
+    },
+    {
+      "vulnSlug": "dev-auth-bypass",
+      "lineNumbers": [
+        32
+      ],
+      "snippet": "    `const session = createMockSession({ userId: 1 });`,\n    `await autoLogin(req);`,\n    `useFakeAuth(req);`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "Mock session/auth pattern — check production guard"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.665Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "2b4ac99ae0ad86dbc6cbc1ab0c21b80387e1ab1795d1a8f9c1e9b96b9b817290",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:03.555Z",
+      "durationMs": 51567,
+      "durationApiMs": 49033,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "854302a2-95f8-4240-939f-0123848e5eb2",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.464015,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 3754,
+        "cacheReadInputTokens": 43885,
+        "cacheCreationInputTokens": 55710
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215247-d54822996f49bf17",
+      "investigatedAt": "2026-05-06T21:53:44.017Z",
+      "durationMs": 9004,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8e73-7001-b338-b63d694b4240",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0524188,
+      "usage": {
+        "inputTokens": 6665.2,
+        "outputTokens": 373.6,
+        "cacheReadInputTokens": 15769.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:44.019Z"
+  },
+  "status": "analyzed"
+}

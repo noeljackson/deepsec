@@ -1,0 +1,151 @@
+{
+  "filePath": "packages/core/src/paths.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        4
+      ],
+      "snippet": "function getDataRoot(): string {\n  return process.env.DEEPSEC_DATA_ROOT || \"data\";\n}",
+      "matchedPattern": "process.env.DEEPSEC_DATA_ROOT"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        18,
+        21,
+        38,
+        41
+      ],
+      "snippet": "    throw new Error(`Invalid ${label}: ${JSON.stringify(name)}`);\n  }\n  if (name.includes(\"\\0\")) {\n    throw new Error(`Invalid ${label}: contains null byte`);\n  }",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.681Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "2949919ce8eae95dd634bdc23cd209755f0e887eb84cd842e5e4fe0e4bcb9023",
+  "findings": [
+    {
+      "severity": "MEDIUM",
+      "vulnSlug": "path-traversal",
+      "title": "Path-construction utilities do not validate caller-supplied segments",
+      "description": "fileRecordPath(projectId, filePath), runMetaPath(projectId, runId), projectConfigPath(projectId), and dataDir(projectId) all build paths via path.join() with arguments that originate from FileRecord JSON, RunMeta JSON, ProjectConfig JSON, or CLI flags. None of them check for '..' components, absolute paths, or null bytes. As a result, a malicious segment like projectId='../../tmp/evil' or filePath='../../../tmp/evil' escapes the intended subtree (verified: path.join('data', '../../tmp/evil', 'project.json') === '../tmp/evil/project.json'; path.join('data/p/files', '../../../tmp/evil.json') === 'tmp/evil.json'). Combined with the writeFileRecord / writeRunMeta callers in run.ts, this is the root primitive enabling the sandbox-round-trip path traversal documented in CLAUDE.md attack surface #1. Putting validation here closes the door for all current and future callers in one place. Also note that on case-insensitive filesystems (macOS default), case differences in projectId would not be caught either, but the '..' / absolute / null-byte cases are the security-relevant ones.",
+      "lineNumbers": [
+        7,
+        8,
+        9,
+        11,
+        12,
+        13,
+        17,
+        18,
+        19,
+        21,
+        22,
+        23,
+        27,
+        28,
+        29,
+        31,
+        32,
+        33
+      ],
+      "recommendation": "Add a small assertSafeSegment(name: string) helper that rejects empty strings, '.', '..', any segment containing path.sep / '/' / '\\\\' (for filePath, allow forward slashes but reject '..' components after splitting), absolute paths via path.isAbsolute, and null bytes. Call it at the top of every path-construction function. As belt-and-suspenders, after computing the final path, verify that path.resolve(result).startsWith(path.resolve(dataDir(projectId)) + path.sep) and throw otherwise.",
+      "confidence": "high",
+      "revalidation": {
+        "verdict": "fixed",
+        "reasoning": "The current paths.ts defines assertSafeSegment and assertSafeFilePath and applies them in the path constructors that were called out. dataDir validates projectId before joining it under the data root, and projectConfigPath, filesDir, runsDir, and reportsDir all route through dataDir. fileRecordPath validates filePath with assertSafeFilePath, rejecting empty paths, null bytes, backslashes, absolute paths, empty components, '.', and '..' components while still allowing normal forward-slash relative paths. runMetaPath validates runId with assertSafeSegment, rejecting separators and traversal components. The current tests in packages/core/src/__tests__/paths.test.ts also cover rejection of '..', '../escape', absolute projectId, null bytes, traversal filePath, absolute filePath, and separator-bearing runId. The sandbox download path additionally validates tar entries before extraction, which further reduces the sandbox round-trip traversal scenario described in the report. The unvalidated path.join primitive described by the finding is no longer present in the current implementation.",
+        "revalidatedAt": "2026-05-06T22:53:41.372Z",
+        "runId": "20260506225212-3e9b4ab06177a23a",
+        "model": "gpt-5.5"
+      }
+    }
+  ],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:13:47.830Z",
+      "durationMs": 242148,
+      "durationApiMs": 240425,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "76aacc55-a4fb-489b-a4da-41b9a25a5909",
+      "findingCount": 1,
+      "numTurns": 11,
+      "costUsd": 0.8037119999999999,
+      "usage": {
+        "inputTokens": 9,
+        "outputTokens": 17905,
+        "cacheReadInputTokens": 200559,
+        "cacheCreationInputTokens": 40922
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-bcac2325c8c87b25",
+      "investigatedAt": "2026-05-06T21:53:45.519Z",
+      "durationMs": 23126,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b6b-7682-adb8-29e50f2b9567",
+      "findingCount": 0,
+      "numTurns": 0.5,
+      "phase": "process",
+      "costUsd": 0.1118475,
+      "usage": {
+        "inputTokens": 12939.5,
+        "outputTokens": 1017,
+        "cacheReadInputTokens": 33280,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    },
+    {
+      "runId": "20260506225212-3e9b4ab06177a23a",
+      "investigatedAt": "2026-05-06T22:53:41.372Z",
+      "durationMs": 37636.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff7d-f5a0-7931-9667-8768dc99a05c",
+      "findingCount": 1,
+      "numTurns": 0.5,
+      "phase": "revalidate",
+      "costUsd": 0.184125,
+      "usage": {
+        "inputTokens": 19773,
+        "outputTokens": 2074,
+        "cacheReadInputTokens": 46080,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T22:53:41.379Z"
+  },
+  "status": "analyzed"
+}

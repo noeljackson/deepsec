@@ -1,0 +1,125 @@
+{
+  "filePath": "packages/scanner/src/matchers/snowflake-bigquery-sql.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": " * Flags:\n *   - `snowflake.execute({ sqlText: \\`...${...}...\\` })`\n *   - `connection.execute(\\`SELECT ... ${...}\\`)` in snowflake-sdk context\n *   - `bigquery.query(\\`...${...}\\`)` / `bigquery.createQueryJob({query: \\`...\\`})`\n *   - `clickhouse.query(\\`...${...}\\`)` / `client.query({query: \\`...\\`})`",
+      "matchedPattern": "template literal SELECT with interpolation"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        6,
+        18
+      ],
+      "snippet": "/**\n * Analytics-tier SQL injection (Snowflake / BigQuery / DuckDB / ClickHouse).\n * These look like analytics, but the destination is a real query engine\n * and template-literal interpolation is exploitable just as on Postgres.\n *",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        11,
+        21,
+        23,
+        24,
+        25,
+        26,
+        27
+      ],
+      "snippet": " * Flags:\n *   - `snowflake.execute({ sqlText: \\`...${...}...\\` })`\n *   - `connection.execute(\\`SELECT ... ${...}\\`)` in snowflake-sdk context\n *   - `bigquery.query(\\`...${...}\\`)` / `bigquery.createQueryJob({query: \\`...\\`})`\n *   - `clickhouse.query(\\`...${...}\\`)` / `client.query({query: \\`...\\`})`",
+      "matchedPattern": "template literal SELECT with interpolation"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "  examples: [\n    `import snowflake from \"snowflake-sdk\";\\nconnection.execute({ sqlText: \\`SELECT * FROM users WHERE id = \\${id}\\` });`,\n    `import snowflake from \"snowflake-sdk\";\\nconnection.execute({ sqlText: \"SELECT * FROM users WHERE id = \" + id });`,\n    `import { BigQuery } from \"@google-cloud/bigquery\";\\nawait bigquery.query(\\`SELECT * FROM users WHERE id = \\${id}\\`);`,\n    `import { BigQuery } from \"@google-cloud/bigquery\";\\nawait bigquery.createQueryJob({ query: \\`SELECT * FROM \\${tableName}\\` });`,",
+      "matchedPattern": "string concat SELECT"
+    },
+    {
+      "vulnSlug": "snowflake-bigquery-sql",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "    `import snowflake from \"snowflake-sdk\";\\nconnection.execute({ sqlText: \\`SELECT * FROM users WHERE id = \\${id}\\` });`,\n    `import snowflake from \"snowflake-sdk\";\\nconnection.execute({ sqlText: \"SELECT * FROM users WHERE id = \" + id });`,\n    `import { BigQuery } from \"@google-cloud/bigquery\";\\nawait bigquery.query(\\`SELECT * FROM users WHERE id = \\${id}\\`);`,\n    `import { BigQuery } from \"@google-cloud/bigquery\";\\nawait bigquery.createQueryJob({ query: \\`SELECT * FROM \\${tableName}\\` });`,",
+      "matchedPattern": "Snowflake sqlText with string concatenation"
+    },
+    {
+      "vulnSlug": "snowflake-bigquery-sql",
+      "lineNumbers": [
+        41
+      ],
+      "snippet": "\n    // sqlText: `...${...}...`\n    const SQLTEXT_TPL = /\\bsqlText\\s*:\\s*`[^`]*\\$\\{/;\n    // .execute({sqlText: ...}) with concat",
+      "matchedPattern": "Snowflake sqlText with template interpolation"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.819Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "338e1087dd6d717059e285082b83d02b13bec2951eee913c359e60d48511c1f2",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:00.707Z",
+      "durationMs": 49234,
+      "durationApiMs": 46756,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "138fcf13-e4b7-4a3b-ac41-8724b22e1dfb",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.43548600000000004,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 3473,
+        "cacheReadInputTokens": 43952,
+        "cacheCreationInputTokens": 52264
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-5fb7cdb49fe0bbda",
+      "investigatedAt": "2026-05-06T21:53:45.381Z",
+      "durationMs": 11650,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8bc9-7e61-aaad-fadc27e0addc",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05861325,
+      "usage": {
+        "inputTokens": 6561.75,
+        "outputTokens": 501.75,
+        "cacheReadInputTokens": 21504,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:45.383Z"
+  },
+  "status": "analyzed"
+}

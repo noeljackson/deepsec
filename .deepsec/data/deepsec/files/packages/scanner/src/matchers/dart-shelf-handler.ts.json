@@ -1,0 +1,126 @@
+{
+  "filePath": "packages/scanner/src/matchers/dart-shelf-handler.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    `final router = Router();`,\n    `var app = Router()..get('/', (req) => Response.ok('hi'));`,\n    `router.get('/users', listUsers);`,\n    `router.post('/users', (Request req) async => Response.ok(''));`,\n    `router.put('/users/<id>', updateUser);`,",
+      "matchedPattern": "HTTP entry point: router method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    `var app = Router()..get('/', (req) => Response.ok('hi'));`,\n    `router.get('/users', listUsers);`,\n    `router.post('/users', (Request req) async => Response.ok(''));`,\n    `router.put('/users/<id>', updateUser);`,\n    `router.patch('/users/<id>', patchUser);`,",
+      "matchedPattern": "HTTP entry point: router method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "    `router.get('/users', listUsers);`,\n    `router.post('/users', (Request req) async => Response.ok(''));`,\n    `router.put('/users/<id>', updateUser);`,\n    `router.patch('/users/<id>', patchUser);`,\n    `router.delete('/users/<id>', deleteUser);`,",
+      "matchedPattern": "HTTP entry point: router method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "    `router.post('/users', (Request req) async => Response.ok(''));`,\n    `router.put('/users/<id>', updateUser);`,\n    `router.patch('/users/<id>', patchUser);`,\n    `router.delete('/users/<id>', deleteUser);`,\n    `router.head('/health', healthCheck);`,",
+      "matchedPattern": "HTTP entry point: router method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "    `router.put('/users/<id>', updateUser);`,\n    `router.patch('/users/<id>', patchUser);`,\n    `router.delete('/users/<id>', deleteUser);`,\n    `router.head('/health', healthCheck);`,\n    `router.options('/cors', corsHandler);`,",
+      "matchedPattern": "HTTP entry point: router method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "    `router.head('/health', healthCheck);`,\n    `router.options('/cors', corsHandler);`,\n    `router.all('/<ignored|.*>', notFound);`,\n    `Response handler(Request request) { return Response.ok(''); }`,\n    `Future<Response> _users(Request req) async { return Response.ok(''); }`,",
+      "matchedPattern": "HTTP entry point: router method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"dart-shelf-handler\",\n  description: \"Dart Shelf handlers and Router routes (gated on dart)\",\n  filePatterns: [\"**/*.dart\"],\n  requires: { tech: [\"dart\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.491Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "12b99c7297cca9a9e999672c40108da79cb298f2142c119f87c4c3a692fede63",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214907-70fbf7924106c870",
+      "investigatedAt": "2026-05-06T21:50:01.277Z",
+      "durationMs": 10135.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-344f-79d3-a7fc-1066aa444326",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0534315,
+      "usage": {
+        "inputTokens": 6426.5,
+        "outputTokens": 462.5,
+        "cacheReadInputTokens": 14848,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      }
+    },
+    {
+      "runId": "20260506215246-c6bc3f0a3586feaf",
+      "investigatedAt": "2026-05-06T21:53:32.961Z",
+      "durationMs": 8690.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8ab9-7382-ad35-7c37809e4626",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05982975,
+      "usage": {
+        "inputTokens": 7903.25,
+        "outputTokens": 391.25,
+        "cacheReadInputTokens": 17152,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:32.962Z"
+  },
+  "status": "analyzed"
+}

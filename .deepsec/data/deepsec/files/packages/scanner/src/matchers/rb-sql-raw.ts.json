@@ -1,0 +1,107 @@
+{
+  "filePath": "packages/scanner/src/matchers/rb-sql-raw.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "    `DB.fetch(\"SELECT * FROM t WHERE col = '#{val}'\")`,\n    `Sequel.lit(\"name = '#{user_input}'\")`,\n    `conn.exec(\"SELECT * FROM users WHERE id = #{user_id}\")`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "exec with string"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"rb-sql-raw\",\n  description:\n    \"Raw SQL across Ruby DB libraries (ActiveRecord raw, Sequel.lit, pg gem) — string interpolation is SQL injection\",\n  filePatterns: [\"**/*.rb\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "  examples: [\n    `User.find_by_sql(\"SELECT * FROM users WHERE name = '#{name}'\")`,\n    `User.where(\"name = '#{name}'\")`,\n    `User.where(\"id = #{user_id}\")`,\n    `User.connection.execute(\"DELETE FROM users WHERE id = #{id}\")`,\n    `ActiveRecord::Base.connection.execute(\"UPDATE users SET role = '#{role}'\")`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        77
+      ],
+      "snippet": "        {\n          regex: /\"\\s*(?:SELECT|INSERT|UPDATE|DELETE)[^\"]{0,400}#\\{/m,\n          label: \"Raw SQL string with #{} interpolation (SQL injection)\",\n        },\n      ],\n      content,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.732Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "0c739b916cd3e04aceb55d2d9a698bc55a471f4039e43c46686c16d58741aa90",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-5b833cf1c8aa279e",
+      "investigatedAt": "2026-05-06T21:49:56.510Z",
+      "durationMs": 9501.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-311c-7640-879e-2d8e3b62d7ea",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0941865,
+      "usage": {
+        "inputTokens": 13401.5,
+        "outputTokens": 594.5,
+        "cacheReadInputTokens": 18688,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-028f56683dd5ae6a",
+      "investigatedAt": "2026-05-06T21:53:52.443Z",
+      "durationMs": 13314.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8baa-7842-b44c-83cebf446c82",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.04750175,
+      "usage": {
+        "inputTokens": 4813.25,
+        "outputTokens": 542.25,
+        "cacheReadInputTokens": 14336,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [
+          {
+            "filePath": "packages/scanner/src/matchers/framework-server-action.ts",
+            "reason": "The requested path did not exist; I inspected the matching registered implementation at packages/scanner/src/matchers/js-nextjs-fw-server-action.ts instead."
+          }
+        ],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[{\"filePath\":\"packages/scanner/src/matchers/framework-server-action.ts\",\"reason\":\"The requested path did not exist; I inspected the matching registered implementation at packages/scanner/src/matchers/js-nextjs-fw-server-action.ts instead.\"}]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:52.445Z"
+  },
+  "status": "analyzed"
+}

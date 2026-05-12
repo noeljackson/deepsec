@@ -1,0 +1,94 @@
+{
+  "filePath": "packages/scanner/src/matchers/py-nosql-injection.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"py-nosql-injection\",\n  description:\n    \"PyMongo / Motor NoSQL injection — \\\\$where with f-strings, raw aggregation pipelines fed user input\",\n  filePatterns: [\"**/*.py\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "missing-await",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "  examples: [\n    `coll.find({\"$where\": f\"this.x == '{name}'\"})`,\n    `db.users.find({'$where': f\"this.id == {uid}\"})`,\n    `Model.objects(__raw__={\"$where\": f\"this.x == '{q}'\"})`,\n    `coll.aggregate([{\"$match\": {\"$where\": f\"this.score > {score}\"}}])`,",
+      "matchedPattern": "db call without await"
+    },
+    {
+      "vulnSlug": "js-nosql-injection",
+      "lineNumbers": [
+        27
+      ],
+      "snippet": "    `db.users.find({'$where': f\"this.id == {uid}\"})`,\n    `Model.objects(__raw__={\"$where\": f\"this.x == '{q}'\"})`,\n    `coll.aggregate([{\"$match\": {\"$where\": f\"this.score > {score}\"}}])`,\n    `coll.find({\"name\": {\"$regex\": request.args.get(\"q\")}})`,\n    `q = json.loads(request.json[\"filter\"])`,",
+      "matchedPattern": "MongoDB aggregate() pipeline using $where — server-side JS execution"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.872Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "948f7ca81ba1d78284fda6ca3934e118a858b440f49210c894717dc37c17c009",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214907-9891f87568394613",
+      "investigatedAt": "2026-05-06T21:50:09.550Z",
+      "durationMs": 12168,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3256-74b1-b5e4-3e09e151f284",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.06127525,
+      "usage": {
+        "inputTokens": 7450.25,
+        "outputTokens": 500,
+        "cacheReadInputTokens": 18048,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-783d04573c7fba34",
+      "investigatedAt": "2026-05-06T21:53:45.584Z",
+      "durationMs": 9326.2,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8bb4-7181-ad37-d57fc7b77fb6",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0572824,
+      "usage": {
+        "inputTokens": 7551.6,
+        "outputTokens": 442.6,
+        "cacheReadInputTokens": 12492.8,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:45.585Z"
+  },
+  "status": "analyzed"
+}

@@ -1,0 +1,86 @@
+{
+  "filePath": "packages/scanner/src/matchers/js-hono-route.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "    `app.put(\"/items/:id\", handler);`,\n    `app.delete(\"/x\", handler)`,\n    `app.use(\"*\", authMiddleware);`,\n    `router.all('/health', h)`,\n    `c.req.query(\"page\")`,",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"js-hono-route\",\n  description: \"Hono route registrations — entry points (weak candidate, gated on Hono)\",\n  filePatterns: [\"**/*.{ts,js,mjs}\"],\n  requires: { tech: [\"hono\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.486Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "49c2d8751639d5c8e5229bc1c777a3ba8a6f5d8050f372b3fce5d8ea330828e3",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-ab6562fec23cf37d",
+      "investigatedAt": "2026-05-06T21:49:57.251Z",
+      "durationMs": 9008.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-2f98-7592-a79c-829b1c2c5e44",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.06295575,
+      "usage": {
+        "inputTokens": 8035.25,
+        "outputTokens": 422.25,
+        "cacheReadInputTokens": 20224,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-6c96b5768e32f822",
+      "investigatedAt": "2026-05-06T21:53:43.213Z",
+      "durationMs": 8913.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c2d-7cd2-bdcc-8d9ecc3879fc",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.051097199999999995,
+      "usage": {
+        "inputTokens": 5948,
+        "outputTokens": 428.6,
+        "cacheReadInputTokens": 16998.4,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:43.215Z"
+  },
+  "status": "analyzed"
+}

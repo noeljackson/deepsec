@@ -1,0 +1,78 @@
+{
+  "filePath": "packages/scanner/src/matchers/use-server-export.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"use-server-export\",\n  description:\n    \"Server Action files that export functions accepting identity/auth objects as parameters — trusting client input\",\n  filePatterns: [\"**/*.{ts,tsx}\"],",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-02T17:54:41.497Z",
+  "lastScannedRunId": "20260502175440-05201b02576fe6c2",
+  "fileHash": "dbb8fea7c54fad2908e9840c142a5fa44dc4801b78d8d2bffe4a384f7a435737",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:10:20.466Z",
+      "durationMs": 40308,
+      "durationApiMs": 39609,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "c0d09f95-7ba2-439a-91c5-142da7edb665",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.22457,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2975,
+        "cacheReadInputTokens": 74545,
+        "cacheCreationInputTokens": 18062
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-28e846911c045d2f",
+      "investigatedAt": "2026-05-06T21:54:17.953Z",
+      "durationMs": 19848,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b52-7633-a7d8-cd5fd8df37ea",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0786615,
+      "usage": {
+        "inputTokens": 6971.5,
+        "outputTokens": 1010,
+        "cacheReadInputTokens": 27008,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:54:17.955Z"
+  },
+  "status": "analyzed"
+}

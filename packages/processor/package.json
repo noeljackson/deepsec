@@ -1,0 +1,18 @@
+{
+  "name": "@deepsec/processor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.119",
+    "@openai/codex": "^0.125.0",
+    "@openai/codex-sdk": "^0.125.0",
+    "@deepsec/core": "workspace:*",
+    "@deepsec/scanner": "workspace:*"
+  }
+}

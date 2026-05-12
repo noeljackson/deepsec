@@ -1,0 +1,78 @@
+{
+  "filePath": "packages/scanner/src/matchers/apex-rest-resource.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"apex-rest-resource\",\n  description: \"Salesforce Apex REST resources and class sharing (gated on Apex)\",\n  filePatterns: [\"**/*.cls\"],\n  requires: { tech: [\"apex\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.493Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "c3f044a64baccaab9fe752ea8a075e59f953d5b43b1dee0af629e343d4d502a6",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214907-1c6bbf22b99e9913",
+      "investigatedAt": "2026-05-06T21:49:50.047Z",
+      "durationMs": 7816,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-31f7-7a43-b669-ba59721e2fd1",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.08743025,
+      "usage": {
+        "inputTokens": 13047.25,
+        "outputTokens": 471,
+        "cacheReadInputTokens": 16128,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-3d7d4ec5e83fddc1",
+      "investigatedAt": "2026-05-06T21:53:51.602Z",
+      "durationMs": 13311,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c72-7ec1-98ef-8078732dce09",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.06016225,
+      "usage": {
+        "inputTokens": 5594.75,
+        "outputTokens": 701.75,
+        "cacheReadInputTokens": 22272,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:51.604Z"
+  },
+  "status": "analyzed"
+}

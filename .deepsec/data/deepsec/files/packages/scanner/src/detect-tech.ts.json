@@ -1,0 +1,82 @@
+{
+  "filePath": "packages/scanner/src/detect-tech.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        133,
+        135,
+        136,
+        325,
+        326
+      ],
+      "snippet": "    if (keys.some((k) => k.startsWith(\"laravel/\")) || exists(root, \"artisan\")) tags.push(\"laravel\");\n    if (keys.some((k) => k.startsWith(\"symfony/\"))) tags.push(\"symfony\");\n    if (keys.includes(\"slim/slim\")) tags.push(\"slim\");\n    if (keys.some((k) => k === \"yiisoft/yii2\" || k.startsWith(\"yiisoft/\"))) tags.push(\"yii\");\n    if (keys.includes(\"cakephp/cakephp\")) tags.push(\"cakephp\");",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.471Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "24d6c19cf2372bb3af55a969ce2bf0173ebf3e278a6a4fe137dd4a66d6fc8449",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-056be5ab9843df54",
+      "investigatedAt": "2026-05-06T21:49:53.553Z",
+      "durationMs": 8754.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-309a-7a90-bdf3-7755afe84ae1",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.08156725,
+      "usage": {
+        "inputTokens": 11671.75,
+        "outputTokens": 391.75,
+        "cacheReadInputTokens": 22912,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-221dec17f8912bb2",
+      "investigatedAt": "2026-05-06T21:53:31.500Z",
+      "durationMs": 32883,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8ae8-7ee3-80ec-e55d940e00fd",
+      "findingCount": 0,
+      "numTurns": 1,
+      "phase": "process",
+      "costUsd": 0.174312,
+      "usage": {
+        "inputTokens": 21806,
+        "outputTokens": 1135,
+        "cacheReadInputTokens": 62464,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:31.504Z"
+  },
+  "status": "analyzed"
+}

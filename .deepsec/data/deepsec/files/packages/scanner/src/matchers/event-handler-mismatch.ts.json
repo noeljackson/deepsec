@@ -1,0 +1,121 @@
+{
+  "filePath": "packages/scanner/src/matchers/event-handler-mismatch.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        12,
+        38,
+        39,
+        52
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"event-handler-mismatch\",\n  description: \"Event handlers where function name contradicts event name\",\n  filePatterns: [\n    \"**/event-consumer*.{ts,js}\",",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        12,
+        62,
+        63,
+        76
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"event-handler-mismatch\",\n  description: \"Event handlers where function name contradicts event name\",\n  filePatterns: [\n    \"**/event-consumer*.{ts,js}\",",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "event-handler-mismatch",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "    `switch (event.type) {\n  case \"user.removed\":\n    return userAdded(event.payload);\n  case \"user.added\":\n    return userRemoved(event.payload);\n}`,\n    `switch (event) {",
+      "matchedPattern": "Event \"user.removed\" calls function matching \"add\" — possible copy-paste bug"
+    },
+    {
+      "vulnSlug": "event-handler-mismatch",
+      "lineNumbers": [
+        27
+      ],
+      "snippet": "    return userAdded(event.payload);\n  case \"user.added\":\n    return userRemoved(event.payload);\n}`,\n    `switch (event) {\n  case \"team.deleted\":\n    return createTeam(event.id);",
+      "matchedPattern": "Event \"user.added\" calls function matching \"remove\" — possible copy-paste bug"
+    },
+    {
+      "vulnSlug": "event-handler-mismatch",
+      "lineNumbers": [
+        31
+      ],
+      "snippet": "    `switch (event) {\n  case \"team.deleted\":\n    return createTeam(event.id);\n}`,\n    `switch (eventType) {\n  case \"membership.added\":\n    return removeMembership(id);",
+      "matchedPattern": "Event \"team.deleted\" calls function matching \"create\" — possible copy-paste bug"
+    },
+    {
+      "vulnSlug": "event-handler-mismatch",
+      "lineNumbers": [
+        35
+      ],
+      "snippet": "    `switch (eventType) {\n  case \"membership.added\":\n    return removeMembership(id);\n}`,\n    `switch (event.type) {\n  case \"post.created\":\n    return deletePost(post.id);",
+      "matchedPattern": "Event \"membership.added\" calls function matching \"remove\" — possible copy-paste bug"
+    },
+    {
+      "vulnSlug": "event-handler-mismatch",
+      "lineNumbers": [
+        39
+      ],
+      "snippet": "    `switch (event.type) {\n  case \"post.created\":\n    return deletePost(post.id);\n}`,\n    `switch (event.kind) {\n  case \"record.updated\":\n    return createRecord(input);",
+      "matchedPattern": "Event \"post.created\" calls function matching \"delete\" — possible copy-paste bug"
+    },
+    {
+      "vulnSlug": "event-handler-mismatch",
+      "lineNumbers": [
+        43
+      ],
+      "snippet": "    `switch (event.kind) {\n  case \"record.updated\":\n    return createRecord(input);\n}`,\n  ],\n  match(content, filePath) {\n    if (/\\.(test|spec|mock|stub)\\./i.test(filePath)) return [];",
+      "matchedPattern": "Event \"record.updated\" calls function matching \"create\" — possible copy-paste bug"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.758Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "1192a1e8c22459e826468e017560753a11c8b848d8a3a7080ecc8ed331a3e2fd",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:49.440Z",
+      "durationMs": 46585,
+      "durationApiMs": 45752,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "f48e32e1-34fa-4b2e-a329-6658bb21e698",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.25357875,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 3469,
+        "cacheReadInputTokens": 74550,
+        "cacheCreationInputTokens": 20727
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [
+      {
+        "name": "Malte Ubl",
+        "email": "malte@vercel.com",
+        "date": "2026-04-30T10:49:41-07:00"
+      }
+    ],
+    "enrichedAt": "2026-05-02T16:09:49.473Z"
+  },
+  "status": "analyzed",
+  "lockedByRunId": "20260506215246-c6bc3f0a3586feaf",
+  "lockedAt": "2026-05-06T21:52:46.499Z"
+}

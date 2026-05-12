@@ -1,0 +1,134 @@
+{
+  "filePath": "packages/scanner/src/matchers/rate-limit-bypass.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"rate-limit-bypass\",\n  description: \"Sensitive endpoints that may lack rate limiting\",\n  filePatterns: [\n    \"**/app/api/**/route.{ts,tsx}\",",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "  examples: [\n    `// login handler\\nexport const POST = async (req) => signIn(req);`,\n    `// password reset\\nexport async function POST(req) { return resetPassword(req); }`,\n    `// billing charge\\nexport default async function (req, res) { charge(req); }`,\n    `// delete account\\nexport const DELETE = (req) => removeUser(req);`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "  ],\n  examples: [\n    `// login handler\\nexport const POST = async (req) => signIn(req);`,\n    `// password reset\\nexport async function POST(req) { return resetPassword(req); }`,\n    `// billing charge\\nexport default async function (req, res) { charge(req); }`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (arrow) (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "    `// password reset\\nexport async function POST(req) { return resetPassword(req); }`,\n    `// billing charge\\nexport default async function (req, res) { charge(req); }`,\n    `// delete account\\nexport const DELETE = (req) => removeUser(req);`,\n    `// data export\\nexport default async function handler(req, res) { exportData(); }`,\n    `// generate token\\nexport const POST = async (req) => createToken(req);`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (arrow) (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        27
+      ],
+      "snippet": "    `// delete account\\nexport const DELETE = (req) => removeUser(req);`,\n    `// data export\\nexport default async function handler(req, res) { exportData(); }`,\n    `// generate token\\nexport const POST = async (req) => createToken(req);`,\n    `// invite member\\nexport default function handler(req, res) { invite(req); }`,\n  ],",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (arrow) (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "    `// login handler\\nexport const POST = async (req) => signIn(req);`,\n    `// password reset\\nexport async function POST(req) { return resetPassword(req); }`,\n    `// billing charge\\nexport default async function (req, res) { charge(req); }`,\n    `// delete account\\nexport const DELETE = (req) => removeUser(req);`,\n    `// data export\\nexport default async function handler(req, res) { exportData(); }`,",
+      "matchedPattern": "HTTP entry point: default export handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        26
+      ],
+      "snippet": "    `// billing charge\\nexport default async function (req, res) { charge(req); }`,\n    `// delete account\\nexport const DELETE = (req) => removeUser(req);`,\n    `// data export\\nexport default async function handler(req, res) { exportData(); }`,\n    `// generate token\\nexport const POST = async (req) => createToken(req);`,\n    `// invite member\\nexport default function handler(req, res) { invite(req); }`,",
+      "matchedPattern": "HTTP entry point: default export handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        28
+      ],
+      "snippet": "    `// data export\\nexport default async function handler(req, res) { exportData(); }`,\n    `// generate token\\nexport const POST = async (req) => createToken(req);`,\n    `// invite member\\nexport default function handler(req, res) { invite(req); }`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "HTTP entry point: default export handler (weak candidate)"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.480Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "ce9164d10cbdeb0569c47e8363bb4c7a0a5d423eb9b1c68d688792332562a5a4",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:45.356Z",
+      "durationMs": 38444,
+      "durationApiMs": 37594,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "a1a0a212-d983-455f-8747-41ef247c9554",
+      "findingCount": 0,
+      "numTurns": 7,
+      "costUsd": 0.2501935,
+      "usage": {
+        "inputTokens": 8,
+        "outputTokens": 2701,
+        "cacheReadInputTokens": 123682,
+        "cacheCreationInputTokens": 19326
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-c6bc3f0a3586feaf",
+      "investigatedAt": "2026-05-06T21:53:32.958Z",
+      "durationMs": 8690.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8ab9-7382-ad35-7c37809e4626",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05982975,
+      "usage": {
+        "inputTokens": 7903.25,
+        "outputTokens": 391.25,
+        "cacheReadInputTokens": 17152,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:32.960Z"
+  },
+  "status": "analyzed"
+}

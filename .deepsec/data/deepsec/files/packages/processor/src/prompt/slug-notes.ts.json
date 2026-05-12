@@ -1,0 +1,192 @@
+{
+  "filePath": "packages/processor/src/prompt/slug-notes.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        23,
+        107
+      ],
+      "snippet": "    \"Weak candidate — only flag if no auth wrapper, no role check, AND user-controlled input reaches a sink.\",\n  \"auth-bypass\":\n    \"Look for inverted booleans, early returns that skip checks, and `if (process.env.X) skipAuth()` patterns.\",\n  \"cross-tenant-id\":\n    \"User-supplied teamId/userId in DB queries — confirm the authenticated identity is used for the ownership check, not the request param alone.\",",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        13,
+        109,
+        119,
+        127,
+        141,
+        163,
+        165,
+        169,
+        184,
+        204,
+        235,
+        241
+      ],
+      "snippet": "  \"all-server-actions\":\n    \"Server Actions are public POST endpoints; flag any that don't explicitly check auth + ownership.\",\n  \"nextjs-middleware-only-auth\":\n    \"Next.js middleware.ts alone is NOT sufficient — confirm a backend framework guard wraps the handler too.\",\n  \"framework-server-action\":",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        46,
+        99,
+        111,
+        113,
+        115,
+        175,
+        198
+      ],
+      "snippet": "    '`process.env.X || \"hardcoded\"` is the bug — only flag when the fallback looks like a real credential, not `\"localhost\"`.',\n  \"secret-in-log\":\n    \"Logging full headers, request bodies, or error objects can leak Authorization tokens; flag if the log destination is durable.\",\n  \"secret-env-var\":\n    \"Direct env var reads in client-bundled code (NEXT_PUBLIC_*) are the bug — confirm the file isn't server-only.\",",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "jwt-handling",
+      "lineNumbers": [
+        58
+      ],
+      "snippet": "    \"Confirm signature verification (Stripe, GitHub, Shopify, Slack) happens BEFORE the body is parsed/processed.\",\n  \"jwt-handling\":\n    \"Look for `algorithm: 'none'`, missing `algorithms: ['HS256']` pinning, or skipping `verify()` in dev branches.\",\n  \"iam-permissions\":\n    \"Wildcards in Action AND Resource together are the dangerous shape; one or the other can be intentional.\",",
+      "matchedPattern": "JWT 'none' algorithm (CRITICAL if not test)"
+    },
+    {
+      "vulnSlug": "env-exposure",
+      "lineNumbers": [
+        50
+      ],
+      "snippet": "  \"env-exposure\":\n    \"Secrets reaching client bundles via `NEXT_PUBLIC_` / `VITE_` / build-time inlining — flag only if the env var holds a credential.\",\n  \"rate-limit-bypass\":",
+      "matchedPattern": "NEXT_PUBLIC_ variable with secret-like name"
+    },
+    {
+      "vulnSlug": "cache-key-poisoning",
+      "lineNumbers": [
+        62
+      ],
+      "snippet": "    \"Wildcards in Action AND Resource together are the dangerous shape; one or the other can be intentional.\",\n  \"cache-key-poisoning\":\n    \"Cache keys derived from request headers/cookies (User-Agent, Cookie, X-Forwarded-*) without normalization are the bug.\",\n  \"public-endpoint\":\n    \"Confirm the endpoint truly has no auth (not just a permissive guard) and that it returns sensitive data.\",",
+      "matchedPattern": "Cache key includes request header"
+    },
+    {
+      "vulnSlug": "unsafe-deserialization",
+      "lineNumbers": [
+        261
+      ],
+      "snippet": "    \"Raw-SQL across pg/mysql2/TypeORM/Sequelize/Knex/Kysely/postgres.js — flag string concat or template interpolation into SELECT/INSERT/UPDATE/DELETE; parameterized forms (`$1`, `:name`, prepared statements with separate args) are the safe shape. `sql\\\\`...\\\\`` tagged templates from libraries that escape (drizzle, postgres.js without `.unsafe`) are safe.\",\n  \"js-nosql-injection\":\n    \"MongoDB / Mongoose — `$where` with concat/function/template lets attackers run arbitrary JS in the DB. `find(JSON.parse(req.body...))` accepts attacker operator keys (`$ne`, `$gt`) — coerce to typed query first. `new RegExp(req.*)` is ReDoS-shaped.\",\n  \"py-sql-raw\":\n    'Raw-SQL across SQLAlchemy/psycopg/pymysql/sqlite3/asyncpg/Django ORM — f-string, `%` formatting, `.format()`, and `+` concat into SQL are injection. The safe shape is `cursor.execute(\"... %s ...\", (val,))` (psycopg) or `text(\"... :x ...\").bindparams(x=val)` (SQLAlchemy).',",
+      "matchedPattern": "JSON.parse of request input (verify schema validation)"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "  \"auth-bypass\":\n    \"Look for inverted booleans, early returns that skip checks, and `if (process.env.X) skipAuth()` patterns.\",\n  \"cross-tenant-id\":",
+      "matchedPattern": "process.env.X"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        44
+      ],
+      "snippet": "  \"secret-in-fallback\":\n    '`process.env.X || \"hardcoded\"` is the bug — only flag when the fallback looks like a real credential, not `\"localhost\"`.',\n  \"secret-in-log\":",
+      "matchedPattern": "process.env.X"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        74
+      ],
+      "snippet": "  \"debug-endpoint\":\n    \"Routes guarded by `process.env.NODE_ENV === 'development'` can ship to prod via env misconfig — flag if the route does anything sensitive.\",\n  \"test-header-bypass\":",
+      "matchedPattern": "process.env.NODE_ENV"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        259
+      ],
+      "snippet": "  \"js-sql-raw\":\n    \"Raw-SQL across pg/mysql2/TypeORM/Sequelize/Knex/Kysely/postgres.js — flag string concat or template interpolation into SELECT/INSERT/UPDATE/DELETE; parameterized forms (`$1`, `:name`, prepared statements with separate args) are the safe shape. `sql\\\\`...\\\\`` tagged templates from libraries that escape (drizzle, postgres.js without `.unsafe`) are safe.\",\n  \"js-nosql-injection\":\n    \"MongoDB / Mongoose — `$where` with concat/function/template lets attackers run arbitrary JS in the DB. `find(JSON.parse(req.body...))` accepts attacker operator keys (`$ne`, `$gt`) — coerce to typed query first. `new RegExp(req.*)` is ReDoS-shaped.\",\n  \"py-sql-raw\":\n    'Raw-SQL across SQLAlchemy/psycopg/pymysql/sqlite3/asyncpg/Django ORM — f-string, `%` formatting, `.format()`, and `+` concat into SQL are injection. The safe shape is `cursor.execute(\"... %s ...\", (val,))` (psycopg) or `text(\"... :x ...\").bindparams(x=val)` (SQLAlchemy).',",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        76
+      ],
+      "snippet": "    \"Routes guarded by `process.env.NODE_ENV === 'development'` can ship to prod via env misconfig — flag if the route does anything sensitive.\",\n  \"test-header-bypass\":\n    \"`x-test-*` / `x-bypass-*` headers honored in handler code are the classic prod-leakage bug.\",\n  \"dev-auth-bypass\":\n    \"`if (env === 'dev') return adminUser` patterns — verify the env check can't be tricked, and that the path isn't reachable in prod.\",",
+      "matchedPattern": "x-test-* header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "js-nosql-injection",
+      "lineNumbers": [
+        261
+      ],
+      "snippet": "    \"Raw-SQL across pg/mysql2/TypeORM/Sequelize/Knex/Kysely/postgres.js — flag string concat or template interpolation into SELECT/INSERT/UPDATE/DELETE; parameterized forms (`$1`, `:name`, prepared statements with separate args) are the safe shape. `sql\\\\`...\\\\`` tagged templates from libraries that escape (drizzle, postgres.js without `.unsafe`) are safe.\",\n  \"js-nosql-injection\":\n    \"MongoDB / Mongoose — `$where` with concat/function/template lets attackers run arbitrary JS in the DB. `find(JSON.parse(req.body...))` accepts attacker operator keys (`$ne`, `$gt`) — coerce to typed query first. `new RegExp(req.*)` is ReDoS-shaped.\",\n  \"py-sql-raw\":\n    'Raw-SQL across SQLAlchemy/psycopg/pymysql/sqlite3/asyncpg/Django ORM — f-string, `%` formatting, `.format()`, and `+` concat into SQL are injection. The safe shape is `cursor.execute(\"... %s ...\", (val,))` (psycopg) or `text(\"... :x ...\").bindparams(x=val)` (SQLAlchemy).',",
+      "matchedPattern": "new RegExp from req.* — ReDoS and NoSQL query-shape injection"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.874Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "b1dfd20efd6bfdaa45ccc8d355323f7ecfd57abc04b5f8359b389674fadfba17",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-056be5ab9843df54",
+      "investigatedAt": "2026-05-06T21:49:53.549Z",
+      "durationMs": 8754.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-309a-7a90-bdf3-7755afe84ae1",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.08156725,
+      "usage": {
+        "inputTokens": 11671.75,
+        "outputTokens": 391.75,
+        "cacheReadInputTokens": 22912,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-bcac2325c8c87b25",
+      "investigatedAt": "2026-05-06T21:55:14.361Z",
+      "durationMs": 27046.6,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b6b-7761-82db-0547b8609d5b",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1292618,
+      "usage": {
+        "inputTokens": 13143.4,
+        "outputTokens": 1258,
+        "cacheReadInputTokens": 51609.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:55:14.363Z"
+  },
+  "status": "analyzed"
+}

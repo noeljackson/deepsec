@@ -1,0 +1,53 @@
+{
+  "filePath": "packages/scanner/src/matchers/android-manifest-export.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"android-manifest-export\",\n  description:\n    \"Exported Android components (Activity / Service / Receiver / Provider) — IPC entry points (gated on android)\",\n  filePatterns: [\"**/AndroidManifest.xml\"],",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.493Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "0faa4c175fd3935b091e765817a32aeaf98992b4f561a102427ede1e8a1d07b2",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-50cdef6ba19e673a",
+      "investigatedAt": "2026-05-06T21:50:07.572Z",
+      "durationMs": 12221.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3080-7a61-95f3-19c3f30cea48",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0695545,
+      "usage": {
+        "inputTokens": 8432.5,
+        "outputTokens": 512,
+        "cacheReadInputTokens": 24064,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:50:07.573Z"
+  },
+  "status": "analyzed",
+  "lockedByRunId": "20260506215246-3d7d4ec5e83fddc1",
+  "lockedAt": "2026-05-06T21:52:46.998Z"
+}

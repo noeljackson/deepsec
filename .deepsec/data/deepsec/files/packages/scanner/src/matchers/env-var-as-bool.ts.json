@@ -1,0 +1,206 @@
+{
+  "filePath": "packages/scanner/src/matchers/env-var-as-bool.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "      [\n        {\n          regex: /if\\s*\\(\\s*!?\\s*process\\.env\\.\\w*(DISABLE|SKIP|BYPASS|NO_).*AUTH/i,\n          label: \"Security disable flag checked as truthy\",\n        },",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"env-var-as-bool\",\n  description: \"Security env vars checked with truthy/falsy — 'false' string is truthy in JS\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        10,
+        11,
+        12,
+        29
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `if (process.env.DISABLE_AUTH) skipAuth();`,\n    `if (!process.env.SKIP_AUTH_CHECK) doAuth();`,\n    `if (process.env.BYPASS_AUTH) return next();`,",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "env-var-as-bool",
+      "lineNumbers": [
+        10,
+        11,
+        12,
+        13
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `if (process.env.DISABLE_AUTH) skipAuth();`,\n    `if (!process.env.SKIP_AUTH_CHECK) doAuth();`,\n    `if (process.env.BYPASS_AUTH) return next();`,",
+      "matchedPattern": "Security disable flag checked as truthy"
+    },
+    {
+      "vulnSlug": "env-var-as-bool",
+      "lineNumbers": [
+        11,
+        14,
+        15,
+        16
+      ],
+      "snippet": "  examples: [\n    `if (process.env.DISABLE_AUTH) skipAuth();`,\n    `if (!process.env.SKIP_AUTH_CHECK) doAuth();`,\n    `if (process.env.BYPASS_AUTH) return next();`,\n    `if (process.env.NO_AUTH) return next();`,",
+      "matchedPattern": "Verification disable flag checked as truthy"
+    },
+    {
+      "vulnSlug": "env-var-as-bool",
+      "lineNumbers": [
+        17,
+        18
+      ],
+      "snippet": "    `if (!process.env.SKIP_VALIDATE) validate();`,\n    `if (process.env.BYPASS_CHECK) doStuff();`,\n    `if (process.env.ENABLE_AUTH) attachAuth();`,\n    `if (process.env.REQUIRE_AUTH) doAuth();`,\n    `const token = process.env.MY_SECRET;`,",
+      "matchedPattern": "Auth enable flag — falsy when unset"
+    },
+    {
+      "vulnSlug": "env-var-as-bool",
+      "lineNumbers": [
+        19,
+        20
+      ],
+      "snippet": "    `if (process.env.ENABLE_AUTH) attachAuth();`,\n    `if (process.env.REQUIRE_AUTH) doAuth();`,\n    `const token = process.env.MY_SECRET;`,\n    `auth(process.env.API_TOKEN);`,\n  ],",
+      "matchedPattern": "Secret env var used as boolean"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        10
+      ],
+      "snippet": "  examples: [\n    `if (process.env.DISABLE_AUTH) skipAuth();`,\n    `if (!process.env.SKIP_AUTH_CHECK) doAuth();`,",
+      "matchedPattern": "process.env.DISABLE_AUTH"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "    `if (process.env.DISABLE_AUTH) skipAuth();`,\n    `if (!process.env.SKIP_AUTH_CHECK) doAuth();`,\n    `if (process.env.BYPASS_AUTH) return next();`,",
+      "matchedPattern": "process.env.SKIP_AUTH_CHECK"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "    `if (!process.env.SKIP_AUTH_CHECK) doAuth();`,\n    `if (process.env.BYPASS_AUTH) return next();`,\n    `if (process.env.NO_AUTH) return next();`,",
+      "matchedPattern": "process.env.BYPASS_AUTH"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    `if (process.env.BYPASS_AUTH) return next();`,\n    `if (process.env.NO_AUTH) return next();`,\n    `if (process.env.DISABLE_VERIFY) bypassed = true;`,",
+      "matchedPattern": "process.env.NO_AUTH"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    `if (process.env.NO_AUTH) return next();`,\n    `if (process.env.DISABLE_VERIFY) bypassed = true;`,\n    `if (!process.env.SKIP_VALIDATE) validate();`,",
+      "matchedPattern": "process.env.DISABLE_VERIFY"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "    `if (process.env.DISABLE_VERIFY) bypassed = true;`,\n    `if (!process.env.SKIP_VALIDATE) validate();`,\n    `if (process.env.BYPASS_CHECK) doStuff();`,",
+      "matchedPattern": "process.env.SKIP_VALIDATE"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "    `if (!process.env.SKIP_VALIDATE) validate();`,\n    `if (process.env.BYPASS_CHECK) doStuff();`,\n    `if (process.env.ENABLE_AUTH) attachAuth();`,",
+      "matchedPattern": "process.env.BYPASS_CHECK"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "    `if (process.env.BYPASS_CHECK) doStuff();`,\n    `if (process.env.ENABLE_AUTH) attachAuth();`,\n    `if (process.env.REQUIRE_AUTH) doAuth();`,",
+      "matchedPattern": "process.env.ENABLE_AUTH"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "    `if (process.env.ENABLE_AUTH) attachAuth();`,\n    `if (process.env.REQUIRE_AUTH) doAuth();`,\n    `const token = process.env.MY_SECRET;`,",
+      "matchedPattern": "process.env.REQUIRE_AUTH"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `if (process.env.REQUIRE_AUTH) doAuth();`,\n    `const token = process.env.MY_SECRET;`,\n    `auth(process.env.API_TOKEN);`,",
+      "matchedPattern": "process.env.MY_SECRET"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "    `const token = process.env.MY_SECRET;`,\n    `auth(process.env.API_TOKEN);`,\n  ],",
+      "matchedPattern": "process.env.API_TOKEN"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.682Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "d50fc09351f1ae619c6d68cf07e4792b8fdfecaca66b3757cc7fa2e4d54c0cc7",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:50.597Z",
+      "durationMs": 37975,
+      "durationApiMs": 35462,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "d8f6357f-7fc5-4642-9ffb-b41b8741689c",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.39885175000000006,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2743,
+        "cacheReadInputTokens": 43521,
+        "cacheCreationInputTokens": 49357
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [
+      {
+        "name": "Malte Ubl",
+        "email": "malte@vercel.com",
+        "date": "2026-04-30T10:49:41-07:00"
+      }
+    ],
+    "enrichedAt": "2026-05-02T16:08:50.673Z"
+  },
+  "status": "analyzed",
+  "lockedByRunId": "20260506215246-46b46eb6e55984c8",
+  "lockedAt": "2026-05-06T21:52:46.776Z"
+}

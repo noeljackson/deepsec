@@ -1,0 +1,17 @@
+node_modules/
+.env*.local
+
+# Per-file investigation results (`data/*/files/`) ARE tracked: that's
+# what lets CI skip already-analyzed files and only re-investigate
+# the diff. INFO.md and SETUP.md (manually edited) stay tracked too.
+#
+# Run metadata, generated reports, and project.json (absolute root
+# path, flips per machine) stay ignored — pure churn otherwise.
+data/*/runs/
+data/*/reports/
+data/*/project.json
+
+# `deepsec export --out ./findings` lands here.
+findings/
+
+.vercel

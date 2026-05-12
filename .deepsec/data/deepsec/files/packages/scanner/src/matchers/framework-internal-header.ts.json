@@ -1,0 +1,122 @@
+{
+  "filePath": "packages/scanner/src/matchers/framework-internal-header.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"framework-internal-header\",\n  description: \"Reads/writes of Next.js internal headers (x-middleware-*, x-next-*, __Next-*)\",\n  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "open-redirect",
+      "lineNumbers": [
+        48
+      ],
+      "snippet": "      \"next-router-segment-prefetch\",\n      \"rsc\",\n      \"next-url\",\n    ];\n    const re = new RegExp(",
+      "matchedPattern": "redirect URL parameter"
+    },
+    {
+      "vulnSlug": "framework-internal-header",
+      "lineNumbers": [
+        11,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48
+      ],
+      "snippet": " * server-side before being trusted.\n *\n * CVE-2025-29927 was a middleware-bypass via `x-middleware-subrequest`. This\n * matcher flags every site for human/AI review.\n */",
+      "matchedPattern": "x-middleware-subrequest, x-middleware-prefetch, x-middleware-rewrite, x-middleware-redirect"
+    },
+    {
+      "vulnSlug": "framework-server-action",
+      "lineNumbers": [
+        42
+      ],
+      "snippet": "      \"x-next-cache-tags\",\n      \"x-next-debug-logging\",\n      \"__Next-Action\",\n      \"next-action-id\",\n      \"next-router-state-tree\",\n      \"next-router-prefetch\",",
+      "matchedPattern": "\\b__Next[-_]Action\\b"
+    }
+  ],
+  "lastScannedAt": "2026-05-02T17:54:41.738Z",
+  "lastScannedRunId": "20260502175440-05201b02576fe6c2",
+  "fileHash": "ea1d7526f1ed6d695050763f298ebc9a8b317418c8bf75fc58ac0f261e525872",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:03.604Z",
+      "durationMs": 51567,
+      "durationApiMs": 49033,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "854302a2-95f8-4240-939f-0123848e5eb2",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.464015,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 3754,
+        "cacheReadInputTokens": 43885,
+        "cacheCreationInputTokens": 55710
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-028f56683dd5ae6a",
+      "investigatedAt": "2026-05-06T21:54:00.952Z",
+      "durationMs": 12194,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8baa-74b1-97e8-4be68be65e02",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0748896,
+      "usage": {
+        "inputTokens": 8932.8,
+        "outputTokens": 618.4,
+        "cacheReadInputTokens": 23347.2,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:54:00.953Z"
+  },
+  "status": "analyzed"
+}

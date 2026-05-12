@@ -1,0 +1,111 @@
+{
+  "filePath": "packages/processor/src/prompt/core.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        33
+      ],
+      "snippet": "| Slug | Category |\n|------|----------|\n| auth-bypass | Authentication checks that can be circumvented |\n| missing-auth | HTTP endpoints without authentication |\n| acl-check | Missing or incorrect RBAC/permission checks |",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        67
+      ],
+      "snippet": "- Is there middleware or a framework guard that protects this code path?\n- Is the vulnerable pattern only used with trusted/internal data, not user input?\n- For auth checks: only middleware that *wraps the handler directly* counts (Express middleware, Fastify hooks, NestJS guards, Spring filters, Rails before_action, Django decorators, FastAPI Depends). Edge/proxy/CDN/WAF rules and front-of-stack middleware that runs BEFORE the handler are NOT sufficient on their own — too easy to misconfigure or bypass via routes that escape the matcher.\n- For redirects: is there an explicit allowlist or origin check before the redirect?\n",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        36
+      ],
+      "snippet": "| missing-auth | HTTP endpoints without authentication |\n| acl-check | Missing or incorrect RBAC/permission checks |\n| xss | Cross-site scripting via innerHTML, dangerouslySetInnerHTML, etc. |\n| dangerous-html | Unsafe HTML rendering with user-controlled data |\n| rce | Remote code execution via exec, eval, spawn, etc. |",
+      "matchedPattern": "dangerouslySetInnerHTML"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        20,
+        59
+      ],
+      "snippet": "Security severities (exploitable by an attacker):\n- **CRITICAL**: Remote Code Execution (RCE), authentication bypass allowing full access, SQL injection on sensitive data, unrestricted file upload leading to RCE, SSRF to internal services\n- **HIGH**: Cross-Site Scripting (XSS), Server-Side Request Forgery (SSRF), privilege escalation, hardcoded secrets/credentials in source code, insecure deserialization, missing authorization on sensitive operations\n- **MEDIUM**: Open redirect, weak cryptographic algorithms, missing rate limiting, information disclosure, insecure direct object references, race conditions, logic bugs in auth/permission checks\n",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        36
+      ],
+      "snippet": "| auth-bypass | Authentication checks that can be circumvented |\n| missing-auth | HTTP endpoints without authentication |\n| acl-check | Missing or incorrect RBAC/permission checks |\n| xss | Cross-site scripting via innerHTML, dangerouslySetInnerHTML, etc. |\n| dangerous-html | Unsafe HTML rendering with user-controlled data |\n| rce | Remote code execution via exec, eval, spawn, etc. |\n| sql-injection | SQL injection via string interpolation/concatenation |\n| ssrf | Server-side request forgery via user-controlled URLs |",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.520Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "6ea58ea21715d1f0efea497e0db4c394ebc2e253a656ef4d30267ba441aa12a1",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-056be5ab9843df54",
+      "investigatedAt": "2026-05-06T21:49:53.551Z",
+      "durationMs": 8754.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-309a-7a90-bdf3-7755afe84ae1",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.08156725,
+      "usage": {
+        "inputTokens": 11671.75,
+        "outputTokens": 391.75,
+        "cacheReadInputTokens": 22912,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-bcac2325c8c87b25",
+      "investigatedAt": "2026-05-06T21:55:14.363Z",
+      "durationMs": 27046.6,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b6b-7761-82db-0547b8609d5b",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1292618,
+      "usage": {
+        "inputTokens": 13143.4,
+        "outputTokens": 1258,
+        "cacheReadInputTokens": 51609.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:55:14.365Z"
+  },
+  "status": "analyzed"
+}

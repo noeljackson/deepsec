@@ -1,0 +1,118 @@
+{
+  "filePath": "packages/scanner/src/matchers/py-sanic-route.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    `@bp.route(\"/items\", methods=[\"GET\", \"POST\"])`,\n    `@blueprint.route(\"/x\")`,\n    `@app.get(\"/health\")`,\n    `@app.post('/login')`,\n    `@bp.put(\"/items/<id:int>\")`,",
+      "matchedPattern": "HTTP entry point: app method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "    `@blueprint.route(\"/x\")`,\n    `@app.get(\"/health\")`,\n    `@app.post('/login')`,\n    `@bp.put(\"/items/<id:int>\")`,\n    `@app.websocket(\"/ws\")`,",
+      "matchedPattern": "HTTP entry point: app method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  requires: { tech: [\"sanic\"] },\n  examples: [\n    `@app.route(\"/\")`,\n    `@bp.route(\"/items\", methods=[\"GET\", \"POST\"])`,\n    `@blueprint.route(\"/x\")`,",
+      "matchedPattern": "HTTP entry point: route definition (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  examples: [\n    `@app.route(\"/\")`,\n    `@bp.route(\"/items\", methods=[\"GET\", \"POST\"])`,\n    `@blueprint.route(\"/x\")`,\n    `@app.get(\"/health\")`,",
+      "matchedPattern": "HTTP entry point: route definition (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    `@app.route(\"/\")`,\n    `@bp.route(\"/items\", methods=[\"GET\", \"POST\"])`,\n    `@blueprint.route(\"/x\")`,\n    `@app.get(\"/health\")`,\n    `@app.post('/login')`,",
+      "matchedPattern": "HTTP entry point: route definition (weak candidate)"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"py-sanic-route\",\n  description: \"Sanic route handlers and Blueprints (gated on Sanic)\",\n  filePatterns: [\"**/*.py\"],\n  requires: { tech: [\"sanic\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.480Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "9155ad2d80a390306aa44df57611b2ca94d41ab8ad55919683eb2c4410950444",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-5ae71a3d1b833445",
+      "investigatedAt": "2026-05-06T21:50:03.254Z",
+      "durationMs": 11145,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-2ffb-7402-b151-ca739f5e7e5f",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.079966,
+      "usage": {
+        "inputTokens": 10780,
+        "outputTokens": 455,
+        "cacheReadInputTokens": 24832,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      }
+    },
+    {
+      "runId": "20260506215247-339bb41812196c7b",
+      "investigatedAt": "2026-05-06T21:53:42.605Z",
+      "durationMs": 8625.6,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8dbb-7fb1-8d2a-e3566e1d1ef2",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.063703,
+      "usage": {
+        "inputTokens": 8334.6,
+        "outputTokens": 444.2,
+        "cacheReadInputTokens": 17408,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:42.607Z"
+  },
+  "status": "analyzed"
+}

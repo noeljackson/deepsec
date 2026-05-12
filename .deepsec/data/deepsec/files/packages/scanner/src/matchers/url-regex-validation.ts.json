@@ -1,0 +1,176 @@
+{
+  "filePath": "packages/scanner/src/matchers/url-regex-validation.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"url-regex-validation\",\n  description: \"Regex-based URL/hostname validation with .+ or .* patterns — bypassable\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "      const hasUrlRegex =\n        (/https?.*\\.\\+|https?.*\\.\\*/.test(line) && /RegExp|\\/.*\\/|\\.test|\\.match/.test(line)) ||\n        /new RegExp\\s*\\(.*https?/.test(line) ||\n        // Regex literal with URL + .+",
+      "matchedPattern": "URL validation regex with greedy wildcard (.+ or .*) — may be bypassable"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "        // Regex literal with URL + .+\n        /\\/\\^?https?:.*\\.\\+.*\\//.test(line);\n\n      // new URL() without hostname check",
+      "matchedPattern": "URL validation regex with greedy wildcard (.+ or .*) — may be bypassable"
+    },
+    {
+      "vulnSlug": "ssrf",
+      "lineNumbers": [
+        16,
+        17,
+        18
+      ],
+      "snippet": "    `const re = /https?:.*\\\\.foo\\\\.com/;\nif (re.test(url)) good();`,\n    `const u = new URL(req.query.target);`,\n    `const u = new URL(params.url);`,\n    `const u = new URL(body.callbackUrl);`,",
+      "matchedPattern": "new URL from request data"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        10
+      ],
+      "snippet": "  examples: [\n    `const re = new RegExp(\"https?://.+\\\\\\\\.example\\\\\\\\.com\");\nif (re.test(url)) ok();`,\n    `if (/^https?:\\\\/\\\\/.+\\\\.trusted\\\\.com/.test(url)) ok();`,",
+      "matchedPattern": "URL validation regex with greedy wildcard (.+ or .*) — may be bypassable"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "if (re.test(url)) ok();`,\n    `if (/^https?:\\\\/\\\\/.+\\\\.trusted\\\\.com/.test(url)) ok();`,\n    `const ok = /https?:.+\\\\.example\\\\.com/.test(url);`,\n    `const re = /https?:.*\\\\.foo\\\\.com/;",
+      "matchedPattern": "URL validation regex with greedy wildcard (.+ or .*) — may be bypassable"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    `if (/^https?:\\\\/\\\\/.+\\\\.trusted\\\\.com/.test(url)) ok();`,\n    `const ok = /https?:.+\\\\.example\\\\.com/.test(url);`,\n    `const re = /https?:.*\\\\.foo\\\\.com/;\nif (re.test(url)) good();`,",
+      "matchedPattern": "URL validation regex with greedy wildcard (.+ or .*) — may be bypassable"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    `const ok = /https?:.+\\\\.example\\\\.com/.test(url);`,\n    `const re = /https?:.*\\\\.foo\\\\.com/;\nif (re.test(url)) good();`,\n    `const u = new URL(req.query.target);`,",
+      "matchedPattern": "URL validation regex with greedy wildcard (.+ or .*) — may be bypassable"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "if (re.test(url)) good();`,\n    `const u = new URL(req.query.target);`,\n    `const u = new URL(params.url);`,\n    `const u = new URL(body.callbackUrl);`,",
+      "matchedPattern": "new URL() from request input without hostname validation"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "    `const u = new URL(req.query.target);`,\n    `const u = new URL(params.url);`,\n    `const u = new URL(body.callbackUrl);`,\n  ],",
+      "matchedPattern": "new URL() from request input without hostname validation"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "    `const u = new URL(params.url);`,\n    `const u = new URL(body.callbackUrl);`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "new URL() from request input without hostname validation"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        31
+      ],
+      "snippet": "      const hasUrlRegex =\n        (/https?.*\\.\\+|https?.*\\.\\*/.test(line) && /RegExp|\\/.*\\/|\\.test|\\.match/.test(line)) ||\n        /new RegExp\\s*\\(.*https?/.test(line) ||\n        // Regex literal with URL + .+",
+      "matchedPattern": "URL validation regex with greedy wildcard (.+ or .*) — may be bypassable"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        34
+      ],
+      "snippet": "        // Regex literal with URL + .+\n        /\\/\\^?https?:.*\\.\\+.*\\//.test(line);\n\n      // new URL() without hostname check",
+      "matchedPattern": "URL validation regex with greedy wildcard (.+ or .*) — may be bypassable"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.547Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "5469beb37d8b32324909c984ff39b9250afd1ca24e286cd8aa6a68f9e1e8cc25",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:55.927Z",
+      "durationMs": 44252,
+      "durationApiMs": 41662,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "41de6492-d93b-43db-9e1d-4a2babea4197",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.52210075,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 2782,
+        "cacheReadInputTokens": 230479,
+        "cacheCreationInputTokens": 53961
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-1595aabe27b888ba",
+      "investigatedAt": "2026-05-06T21:53:45.516Z",
+      "durationMs": 9426.2,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b5a-79c1-8782-d679e7129e7b",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.05059860000000001,
+      "usage": {
+        "inputTokens": 5234.2,
+        "outputTokens": 467.8,
+        "cacheReadInputTokens": 20787.2,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:45.519Z"
+  },
+  "status": "analyzed"
+}

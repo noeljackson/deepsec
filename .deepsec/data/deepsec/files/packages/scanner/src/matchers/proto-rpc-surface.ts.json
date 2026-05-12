@@ -1,0 +1,72 @@
+{
+  "filePath": "packages/scanner/src/matchers/proto-rpc-surface.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        11,
+        18,
+        32
+      ],
+      "snippet": " *\n * Also flags message/enum-only proto files (no service) that define types\n * carrying user-controllable data (paths, URLs, args, env, modes), since\n * those types frequently end up in `os.*` / `syscall.*` / `exec.*` calls\n * on the host side.",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        11,
+        18,
+        25,
+        41
+      ],
+      "snippet": " *\n * Also flags message/enum-only proto files (no service) that define types\n * carrying user-controllable data (paths, URLs, args, env, modes), since\n * those types frequently end up in `os.*` / `syscall.*` / `exec.*` calls\n * on the host side.",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.481Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "603af9a6ca304e8980656f89e012a84b84fffbb489fb3ea8c74d690aa82617c6",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:45.293Z",
+      "durationMs": 38444,
+      "durationApiMs": 37594,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "a1a0a212-d983-455f-8747-41ef247c9554",
+      "findingCount": 0,
+      "numTurns": 7,
+      "costUsd": 0.2501935,
+      "usage": {
+        "inputTokens": 8,
+        "outputTokens": 2701,
+        "cacheReadInputTokens": 123682,
+        "cacheCreationInputTokens": 19326
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [
+      {
+        "name": "Malte Ubl",
+        "email": "malte@vercel.com",
+        "date": "2026-04-30T10:49:41-07:00"
+      }
+    ],
+    "enrichedAt": "2026-05-02T16:09:45.326Z"
+  },
+  "status": "analyzed",
+  "lockedByRunId": "20260506215246-3d7d4ec5e83fddc1",
+  "lockedAt": "2026-05-06T21:52:46.998Z"
+}

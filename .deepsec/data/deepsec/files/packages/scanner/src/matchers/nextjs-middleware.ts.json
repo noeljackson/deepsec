@@ -1,0 +1,96 @@
+{
+  "filePath": "packages/scanner/src/matchers/nextjs-middleware.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": " * Next.js middleware files are security-critical — they handle auth redirects,\n * CSRF, bot detection, header rewriting, and path-based access control.\n * A broken middleware = bypassed auth for entire route groups.\n */\nexport const nextjsMiddlewareMatcher: MatcherPlugin = {",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        5,
+        7,
+        12
+      ],
+      "snippet": "\n/**\n * Next.js middleware files are security-critical — they handle auth redirects,\n * CSRF, bot detection, header rewriting, and path-based access control.\n * A broken middleware = bypassed auth for entire route groups.",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"nextjs-middleware\",\n  description: \"Next.js middleware.ts files — auth, redirects, header rewriting, access control\",\n  filePatterns: [\"**/middleware.{ts,tsx,js,jsx}\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-02T17:54:41.508Z",
+  "lastScannedRunId": "20260502175440-05201b02576fe6c2",
+  "fileHash": "f04a2bceaa04c6453ccdec604d596df9ad21f5fcb215b6382ad5aeab1a9bbf5c",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:59.614Z",
+      "durationMs": 48319,
+      "durationApiMs": 45832,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "66229215-48c4-47cc-9a9f-0265b9cf65ab",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.5060955,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 3172,
+        "cacheReadInputTokens": 230656,
+        "cacheCreationInputTokens": 49826
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-783d04573c7fba34",
+      "investigatedAt": "2026-05-06T21:53:45.580Z",
+      "durationMs": 9326.2,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8bb4-7181-ad37-d57fc7b77fb6",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0572824,
+      "usage": {
+        "inputTokens": 7551.6,
+        "outputTokens": 442.6,
+        "cacheReadInputTokens": 12492.8,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:45.583Z"
+  },
+  "status": "analyzed"
+}

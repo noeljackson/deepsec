@@ -3,7 +3,6 @@ package commands_test
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -76,7 +75,7 @@ func newHarness(t *testing.T) *harness {
 	bin := buildBinary(t)
 	tmp := t.TempDir()
 	copyDir(t, fixturePath(t), filepath.Join(tmp, "app"))
-	cfg := fmt.Sprintf("default_agent = \"anthropic\"\n[[projects]]\nid = \"p1\"\nroot = \"./app\"\n")
+	cfg := "default_agent = \"anthropic\"\n[[projects]]\nid = \"p1\"\nroot = \"./app\"\n"
 	require.NoError(t, os.WriteFile(filepath.Join(tmp, "deepsec.config.toml"), []byte(cfg), 0o644))
 	return &harness{binary: bin, cwd: tmp, projectID: "p1"}
 }

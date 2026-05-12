@@ -1,0 +1,160 @@
+# Core web-security matchers. These have no tech gate — they apply to
+# any text-ish source file.
+
+[[matcher]]
+slug = "auth-bypass"
+description = "Authentication or authorization check disabled, commented, or short-circuited"
+noise_tier = "normal"
+file_patterns = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.cjs", "**/*.py", "**/*.rb", "**/*.go", "**/*.rs", "**/*.java", "**/*.cs", "**/*.php"]
+exclude_path_patterns = ["\\.(test|spec)\\.[jt]sx?$", "node_modules/", "tests?/"]
+patterns = [
+  "(?i)//\\s*TODO:\\s*(?:add|implement|enable).*(?:auth|permission|authorization)",
+  "(?i)//\\s*(?:skip|bypass|disable|no)\\s+auth",
+  "(?i)#\\s*(?:skip|bypass|disable|no)\\s+auth",
+  "(?i)\\b(?:isAuth|isAuthenticated|isAdmin|hasPermission|checkAuth)\\s*=\\s*(?:true|True)\\b",
+  "(?i)\\breturn\\s+true\\s*(?://|/\\*|#)\\s*(?:auth|admin|bypass)",
+]
+label = "potential auth bypass / disabled authorization"
+
+[[matcher]]
+slug = "sql-injection-string-concat"
+description = "SQL query built via string concatenation or interpolation with user input"
+noise_tier = "normal"
+file_patterns = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.py", "**/*.rb", "**/*.go", "**/*.php", "**/*.java", "**/*.cs"]
+exclude_path_patterns = ["\\.(test|spec)\\.[jt]sx?$", "node_modules/"]
+patterns = [
+  "(?i)(?:query|execute|exec|raw)\\s*\\(\\s*[`\"'][^`\"']*\\$\\{[^}]*(?:req|request|input|body|params|query|user)",
+  "(?i)(?:query|execute|exec|raw)\\s*\\(\\s*[\"'][^\"']*[\"']\\s*\\+\\s*\\w+",
+  "(?i)f[\"']\\s*SELECT[^\"']*\\{[^}]*(?:request|input|args)",
+  "(?i)\"\\s*SELECT[^\"]*\"\\s*%\\s*\\(",
+]
+label = "SQL query built from interpolated/concatenated user input"
+
+[[matcher]]
+slug = "command-injection"
+description = "Shell command built with user-controlled input"
+noise_tier = "normal"
+file_patterns = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.py", "**/*.rb", "**/*.go", "**/*.php"]
+exclude_path_patterns = ["\\.(test|spec)\\.[jt]sx?$", "node_modules/"]
+patterns = [
+  "(?i)\\b(?:exec|execSync|spawn|spawnSync)\\s*\\(\\s*[`\"'][^`\"']*\\$\\{",
+  "(?i)\\b(?:exec|execSync)\\s*\\(\\s*\\w+\\s*\\+",
+  "(?i)\\bos\\.system\\s*\\(\\s*[^)]*(?:request|input|args)",
+  "(?i)\\bsubprocess\\.(?:run|Popen|call|check_output)\\s*\\([^)]*shell\\s*=\\s*True",
+  "(?i)\\b`[^`]*\\$\\{[^}]*(?:req|input|user)[^}]*\\}[^`]*`",
+]
+label = "shell command built from user input"
+
+[[matcher]]
+slug = "ssrf"
+description = "HTTP request URL derived from request-controlled input"
+noise_tier = "noisy"
+file_patterns = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.py", "**/*.rb", "**/*.go"]
+exclude_path_patterns = ["\\.(test|spec)\\.[jt]sx?$", "node_modules/"]
+patterns = [
+  "(?i)\\b(?:fetch|axios(?:\\.get|\\.post)?|got|request)\\s*\\(\\s*(?:req\\.|request\\.|params\\.|body\\.|query\\.)",
+  "(?i)\\b(?:http\\.get|requests\\.(?:get|post)|urlopen)\\s*\\([^)]*(?:request\\.|args\\.|params\\.|body)",
+  "(?i)\\bnew\\s+URL\\s*\\(\\s*(?:req|body|params|query)\\.",
+]
+label = "outbound HTTP using user-supplied URL — possible SSRF"
+
+[[matcher]]
+slug = "path-traversal"
+description = "File-system path built from user input without normalization"
+noise_tier = "noisy"
+file_patterns = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.py", "**/*.rb", "**/*.go"]
+exclude_path_patterns = ["\\.(test|spec)\\.[jt]sx?$", "node_modules/"]
+patterns = [
+  "(?i)(?:readFile|readFileSync|createReadStream|sendFile|open)\\s*\\([^)]*(?:req\\.|body\\.|params\\.|query\\.)",
+  "(?i)path\\.join\\([^)]*(?:req\\.|body\\.|params\\.|query\\.)",
+  "(?i)open\\s*\\([^)]*request\\.",
+]
+label = "file path built from user input — path traversal risk"
+
+[[matcher]]
+slug = "open-redirect"
+description = "HTTP redirect destination taken directly from user input"
+noise_tier = "noisy"
+file_patterns = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.py", "**/*.rb", "**/*.go"]
+exclude_path_patterns = ["\\.(test|spec)\\.[jt]sx?$", "node_modules/"]
+patterns = [
+  "(?i)\\b(?:res|response|ctx)\\.redirect\\s*\\(\\s*(?:req\\.|body\\.|params\\.|query\\.)",
+  "(?i)HttpResponseRedirect\\s*\\([^)]*request\\.",
+  "(?i)redirect_to\\s*\\(\\s*params\\[",
+]
+label = "redirect to user-supplied URL — open redirect"
+
+[[matcher]]
+slug = "dangerous-html"
+description = "Untrusted HTML written directly to DOM / response"
+noise_tier = "normal"
+file_patterns = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.vue", "**/*.svelte"]
+exclude_path_patterns = ["\\.(test|spec)\\.[jt]sx?$", "node_modules/"]
+patterns = [
+  "(?i)dangerouslySetInnerHTML\\s*=\\s*\\{\\{\\s*__html",
+  "(?i)\\.innerHTML\\s*=\\s*[^;]*(?:req|input|user|body|params)",
+  "(?i)\\bv-html\\s*=",
+  "(?i)@@\\{",
+]
+label = "untrusted HTML injection into DOM"
+
+[[matcher]]
+slug = "cors-wildcard"
+description = "CORS origin set to wildcard with credentials enabled"
+noise_tier = "precise"
+file_patterns = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.py", "**/*.rb", "**/*.go"]
+patterns = [
+  "(?i)Access-Control-Allow-Origin[\"']?\\s*[,:]\\s*[\"']\\*[\"']",
+  "(?i)\\borigin\\s*:\\s*[\"']\\*[\"'][^}]*credentials\\s*:\\s*true",
+  "(?i)\\bcors\\s*\\(\\s*\\{[^}]*origin\\s*:\\s*[\"']\\*",
+]
+label = "CORS allow-origin wildcard"
+
+[[matcher]]
+slug = "debug-endpoint"
+description = "Debug / admin / internal endpoint reachable from external traffic"
+noise_tier = "normal"
+file_patterns = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.py", "**/*.rb", "**/*.go"]
+exclude_path_patterns = ["\\.(test|spec)\\.[jt]sx?$"]
+patterns = [
+  "(?i)\\bDEBUG\\s*=\\s*True\\b",
+  "(?i)['\"]/(?:debug|__debug__|admin/debug|internal|_internal|phpinfo)['\"]",
+  "(?i)\\bapp\\.(?:get|post|all)\\s*\\(\\s*['\"]/(?:debug|admin/?internal)",
+]
+label = "debug / internal endpoint surface"
+
+[[matcher]]
+slug = "dev-auth-bypass"
+description = "Auth check gated on environment / NODE_ENV / DEBUG flag"
+noise_tier = "normal"
+file_patterns = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.py", "**/*.rb", "**/*.go"]
+exclude_path_patterns = ["\\.(test|spec)\\.[jt]sx?$"]
+patterns = [
+  "(?i)if\\s*\\(\\s*(?:process\\.env\\.NODE_ENV|os\\.environ\\.get\\(['\"]ENV['\"]\\))\\s*[!=]==?\\s*['\"]production['\"]?\\s*\\)\\s*(?:\\{|return)",
+  "(?i)\\benv\\b.*=\\s*['\"]development['\"][^\\n]*\\n[^\\n]*(?:skip|bypass).*(?:auth|permission)",
+]
+label = "auth gated on environment flag — dev bypass risk"
+
+[[matcher]]
+slug = "env-exposure"
+description = "Environment variable serialized to client / log / response"
+noise_tier = "normal"
+file_patterns = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs"]
+patterns = [
+  "(?i)JSON\\.stringify\\s*\\(\\s*process\\.env\\b",
+  "(?i)\\bres\\.(?:json|send)\\s*\\(\\s*process\\.env\\b",
+  "(?i)console\\.(?:log|error|warn)\\s*\\([^)]*process\\.env\\.[A-Z_]+",
+]
+label = "process.env serialized to output"
+
+[[matcher]]
+slug = "error-message-leak"
+description = "Raw error / stack returned to client"
+noise_tier = "noisy"
+file_patterns = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.py", "**/*.rb"]
+exclude_path_patterns = ["\\.(test|spec)\\.[jt]sx?$"]
+patterns = [
+  "(?i)\\bres\\.(?:json|send|status\\s*\\(\\s*\\d+\\s*\\)\\.(?:json|send))\\s*\\(\\s*\\{[^}]*error\\s*:\\s*(?:e|err|error)\\b",
+  "(?i)\\bres\\.(?:json|send)\\s*\\(\\s*(?:e|err|error)\\.stack",
+]
+label = "raw error returned to client"

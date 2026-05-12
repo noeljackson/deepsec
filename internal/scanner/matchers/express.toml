@@ -1,0 +1,61 @@
+[[matcher]]
+slug = "express-route"
+description = "Express route handler"
+noise_tier = "noisy"
+file_patterns = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.mjs"]
+patterns = [
+  "(?i)\\b(?:app|router)\\.(?:get|post|put|patch|delete|all)\\s*\\(\\s*['\"][^'\"]+['\"]",
+]
+snippet_after = 12
+requires = { tech = ["express"] }
+label = "Express route handler"
+
+[[matcher]]
+slug = "fastify-route"
+description = "Fastify route handler"
+noise_tier = "noisy"
+file_patterns = ["**/*.ts", "**/*.js", "**/*.mjs"]
+patterns = [
+  "(?i)\\bfastify\\.(?:get|post|put|patch|delete)\\s*\\(",
+  "(?i)\\.route\\s*\\(\\s*\\{[^}]*method\\s*:\\s*['\"](?:GET|POST|PUT|DELETE)",
+]
+snippet_after = 12
+requires = { tech = ["fastify"] }
+label = "Fastify route handler"
+
+[[matcher]]
+slug = "nestjs-controller"
+description = "NestJS controller method"
+noise_tier = "noisy"
+file_patterns = ["**/*.ts", "**/*.tsx"]
+patterns = [
+  "(?i)@(?:Get|Post|Put|Patch|Delete|All)\\s*\\(",
+]
+snippet_after = 12
+requires = { tech = ["nestjs"] }
+label = "NestJS controller method"
+
+[[matcher]]
+slug = "koa-route"
+description = "Koa router method"
+noise_tier = "noisy"
+file_patterns = ["**/*.ts", "**/*.js", "**/*.mjs"]
+patterns = [
+  "(?i)\\brouter\\.(?:get|post|put|patch|delete|all)\\s*\\(\\s*['\"]/",
+]
+snippet_after = 12
+requires = { tech = ["koa"] }
+label = "Koa router method"
+
+[[matcher]]
+slug = "graphql-resolver"
+description = "GraphQL resolver — authorization must be checked per-field"
+noise_tier = "noisy"
+file_patterns = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.mjs"]
+patterns = [
+  "(?i)\\bresolvers\\s*[:=]\\s*\\{",
+  "(?i)\\bMutation\\s*:\\s*\\{",
+]
+require_content = ["(?i)graphql|@graphql|apollo"]
+snippet_after = 20
+label = "GraphQL resolver block"

@@ -4,24 +4,14 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	promptdata "github.com/noeljackson/deepsec/internal/processor/prompts"
 )
 
 // CorePrompt is the system-prompt preamble shared across backends. The
 // JSON-output rules and finding schema are baked in so the response is
 // machine-parseable.
-const CorePrompt = `You are a security analyst reviewing a batch of source files for real, exploitable security vulnerabilities. You will see one or more files, each with a list of regex-derived candidate matches indicating *where to look*. Candidates are noisy — many are false positives. Your job is to read the actual code and decide what is genuinely exploitable.
-
-Output rules:
-- Return ONLY findings via the structured response mechanism (a tool call OR a JSON object — whichever the backend requests).
-- Each finding refers to exactly one file. Use the file path EXACTLY as given.
-- Omit findings that are not exploitable. False positives must not appear.
-- ` + "`severity`" + ` is one of CRITICAL | HIGH | MEDIUM | HIGH_BUG | BUG | LOW.
-- ` + "`confidence`" + ` is one of high | medium | low.
-- ` + "`vulnSlug`" + ` should reuse the candidate slug when applicable; otherwise pick a short kebab-case slug describing the bug.
-- ` + "`lineNumbers`" + ` lists the 1-based line(s) where the vulnerability lives.
-- ` + "`recommendation`" + ` is one short sentence describing the fix.
-- If you decline the task entirely, return a single refusal with the reason.
-`
+var CorePrompt = promptdata.CorePrompt()
 
 // AssemblePrompt builds the (system, user) pair for one investigation
 // batch. The system prompt is stable across a run (good for prompt

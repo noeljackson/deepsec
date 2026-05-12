@@ -1,0 +1,67 @@
+# Candidate-slug reasoning hints appended to the system prompt when a batch
+# includes the matching vulnSlug. Keep `slug` equal to a matcher slug, and keep
+# `text` as a concise note without repeating the slug.
+
+[[note]]
+slug = "auth-bypass"
+text = """Look for an authentication or authorization check that's been disabled, commented out, or short-circuited via a constant. Confirm the surrounding route is actually reachable."""
+
+[[note]]
+slug = "sql-injection-string-concat"
+text = """Verify the input flowing into the query is user-controlled (not a server-side constant). Parameterized callers are safe."""
+
+[[note]]
+slug = "command-injection"
+text = """Check whether the user-controlled fragment is shell-quoted, validated against an allowlist, or constrained to a known set of arguments."""
+
+[[note]]
+slug = "ssrf"
+text = """Look at whether the URL is validated against an allowlist of hosts and whether the request is made server-side from a privileged network."""
+
+[[note]]
+slug = "path-traversal"
+text = """Decide whether normalization (e.g. resolve+startsWith) is applied before the read/write, and whether symlinks are followed."""
+
+[[note]]
+slug = "open-redirect"
+text = """Decide whether the redirect target is restricted to same-origin or an allowlist of trusted hosts."""
+
+[[note]]
+slug = "dangerous-html"
+text = """Confirm the value reaches the DOM/HTML stream without sanitization (DOMPurify, sanitize-html, framework's safe-by-default escaping)."""
+
+[[note]]
+slug = "cors-wildcard"
+text = """Wildcard origin is fine for fully public APIs without credentials. Combined with credentials it leaks authenticated responses to attacker pages."""
+
+[[note]]
+slug = "secret-plaintext"
+text = """Confirm it's a real secret (not a placeholder, example, or test value). Decide if it's already revoked."""
+
+[[note]]
+slug = "weak-default-secret"
+text = """If the default is used in production (rather than overridden by env var), forged tokens become trivial."""
+
+[[note]]
+slug = "agent-loop-no-cap"
+text = """Without a maxSteps / maxTurns / signal cap, prompt injection or adversarial input can DoS the agent or burn unbounded cost."""
+
+[[note]]
+slug = "agentic-untrusted-prompt-input"
+text = """Decide whether the user-controlled string is treated as data or instructions. If it can change the agent's behavior, it's prompt-injectable."""
+
+[[note]]
+slug = "mcp-tool-handler"
+text = """MCP tools called by an agent inherit the agent's authority. Tool handlers must authorize the caller and validate args."""
+
+[[note]]
+slug = "dockerfile-mutable-tag"
+text = """Pinning to a digest (image@sha256:...) prevents supply-chain swaps. `latest` and version-less FROMs reroll on every build."""
+
+[[note]]
+slug = "github-workflow-pwn-request"
+text = """pull_request_target runs with the secrets of the target repo. Checking out the PR head means running attacker code with those secrets."""
+
+[[note]]
+slug = "k8s-privileged-pod"
+text = """Privileged + hostNetwork is effectively root on the node. Always question whether the workload truly needs it."""

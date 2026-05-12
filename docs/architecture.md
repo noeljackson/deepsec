@@ -105,13 +105,27 @@ one branch in `NewBackend`. Adding a *provider* = one TOML block.
 
 ## Prompt assembly
 
-`AssemblePrompt(batch) → (system, user)` composes:
+`AssemblePrompt(batch) → (system, user)` composes embedded prompt data
+from `internal/processor/prompts/`:
 
-- `CorePrompt` (constant, in `prompt.go`).
+- `core.md`: the shared system-prompt preamble.
 - Framework-specific highlights keyed by detected-tech tag
-  (`HighlightForTag`).
+  (`framework_hints.toml`).
 - Per-matcher reasoning hints keyed by `vulnSlug` (`NoteForSlug`).
+  (`slug_hints.toml`).
 - `info_markdown` and `prompt_append` from the project config.
+
+The prompt files are embedded with `go:embed` and parsed at package init.
+Malformed TOML, unknown keys, duplicate keys, or empty entries fail loudly
+instead of silently changing model behavior. To edit the prompt data:
+
+- Change `core.md` when the shared investigation instructions should change.
+- Add or edit `[[highlight]]` entries in `framework_hints.toml` with
+  `tag = "<detected-tech-tag>"` and `text = "<one bullet body>"`.
+- Add or edit `[[note]]` entries in `slug_hints.toml` with
+  `slug = "<matcher-slug>"` and `text = "<reasoning hint>"`.
+- Run `go test ./internal/processor/...`; the golden prompt test catches
+  unintended byte-level changes in `AssemblePrompt`.
 
 The system prompt is stable across a run, which makes prompt caching
 (Anthropic `cache_control: ephemeral`) hit on every batch after the

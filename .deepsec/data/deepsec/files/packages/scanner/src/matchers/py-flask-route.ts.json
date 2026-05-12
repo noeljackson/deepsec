@@ -1,0 +1,126 @@
+{
+  "filePath": "packages/scanner/src/matchers/py-flask-route.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "    `@blueprint.route(\"/x\")`,\n    `@api.route(\"/v1/users\")`,\n    `@app.get(\"/health\")`,\n    `@app.post(\"/login\")`,\n    `@bp.put(\"/items/<int:id>\")`,",
+      "matchedPattern": "HTTP entry point: app method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "    `@api.route(\"/v1/users\")`,\n    `@app.get(\"/health\")`,\n    `@app.post(\"/login\")`,\n    `@bp.put(\"/items/<int:id>\")`,\n    `bp = Blueprint(\"api\", __name__, url_prefix=\"/api\")`,",
+      "matchedPattern": "HTTP entry point: app method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  requires: { tech: [\"flask\"] },\n  examples: [\n    `@app.route(\"/\")`,\n    `@bp.route(\"/items\", methods=[\"GET\", \"POST\"])`,\n    `@blueprint.route(\"/x\")`,",
+      "matchedPattern": "HTTP entry point: route definition (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  examples: [\n    `@app.route(\"/\")`,\n    `@bp.route(\"/items\", methods=[\"GET\", \"POST\"])`,\n    `@blueprint.route(\"/x\")`,\n    `@api.route(\"/v1/users\")`,",
+      "matchedPattern": "HTTP entry point: route definition (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    `@app.route(\"/\")`,\n    `@bp.route(\"/items\", methods=[\"GET\", \"POST\"])`,\n    `@blueprint.route(\"/x\")`,\n    `@api.route(\"/v1/users\")`,\n    `@app.get(\"/health\")`,",
+      "matchedPattern": "HTTP entry point: route definition (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    `@bp.route(\"/items\", methods=[\"GET\", \"POST\"])`,\n    `@blueprint.route(\"/x\")`,\n    `@api.route(\"/v1/users\")`,\n    `@app.get(\"/health\")`,\n    `@app.post(\"/login\")`,",
+      "matchedPattern": "HTTP entry point: route definition (weak candidate)"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"py-flask-route\",\n  description: \"Flask route registrations — entry points (gated on Flask)\",\n  filePatterns: [\"**/*.py\"],\n  requires: { tech: [\"flask\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.481Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "6cbb06956997530dcf05aa8ea6b5ffa0a1941ff138034a5d559a6c029781b306",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-5ae71a3d1b833445",
+      "investigatedAt": "2026-05-06T21:50:03.247Z",
+      "durationMs": 11145,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-2ffb-7402-b151-ca739f5e7e5f",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.079966,
+      "usage": {
+        "inputTokens": 10780,
+        "outputTokens": 455,
+        "cacheReadInputTokens": 24832,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      }
+    },
+    {
+      "runId": "20260506215246-c6bc3f0a3586feaf",
+      "investigatedAt": "2026-05-06T21:53:32.963Z",
+      "durationMs": 8690.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8ab9-7382-ad35-7c37809e4626",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05982975,
+      "usage": {
+        "inputTokens": 7903.25,
+        "outputTokens": 391.25,
+        "cacheReadInputTokens": 17152,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:32.964Z"
+  },
+  "status": "analyzed"
+}

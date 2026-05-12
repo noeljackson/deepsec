@@ -1,0 +1,59 @@
+{
+  "filePath": "packages/scanner/src/matchers/framework-edge-sandbox.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"framework-edge-sandbox\",\n  description: \"Edge runtime sandbox + global shims (Buffer/process/fetch leak risk)\",\n  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-02T17:54:41.514Z",
+  "lastScannedRunId": "20260502175440-05201b02576fe6c2",
+  "fileHash": "494fd7cfd6674307e4fc23dd1f5f2d82f6caac48d9437a84ca7d965be28b3fd6",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:49.502Z",
+      "durationMs": 46585,
+      "durationApiMs": 45752,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "f48e32e1-34fa-4b2e-a329-6658bb21e698",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.25357875,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 3469,
+        "cacheReadInputTokens": 74550,
+        "cacheCreationInputTokens": 20727
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [
+      {
+        "name": "Malte Ubl",
+        "email": "malte@vercel.com",
+        "date": "2026-04-30T10:49:41-07:00"
+      }
+    ],
+    "enrichedAt": "2026-05-02T16:09:49.528Z"
+  },
+  "status": "analyzed",
+  "lockedByRunId": "20260506215246-7f870d2495961b4e",
+  "lockedAt": "2026-05-06T21:52:46.606Z"
+}

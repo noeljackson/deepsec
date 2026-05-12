@@ -1,0 +1,60 @@
+{
+  "filePath": "packages/scanner/src/matchers/all-server-actions.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7,
+        12
+      ],
+      "snippet": " * Comprehensive \"use server\" coverage. Any file with \"use server\" directive\n * has every exported function callable as a public POST endpoint.\n * This is the broadest net — flags every export, not just ones missing auth.\n */\nexport const allServerActionsMatcher: MatcherPlugin = {",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-02T17:54:41.519Z",
+  "lastScannedRunId": "20260502175440-05201b02576fe6c2",
+  "fileHash": "13f7d5bd581097723995c2f72ec5902d2e80ffcd39419b5625f24f6ac2614d8b",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:26.371Z",
+      "durationMs": 31353,
+      "durationApiMs": 30660,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "cc920989-37b8-404e-ac5e-2186835ffa65",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.2131185,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2332,
+        "cacheReadInputTokens": 74542,
+        "cacheCreationInputTokens": 18802
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [
+      {
+        "name": "Malte Ubl",
+        "email": "malte@vercel.com",
+        "date": "2026-04-30T10:49:41-07:00"
+      }
+    ],
+    "enrichedAt": "2026-05-02T16:09:26.423Z"
+  },
+  "status": "analyzed",
+  "lockedByRunId": "20260506215246-3d7d4ec5e83fddc1",
+  "lockedAt": "2026-05-06T21:52:46.998Z"
+}

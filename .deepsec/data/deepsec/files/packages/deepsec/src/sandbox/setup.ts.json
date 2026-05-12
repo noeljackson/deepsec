@@ -1,0 +1,248 @@
+{
+  "filePath": "packages/deepsec/src/sandbox/setup.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        49
+      ],
+      "snippet": "\nconst COMMAND_ENV_KEYS: Record<string, string[]> = {\n  enrich: [\"PEOPLE_SH_BYPASS\", \"OWNERSHIP_AUTH_TOKEN\"],\n};\n",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        411,
+        412,
+        413,
+        414,
+        418,
+        612,
+        616,
+        617,
+        618,
+        619,
+        620,
+        621,
+        692
+      ],
+      "snippet": "  fi\n  SIZE=$(stat -c%s package/claude 2>/dev/null || stat -f%z package/claude 2>/dev/null || echo \"?\")\n  for DEST_VARIANT in \"linux-\\${ARCH}-musl\" \"linux-\\${ARCH}\"; do\n    PNPM_KEY=\"@anthropic-ai+claude-agent-sdk-\\${DEST_VARIANT}@\\${SDK_VER}\"\n    DEST_PKG=\"@anthropic-ai/claude-agent-sdk-\\${DEST_VARIANT}\"",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "git-provider-url-injection",
+      "lineNumbers": [
+        489
+      ],
+      "snippet": "  esac\n  local rel=\"14.1.1\"\n  local url=\"https://github.com/BurntSushi/ripgrep/releases/download/\\${rel}/ripgrep-\\${rel}-\\${arch}.tar.gz\"\n  log \"Downloading ripgrep \\${rel} (\\${arch}) from GitHub...\"\n  rm -rf /tmp/rg-fetch && mkdir -p /tmp/rg-fetch && cd /tmp/rg-fetch",
+      "matchedPattern": "GitHub URL with interpolated path"
+    },
+    {
+      "vulnSlug": "framework-image-optimizer",
+      "lineNumbers": [
+        53,
+        338
+      ],
+      "snippet": "\nconst PROXY_PORT = 8787;\nconst PROXY_URL = `http://127.0.0.1:${PROXY_PORT}`;\n// Path differs by upload mode (see DeepsecMode):\n//   dev       — uploaded source workspace, proxy lives at its source location",
+      "matchedPattern": "\\b(?:169\\.254\\.169\\.254|0\\.0\\.0\\.0|127\\."
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        482,
+        483,
+        484,
+        485,
+        489,
+        683,
+        687,
+        688,
+        689,
+        690,
+        691,
+        692,
+        763
+      ],
+      "snippet": "  fi\n  SIZE=$(stat -c%s package/claude 2>/dev/null || stat -f%z package/claude 2>/dev/null || echo \"?\")\n  for DEST_VARIANT in \"linux-\\${ARCH}-musl\" \"linux-\\${ARCH}\"; do\n    PNPM_KEY=\"@anthropic-ai+claude-agent-sdk-\\${DEST_VARIANT}@\\${SDK_VER}\"\n    DEST_PKG=\"@anthropic-ai/claude-agent-sdk-\\${DEST_VARIANT}\"",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "git-provider-url-injection",
+      "lineNumbers": [
+        560
+      ],
+      "snippet": "  esac\n  local rel=\"14.1.1\"\n  local url=\"https://github.com/BurntSushi/ripgrep/releases/download/\\${rel}/ripgrep-\\${rel}-\\${arch}.tar.gz\"\n  log \"Downloading ripgrep \\${rel} (\\${arch}) from GitHub...\"\n  rm -rf /tmp/rg-fetch && mkdir -p /tmp/rg-fetch && cd /tmp/rg-fetch",
+      "matchedPattern": "GitHub URL with interpolated path"
+    },
+    {
+      "vulnSlug": "env-var-as-bool",
+      "lineNumbers": [
+        73,
+        74
+      ],
+      "snippet": " */\nexport function resolveBrokeredCredentials(agentType: string | undefined): BrokeredCredentials {\n  const anthropicToken = process.env.ANTHROPIC_AUTH_TOKEN;\n  const explicitOpenai = process.env.OPENAI_API_KEY;\n  // Only borrow ANTHROPIC for OPENAI on the codex path — and only when the",
+      "matchedPattern": "Secret env var used as boolean"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        73
+      ],
+      "snippet": "export function resolveBrokeredCredentials(agentType: string | undefined): BrokeredCredentials {\n  const anthropicToken = process.env.ANTHROPIC_AUTH_TOKEN;\n  const explicitOpenai = process.env.OPENAI_API_KEY;",
+      "matchedPattern": "process.env.ANTHROPIC_AUTH_TOKEN"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        74
+      ],
+      "snippet": "  const anthropicToken = process.env.ANTHROPIC_AUTH_TOKEN;\n  const explicitOpenai = process.env.OPENAI_API_KEY;\n  // Only borrow ANTHROPIC for OPENAI on the codex path — and only when the",
+      "matchedPattern": "process.env.OPENAI_API_KEY"
+    },
+    {
+      "vulnSlug": "framework-image-optimizer",
+      "lineNumbers": [
+        83,
+        409
+      ],
+      "snippet": "\nconst PROXY_PORT = 8787;\nconst PROXY_URL = `http://127.0.0.1:${PROXY_PORT}`;\n// Path differs by upload mode (see DeepsecMode):\n//   dev       — uploaded source workspace, proxy lives at its source location",
+      "matchedPattern": "\\b(?:169\\.254\\.169\\.254|0\\.0\\.0\\.0|127\\."
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        505,
+        506,
+        507,
+        508,
+        512,
+        706,
+        710,
+        711,
+        712,
+        713,
+        714,
+        715,
+        786
+      ],
+      "snippet": "  fi\n  SIZE=$(stat -c%s package/claude 2>/dev/null || stat -f%z package/claude 2>/dev/null || echo \"?\")\n  for DEST_VARIANT in \"linux-\\${ARCH}-musl\" \"linux-\\${ARCH}\"; do\n    PNPM_KEY=\"@anthropic-ai+claude-agent-sdk-\\${DEST_VARIANT}@\\${SDK_VER}\"\n    DEST_PKG=\"@anthropic-ai/claude-agent-sdk-\\${DEST_VARIANT}\"",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "git-provider-url-injection",
+      "lineNumbers": [
+        583
+      ],
+      "snippet": "  esac\n  local rel=\"14.1.1\"\n  local url=\"https://github.com/BurntSushi/ripgrep/releases/download/\\${rel}/ripgrep-\\${rel}-\\${arch}.tar.gz\"\n  log \"Downloading ripgrep \\${rel} (\\${arch}) from GitHub...\"\n  rm -rf /tmp/rg-fetch && mkdir -p /tmp/rg-fetch && cd /tmp/rg-fetch",
+      "matchedPattern": "GitHub URL with interpolated path"
+    },
+    {
+      "vulnSlug": "env-var-as-bool",
+      "lineNumbers": [
+        73,
+        74,
+        225,
+        229
+      ],
+      "snippet": " */\nexport function resolveBrokeredCredentials(agentType: string | undefined): BrokeredCredentials {\n  const anthropicToken = process.env.ANTHROPIC_AUTH_TOKEN;\n  const explicitOpenai = process.env.OPENAI_API_KEY;\n  // Only borrow ANTHROPIC for OPENAI on the codex path — and only when the",
+      "matchedPattern": "Secret env var used as boolean"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        225
+      ],
+      "snippet": "function getNonOidcCreds() {\n  if (process.env.VERCEL_TEAM_ID && process.env.VERCEL_PROJECT_ID && process.env.VERCEL_TOKEN) {\n    return {",
+      "matchedPattern": "process.env.VERCEL_TEAM_ID"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        227
+      ],
+      "snippet": "    return {\n      teamId: process.env.VERCEL_TEAM_ID,\n      projectId: process.env.VERCEL_PROJECT_ID,",
+      "matchedPattern": "process.env.VERCEL_TEAM_ID"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        228
+      ],
+      "snippet": "      teamId: process.env.VERCEL_TEAM_ID,\n      projectId: process.env.VERCEL_PROJECT_ID,\n      token: process.env.VERCEL_TOKEN,",
+      "matchedPattern": "process.env.VERCEL_PROJECT_ID"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        229
+      ],
+      "snippet": "      projectId: process.env.VERCEL_PROJECT_ID,\n      token: process.env.VERCEL_TOKEN,\n    };",
+      "matchedPattern": "process.env.VERCEL_TOKEN"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.683Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "f1106d711601e913f97ff8e6a7a460691b19cbbd82f309a4b37d3cea4417a938",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502162558-8060",
+      "investigatedAt": "2026-05-02T16:32:33.302Z",
+      "durationMs": 387976,
+      "durationApiMs": 385675,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "059cbbb1-9116-45a3-8bac-62f003332c03",
+      "findingCount": 0,
+      "numTurns": 11,
+      "costUsd": 2.7404805000000003,
+      "usage": {
+        "inputTokens": 21,
+        "outputTokens": 13776,
+        "cacheReadInputTokens": 671446,
+        "cacheCreationInputTokens": 47980
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-221dec17f8912bb2",
+      "investigatedAt": "2026-05-06T21:55:04.221Z",
+      "durationMs": 25095.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8ae8-7ba0-9eb4-7132564b7e9c",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1313282,
+      "usage": {
+        "inputTokens": 14444.6,
+        "outputTokens": 1132.2,
+        "cacheReadInputTokens": 50278.4,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:55:04.224Z"
+  },
+  "status": "analyzed"
+}

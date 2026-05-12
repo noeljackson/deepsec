@@ -1,0 +1,78 @@
+{
+  "filePath": "packages/scanner/src/matchers/js-nuxt-route.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"js-nuxt-route\",\n  description: \"Nuxt server routes / event handlers (gated on Nuxt)\",\n  filePatterns: [\"**/server/api/**/*.{ts,js}\", \"**/server/routes/**/*.{ts,js}\"],\n  requires: { tech: [\"nuxt\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.485Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "22209afe3fcade089b84394c9226a8de09cea4afb5e41f358bf3ff76426056f2",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-345e6f3c6749411c",
+      "investigatedAt": "2026-05-06T21:50:01.427Z",
+      "durationMs": 10759,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-2f9c-7df1-a9b1-d9e5933776ad",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.06014825,
+      "usage": {
+        "inputTokens": 6524.25,
+        "outputTokens": 548.5,
+        "cacheReadInputTokens": 22144,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-8074d43eee10dcd5",
+      "investigatedAt": "2026-05-06T21:53:50.160Z",
+      "durationMs": 10187.2,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b95-7531-afa5-c1bf052a53c6",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.05540540000000001,
+      "usage": {
+        "inputTokens": 5322.6,
+        "outputTokens": 487,
+        "cacheReadInputTokens": 28364.8,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:50.163Z"
+  },
+  "status": "analyzed"
+}

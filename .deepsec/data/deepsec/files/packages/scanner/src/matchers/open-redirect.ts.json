@@ -1,0 +1,202 @@
+{
+  "filePath": "packages/scanner/src/matchers/open-redirect.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"open-redirect\",\n  description: \"Redirects with user-controlled URLs\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  match(content, _filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "open-redirect",
+      "lineNumbers": [
+        30
+      ],
+      "snippet": "          label: \"window.location from user input\",\n        },\n        { regex: /returnUrl|redirectUrl|returnTo|next.*url/i, label: \"redirect URL parameter\" },\n      ],\n      content,",
+      "matchedPattern": "redirect URL parameter"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        30
+      ],
+      "snippet": "          label: \"window.location from user input\",\n        },\n        { regex: /returnUrl|redirectUrl|returnTo|next.*url/i, label: \"redirect URL parameter\" },\n      ],\n      content,",
+      "matchedPattern": "Redirect URL from header/param (NO validNextRedirect — investigate)"
+    },
+    {
+      "vulnSlug": "open-redirect",
+      "lineNumbers": [
+        10,
+        11,
+        13,
+        14
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `redirect(req.body.next);`,\n    `redirect(query.target);`,\n    \"redirect(`${origin}/${req.body.path}`);\",",
+      "matchedPattern": "redirect with request-derived URL"
+    },
+    {
+      "vulnSlug": "open-redirect",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "    `redirect(req.body.next);`,\n    `redirect(query.target);`,\n    \"redirect(`${origin}/${req.body.path}`);\",\n    `res.redirect(req.body.url);`,\n    `res.redirect(params.next);`,",
+      "matchedPattern": "redirect with interpolated URL"
+    },
+    {
+      "vulnSlug": "open-redirect",
+      "lineNumbers": [
+        13,
+        14
+      ],
+      "snippet": "    `redirect(query.target);`,\n    \"redirect(`${origin}/${req.body.path}`);\",\n    `res.redirect(req.body.url);`,\n    `res.redirect(params.next);`,\n    `headers: { Location: req.body.next }`,",
+      "matchedPattern": "res.redirect with request-derived URL"
+    },
+    {
+      "vulnSlug": "open-redirect",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "    `res.redirect(req.body.url);`,\n    `res.redirect(params.next);`,\n    `headers: { Location: req.body.next }`,\n    `window.location = params.next;`,\n    `const u = returnUrl;`,",
+      "matchedPattern": "Location header from request data"
+    },
+    {
+      "vulnSlug": "open-redirect",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "    `res.redirect(params.next);`,\n    `headers: { Location: req.body.next }`,\n    `window.location = params.next;`,\n    `const u = returnUrl;`,\n    `const r = redirectUrl;`,",
+      "matchedPattern": "window.location from user input"
+    },
+    {
+      "vulnSlug": "open-redirect",
+      "lineNumbers": [
+        17,
+        18,
+        19,
+        42
+      ],
+      "snippet": "    `headers: { Location: req.body.next }`,\n    `window.location = params.next;`,\n    `const u = returnUrl;`,\n    `const r = redirectUrl;`,\n    `const x = returnTo;`,",
+      "matchedPattern": "redirect URL parameter"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        10
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `redirect(req.body.next);`,\n    `redirect(query.target);`,\n    \"redirect(`${origin}/${req.body.path}`);\",",
+      "matchedPattern": "redirect() with request-derived URL (NO validNextRedirect — investigate)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  examples: [\n    `redirect(req.body.next);`,\n    `redirect(query.target);`,\n    \"redirect(`${origin}/${req.body.path}`);\",\n    `res.redirect(req.body.url);`,",
+      "matchedPattern": "redirect() with request-derived URL (NO validNextRedirect — investigate)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    `redirect(query.target);`,\n    \"redirect(`${origin}/${req.body.path}`);\",\n    `res.redirect(req.body.url);`,\n    `res.redirect(params.next);`,\n    `headers: { Location: req.body.next }`,",
+      "matchedPattern": "redirect() with request-derived URL (NO validNextRedirect — investigate)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    \"redirect(`${origin}/${req.body.path}`);\",\n    `res.redirect(req.body.url);`,\n    `res.redirect(params.next);`,\n    `headers: { Location: req.body.next }`,\n    `window.location = params.next;`,",
+      "matchedPattern": "redirect() with request-derived URL (NO validNextRedirect — investigate)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "    `redirect(req.body.next);`,\n    `redirect(query.target);`,\n    \"redirect(`${origin}/${req.body.path}`);\",\n    `res.redirect(req.body.url);`,\n    `res.redirect(params.next);`,",
+      "matchedPattern": "redirect() with interpolated URL (NO validNextRedirect — investigate)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "    `headers: { Location: req.body.next }`,\n    `window.location = params.next;`,\n    `const u = returnUrl;`,\n    `const r = redirectUrl;`,\n    `const x = returnTo;`,",
+      "matchedPattern": "Redirect URL from header/param (NO validNextRedirect — investigate)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "    `window.location = params.next;`,\n    `const u = returnUrl;`,\n    `const r = redirectUrl;`,\n    `const x = returnTo;`,\n  ],",
+      "matchedPattern": "Redirect URL from header/param (NO validNextRedirect — investigate)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `const u = returnUrl;`,\n    `const r = redirectUrl;`,\n    `const x = returnTo;`,\n  ],\n  match(content, _filePath) {",
+      "matchedPattern": "Redirect URL from header/param (NO validNextRedirect — investigate)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        42
+      ],
+      "snippet": "          label: \"window.location from user input\",\n        },\n        { regex: /returnUrl|redirectUrl|returnTo|next.*url/i, label: \"redirect URL parameter\" },\n      ],\n      content,",
+      "matchedPattern": "Redirect URL from header/param (NO validNextRedirect — investigate)"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.513Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "ff3ca8188f566bbcc064f56b5d088483982741f1f745b1f8bade8f2fda5efbb2",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:59.664Z",
+      "durationMs": 48319,
+      "durationApiMs": 45832,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "66229215-48c4-47cc-9a9f-0265b9cf65ab",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.5060955,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 3172,
+        "cacheReadInputTokens": 230656,
+        "cacheCreationInputTokens": 49826
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [
+      {
+        "name": "Malte Ubl",
+        "email": "malte@vercel.com",
+        "date": "2026-04-30T10:49:41-07:00"
+      }
+    ],
+    "enrichedAt": "2026-05-02T16:08:59.705Z"
+  },
+  "status": "analyzed",
+  "lockedByRunId": "20260506215246-46b46eb6e55984c8",
+  "lockedAt": "2026-05-06T21:52:46.776Z"
+}

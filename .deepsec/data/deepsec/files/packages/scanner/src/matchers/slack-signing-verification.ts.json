@@ -1,0 +1,144 @@
+{
+  "filePath": "packages/scanner/src/matchers/slack-signing-verification.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        6,
+        21
+      ],
+      "snippet": "/**\n * Slack-bound endpoint handlers. Slack signs every request with HMAC-SHA256\n * keyed by the signing secret. Failure modes:\n *   - Verification missing entirely\n *   - Verification using `==` / `===` instead of `crypto.timingSafeEqual`",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],\n  examples: [\n    `import { App } from \"@slack/bolt\";\\nexport async function POST(req: Request) {\\n  return new Response(\"ok\");\\n}`,\n    `import { App } from \"@slack/bolt\";\\nconst app = new App({ signingSecret: process.env.SLACK_SIGNING_SECRET });`,\n    `import { App } from \"@slack/bolt\";\\napp.command(\"/hello\", async ({ ack }) => { await ack(); });`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "env-var-as-bool",
+      "lineNumbers": [
+        25,
+        33
+      ],
+      "snippet": "  examples: [\n    `import { App } from \"@slack/bolt\";\\nexport async function POST(req: Request) {\\n  return new Response(\"ok\");\\n}`,\n    `import { App } from \"@slack/bolt\";\\nconst app = new App({ signingSecret: process.env.SLACK_SIGNING_SECRET });`,\n    `import { App } from \"@slack/bolt\";\\napp.command(\"/hello\", async ({ ack }) => { await ack(); });`,\n    `import { App } from \"@slack/bolt\";\\napp.action(\"button_click\", async ({ ack }) => { await ack(); });`,",
+      "matchedPattern": "Secret env var used as boolean"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "    `import { App } from \"@slack/bolt\";\\nexport async function POST(req: Request) {\\n  return new Response(\"ok\");\\n}`,\n    `import { App } from \"@slack/bolt\";\\nconst app = new App({ signingSecret: process.env.SLACK_SIGNING_SECRET });`,\n    `import { App } from \"@slack/bolt\";\\napp.command(\"/hello\", async ({ ack }) => { await ack(); });`,",
+      "matchedPattern": "process.env.SLACK_SIGNING_SECRET"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        33
+      ],
+      "snippet": "    `import { verifySlackRequest } from \"@slack/web-api\";\\nverifySlackRequest({ body, signingSecret });`,\n    `import { createHmac } from \"crypto\";\\nconst SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET;\\nconst hmac = crypto.createHmac(\"sha256\", slackSecret);`,\n  ],",
+      "matchedPattern": "process.env.SLACK_SIGNING_SECRET"
+    },
+    {
+      "vulnSlug": "crypto-usage",
+      "lineNumbers": [
+        33
+      ],
+      "snippet": "    `import { AwsLambdaReceiver } from \"@slack/bolt\";\\nconst receiver = new AwsLambdaReceiver({ signingSecret: \"x\" });`,\n    `import { verifySlackRequest } from \"@slack/web-api\";\\nverifySlackRequest({ body, signingSecret });`,\n    `import { createHmac } from \"crypto\";\\nconst SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET;\\nconst hmac = crypto.createHmac(\"sha256\", slackSecret);`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "Node crypto import"
+    },
+    {
+      "vulnSlug": "slack-signing-verification",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "    `import { App } from \"@slack/bolt\";\\nexport async function POST(req: Request) {\\n  return new Response(\"ok\");\\n}`,\n    `import { App } from \"@slack/bolt\";\\nconst app = new App({ signingSecret: process.env.SLACK_SIGNING_SECRET });`,\n    `import { App } from \"@slack/bolt\";\\napp.command(\"/hello\", async ({ ack }) => { await ack(); });`,\n    `import { App } from \"@slack/bolt\";\\napp.action(\"button_click\", async ({ ack }) => { await ack(); });`,\n    `import { App } from \"@slack/bolt\";\\napp.event(\"message\", async ({ event }) => {});`,\n    `import { App } from \"@slack/bolt\";\\napp.view(\"modal_submit\", async ({ ack }) => { await ack(); });`,\n    `import { App } from \"@slack/bolt\";\\napp.shortcut(\"global_shortcut\", async ({ ack }) => { await ack(); });`,",
+      "matchedPattern": "Slack Bolt App construction"
+    },
+    {
+      "vulnSlug": "slack-signing-verification",
+      "lineNumbers": [
+        31
+      ],
+      "snippet": "    `import { App } from \"@slack/bolt\";\\napp.shortcut(\"global_shortcut\", async ({ ack }) => { await ack(); });`,\n    `import { AwsLambdaReceiver } from \"@slack/bolt\";\\nconst receiver = new AwsLambdaReceiver({ signingSecret: \"x\" });`,\n    `import { verifySlackRequest } from \"@slack/web-api\";\\nverifySlackRequest({ body, signingSecret });`,\n    `import { createHmac } from \"crypto\";\\nconst SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET;\\nconst hmac = crypto.createHmac(\"sha256\", slackSecret);`,\n  ],\n  match(content, filePath) {\n    if (/\\.(test|spec)\\.(ts|tsx|js|jsx|mjs|cjs)$/.test(filePath)) return [];",
+      "matchedPattern": "Slack Bolt receiver wiring"
+    },
+    {
+      "vulnSlug": "slack-signing-verification",
+      "lineNumbers": [
+        33
+      ],
+      "snippet": "    `import { verifySlackRequest } from \"@slack/web-api\";\\nverifySlackRequest({ body, signingSecret });`,\n    `import { createHmac } from \"crypto\";\\nconst SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET;\\nconst hmac = crypto.createHmac(\"sha256\", slackSecret);`,\n  ],\n  match(content, filePath) {\n    if (/\\.(test|spec)\\.(ts|tsx|js|jsx|mjs|cjs)$/.test(filePath)) return [];\n    if (/\\.d\\.ts$/.test(filePath)) return [];\n    if (/node_modules/.test(filePath)) return [];",
+      "matchedPattern": "Slack HMAC-SHA256 verification"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.821Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "d5880fd3b222c9fa8de25e340006212c2421b77ce67feacc7f2ae3568c08edf7",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:10:12.439Z",
+      "durationMs": 49424,
+      "durationApiMs": 48745,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "2d37451d-f791-456c-9c1e-23d475431c2e",
+      "findingCount": 0,
+      "numTurns": 7,
+      "costUsd": 0.27781525,
+      "usage": {
+        "inputTokens": 8,
+        "outputTokens": 3650,
+        "cacheReadInputTokens": 124138,
+        "cacheCreationInputTokens": 19913
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-cbb34644b25b760b",
+      "investigatedAt": "2026-05-06T21:53:51.661Z",
+      "durationMs": 9782,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c2a-7f31-aa6f-a3fa7439972c",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.059522399999999996,
+      "usage": {
+        "inputTokens": 6942.4,
+        "outputTokens": 465.2,
+        "cacheReadInputTokens": 21708.8,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:51.663Z"
+  },
+  "status": "analyzed"
+}

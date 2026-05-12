@@ -1,0 +1,141 @@
+{
+  "filePath": ".github/workflows/release.yml",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "github-workflow-security",
+      "lineNumbers": [
+        42,
+        49,
+        76,
+        79,
+        95
+      ],
+      "snippet": "permissions:\n  contents: read\n  id-token: write  # required for npm OIDC trusted publishing + provenance\n\njobs:",
+      "matchedPattern": "id-token: write (OIDC), unpinned action ref (branch/major-tag)"
+    },
+    {
+      "vulnSlug": "github-workflow-security",
+      "lineNumbers": [
+        49,
+        97
+      ],
+      "snippet": "    permissions:\n      contents: read\n      id-token: write  # required for npm OIDC trusted publishing + provenance\n    steps:\n      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2",
+      "matchedPattern": "id-token: write (OIDC)"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.811Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "dae618dfe852ba54d760dc79cc7f4557bf19a511f92906878f75f44e8953994a",
+  "findings": [
+    {
+      "severity": "HIGH",
+      "vulnSlug": "other-supply-chain",
+      "title": "Unpinned GitHub Actions in release workflow with id-token: write and npm publish",
+      "description": "The release workflow grants `id-token: write` (L42) and runs `npm publish --access public` (L106) using npm OIDC Trusted Publishing. It consumes `actions/checkout@v4` (L49), `pnpm/action-setup@v4` (L76), and `actions/setup-node@v4` (L79) by mutable major-version tag. If any of these tags is hijacked (compromised maintainer, force-push to v4), the malicious code runs in the same job that has `id-token: write` and is recognized by npm's Trusted Publisher as the legitimate `release.yml` workflow — so the action can request its own OIDC token, exchange it with npm, and publish a malicious `deepsec` package version (or simply tamper with files between checkout and `npm publish`). The repo's `prepublishOnly`/`prepack` hooks run inside the same context and offer no defense. Combined with `id-token: write`, an unpinned action is effectively a supply-chain backdoor for everyone who installs deepsec from npm.",
+      "lineNumbers": [
+        42,
+        49,
+        76,
+        79,
+        95,
+        106
+      ],
+      "recommendation": "Pin every `uses:` in this workflow to a full 40-char commit SHA with a trailing version comment. Strongly consider also (1) moving the publish step into a dedicated minimal-permissions job that runs *after* a separate validation job, (2) using a GitHub Actions Environment with required reviewers gating the publish step, and (3) limiting `id-token: write` to the publish job only via job-level `permissions:` rather than workflow-level. Re-enable `--provenance` once the repo is public so consumers can verify build provenance.",
+      "confidence": "high",
+      "revalidation": {
+        "verdict": "fixed",
+        "reasoning": "The current release workflow no longer matches the vulnerable state described in the finding. Workflow-level permissions are only `contents: read`, and `id-token: write` is scoped to the `publish` job rather than granted globally. More importantly, every `uses:` action in the publish job is pinned to a full 40-character commit SHA: `actions/checkout` at line 51, `pnpm/action-setup` at line 78, and `actions/setup-node` at line 81. The npm publish step still runs with OIDC Trusted Publishing at lines 106-108, so the original risk model would be valid if these actions were mutable major tags. In the current code, however, a hijacked `@v4` tag would not affect this workflow because the workflow does not reference those tags. I could not inspect git history because `/vercel/sandbox/target` is not a git repository in this environment, but the current source shows the recommended mitigation has been applied.",
+        "revalidatedAt": "2026-05-06T22:53:31.741Z",
+        "runId": "20260506225212-5caaae95a2b00493",
+        "model": "gpt-5.5"
+      }
+    }
+  ],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:13:41.101Z",
+      "durationMs": 208322,
+      "durationApiMs": 207548,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "b5f12bc1-6638-4dbb-b6a9-fcf123d53d73",
+      "findingCount": 1,
+      "numTurns": 11,
+      "costUsd": 0.721455,
+      "usage": {
+        "inputTokens": 10,
+        "outputTokens": 15055,
+        "cacheReadInputTokens": 244285,
+        "cacheCreationInputTokens": 35662
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-d7ae5c7b1506afd5",
+      "investigatedAt": "2026-05-06T21:54:42.653Z",
+      "durationMs": 20765.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8bda-7060-aa31-96333341fed1",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1458454,
+      "usage": {
+        "inputTokens": 18553.8,
+        "outputTokens": 1049,
+        "cacheReadInputTokens": 43212.8,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    },
+    {
+      "runId": "20260506225212-5caaae95a2b00493",
+      "investigatedAt": "2026-05-06T22:53:31.741Z",
+      "durationMs": 33776,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff7d-f2a9-7dc3-bd44-c78eb1048e33",
+      "findingCount": 1,
+      "numTurns": 0.5,
+      "phase": "revalidate",
+      "costUsd": 0.1678645,
+      "usage": {
+        "inputTokens": 16724.5,
+        "outputTokens": 1639,
+        "cacheReadInputTokens": 70144,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T22:53:31.743Z"
+  },
+  "status": "analyzed"
+}

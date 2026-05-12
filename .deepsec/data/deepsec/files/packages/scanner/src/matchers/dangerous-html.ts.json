@@ -1,0 +1,262 @@
+{
+  "filePath": "packages/scanner/src/matchers/dangerous-html.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        6,
+        11,
+        22,
+        29,
+        36,
+        38,
+        40,
+        42,
+        44
+      ],
+      "snippet": "/**\n * Front repo: More nuanced XSS detection for React/Next.js apps.\n * Classifies dangerouslySetInnerHTML by whether the source is user-controlled.\n */\nexport const dangerousHtmlMatcher: MatcherPlugin = {",
+      "matchedPattern": "dangerouslySetInnerHTML"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"dangerous-html\",\n  description: \"dangerouslySetInnerHTML and innerHTML with source classification\",\n  filePatterns: [\"**/*.{tsx,jsx,ts,js}\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        6
+      ],
+      "snippet": "\n/**\n * Front repo: More nuanced XSS detection for React/Next.js apps.\n * Classifies dangerouslySetInnerHTML by whether the source is user-controlled.\n */\nexport const dangerousHtmlMatcher: MatcherPlugin = {\n  noiseTier: \"normal\" as const,\n  slug: \"dangerous-html\",",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "export const dangerousHtmlMatcher: MatcherPlugin = {\n  noiseTier: \"normal\" as const,\n  slug: \"dangerous-html\",\n  description: \"dangerouslySetInnerHTML and innerHTML with source classification\",\n  filePatterns: [\"**/*.{tsx,jsx,ts,js}\"],\n  match(content, filePath) {\n    if (/\\.(test|spec)\\./i.test(filePath)) return [];\n",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "    for (let i = 0; i < lines.length; i++) {\n      const line = lines[i];\n\n      if (/dangerouslySetInnerHTML/.test(line) || /\\.innerHTML\\s*=/.test(line)) {\n        const start = Math.max(0, i - 3);\n        const end = Math.min(lines.length, i + 5);\n        const context = lines.slice(start, end).join(\"\\n\");\n",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        29
+      ],
+      "snippet": "\n        // Classify the source\n        const isSafeScript = /\\.toString\\(\\)/.test(context) || /IIFE|function\\s*\\(/.test(context);\n        const isStaticString = /dangerouslySetInnerHTML.*__html:\\s*['\"`]/.test(context);\n        const isFromProps = /props\\.|children|content|html|body|text|message/i.test(context);\n        const isFromFetch = /data\\.|response\\.|result\\.|await|fetch/i.test(context);\n        const isFromSearchParams = /searchParams|query|params|req\\./i.test(context);\n",
+      "matchedPattern": "dangerouslySetInnerHTML from URL/request params (HIGH RISK)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        36
+      ],
+      "snippet": "\n        let label: string;\n        if (isFromSearchParams) {\n          label = \"dangerouslySetInnerHTML from URL/request params (HIGH RISK)\";\n        } else if (isFromFetch) {\n          label = \"dangerouslySetInnerHTML from fetched data (MEDIUM RISK)\";\n        } else if (isFromProps) {\n          label = \"dangerouslySetInnerHTML from props (trace source)\";",
+      "matchedPattern": "dangerouslySetInnerHTML from URL/request params (HIGH RISK)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        38
+      ],
+      "snippet": "        if (isFromSearchParams) {\n          label = \"dangerouslySetInnerHTML from URL/request params (HIGH RISK)\";\n        } else if (isFromFetch) {\n          label = \"dangerouslySetInnerHTML from fetched data (MEDIUM RISK)\";\n        } else if (isFromProps) {\n          label = \"dangerouslySetInnerHTML from props (trace source)\";\n        } else if (isSafeScript || isStaticString) {\n          label = \"dangerouslySetInnerHTML with static/safe content (weak candidate)\";",
+      "matchedPattern": "dangerouslySetInnerHTML from URL/request params (HIGH RISK)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        40
+      ],
+      "snippet": "        } else if (isFromFetch) {\n          label = \"dangerouslySetInnerHTML from fetched data (MEDIUM RISK)\";\n        } else if (isFromProps) {\n          label = \"dangerouslySetInnerHTML from props (trace source)\";\n        } else if (isSafeScript || isStaticString) {\n          label = \"dangerouslySetInnerHTML with static/safe content (weak candidate)\";\n        } else {\n          label = \"dangerouslySetInnerHTML (classify source)\";",
+      "matchedPattern": "dangerouslySetInnerHTML from fetched data (MEDIUM RISK)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        42
+      ],
+      "snippet": "        } else if (isFromProps) {\n          label = \"dangerouslySetInnerHTML from props (trace source)\";\n        } else if (isSafeScript || isStaticString) {\n          label = \"dangerouslySetInnerHTML with static/safe content (weak candidate)\";\n        } else {\n          label = \"dangerouslySetInnerHTML (classify source)\";\n        }\n",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        44
+      ],
+      "snippet": "        } else if (isSafeScript || isStaticString) {\n          label = \"dangerouslySetInnerHTML with static/safe content (weak candidate)\";\n        } else {\n          label = \"dangerouslySetInnerHTML (classify source)\";\n        }\n\n        matches.push({\n          vulnSlug: \"dangerous-html\",",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        6,
+        11,
+        14,
+        15,
+        28,
+        35,
+        42,
+        44,
+        46,
+        48,
+        50
+      ],
+      "snippet": "/**\n * Front repo: More nuanced XSS detection for React/Next.js apps.\n * Classifies dangerouslySetInnerHTML by whether the source is user-controlled.\n */\nexport const dangerousHtmlMatcher: MatcherPlugin = {",
+      "matchedPattern": "dangerouslySetInnerHTML"
+    },
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        16,
+        17
+      ],
+      "snippet": "    `<div dangerouslySetInnerHTML={{ __html: html }} />`,\n    `<span dangerouslySetInnerHTML={{ __html: props.body }} />`,\n    `el.innerHTML = data;`,\n    `node.innerHTML = result;`,\n  ],",
+      "matchedPattern": "innerHTML assignment"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "  description: \"dangerouslySetInnerHTML and innerHTML with source classification\",\n  filePatterns: [\"**/*.{tsx,jsx,ts,js}\"],\n  examples: [\n    `<div dangerouslySetInnerHTML={{ __html: html }} />`,\n    `<span dangerouslySetInnerHTML={{ __html: props.body }} />`,\n    `el.innerHTML = data;`,\n    `node.innerHTML = result;`,\n  ],",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "  filePatterns: [\"**/*.{tsx,jsx,ts,js}\"],\n  examples: [\n    `<div dangerouslySetInnerHTML={{ __html: html }} />`,\n    `<span dangerouslySetInnerHTML={{ __html: props.body }} />`,\n    `el.innerHTML = data;`,\n    `node.innerHTML = result;`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "  examples: [\n    `<div dangerouslySetInnerHTML={{ __html: html }} />`,\n    `<span dangerouslySetInnerHTML={{ __html: props.body }} />`,\n    `el.innerHTML = data;`,\n    `node.innerHTML = result;`,\n  ],\n  match(content, filePath) {\n    if (/\\.(test|spec)\\./i.test(filePath)) return [];",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "    `<div dangerouslySetInnerHTML={{ __html: html }} />`,\n    `<span dangerouslySetInnerHTML={{ __html: props.body }} />`,\n    `el.innerHTML = data;`,\n    `node.innerHTML = result;`,\n  ],\n  match(content, filePath) {\n    if (/\\.(test|spec)\\./i.test(filePath)) return [];\n",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        28
+      ],
+      "snippet": "    for (let i = 0; i < lines.length; i++) {\n      const line = lines[i];\n\n      if (/dangerouslySetInnerHTML/.test(line) || /\\.innerHTML\\s*=/.test(line)) {\n        const start = Math.max(0, i - 3);\n        const end = Math.min(lines.length, i + 5);\n        const context = lines.slice(start, end).join(\"\\n\");\n",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        35
+      ],
+      "snippet": "\n        // Classify the source\n        const isSafeScript = /\\.toString\\(\\)/.test(context) || /IIFE|function\\s*\\(/.test(context);\n        const isStaticString = /dangerouslySetInnerHTML.*__html:\\s*['\"`]/.test(context);\n        const isFromProps = /props\\.|children|content|html|body|text|message/i.test(context);\n        const isFromFetch = /data\\.|response\\.|result\\.|await|fetch/i.test(context);\n        const isFromSearchParams = /searchParams|query|params|req\\./i.test(context);\n",
+      "matchedPattern": "dangerouslySetInnerHTML from URL/request params (HIGH RISK)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        42
+      ],
+      "snippet": "\n        let label: string;\n        if (isFromSearchParams) {\n          label = \"dangerouslySetInnerHTML from URL/request params (HIGH RISK)\";\n        } else if (isFromFetch) {\n          label = \"dangerouslySetInnerHTML from fetched data (MEDIUM RISK)\";\n        } else if (isFromProps) {\n          label = \"dangerouslySetInnerHTML from props (trace source)\";",
+      "matchedPattern": "dangerouslySetInnerHTML from URL/request params (HIGH RISK)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        44
+      ],
+      "snippet": "        if (isFromSearchParams) {\n          label = \"dangerouslySetInnerHTML from URL/request params (HIGH RISK)\";\n        } else if (isFromFetch) {\n          label = \"dangerouslySetInnerHTML from fetched data (MEDIUM RISK)\";\n        } else if (isFromProps) {\n          label = \"dangerouslySetInnerHTML from props (trace source)\";\n        } else if (isSafeScript || isStaticString) {\n          label = \"dangerouslySetInnerHTML with static/safe content (weak candidate)\";",
+      "matchedPattern": "dangerouslySetInnerHTML from URL/request params (HIGH RISK)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        46
+      ],
+      "snippet": "        } else if (isFromFetch) {\n          label = \"dangerouslySetInnerHTML from fetched data (MEDIUM RISK)\";\n        } else if (isFromProps) {\n          label = \"dangerouslySetInnerHTML from props (trace source)\";\n        } else if (isSafeScript || isStaticString) {\n          label = \"dangerouslySetInnerHTML with static/safe content (weak candidate)\";\n        } else {\n          label = \"dangerouslySetInnerHTML (classify source)\";",
+      "matchedPattern": "dangerouslySetInnerHTML from fetched data (MEDIUM RISK)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        48
+      ],
+      "snippet": "        } else if (isFromProps) {\n          label = \"dangerouslySetInnerHTML from props (trace source)\";\n        } else if (isSafeScript || isStaticString) {\n          label = \"dangerouslySetInnerHTML with static/safe content (weak candidate)\";\n        } else {\n          label = \"dangerouslySetInnerHTML (classify source)\";\n        }\n",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        50
+      ],
+      "snippet": "        } else if (isSafeScript || isStaticString) {\n          label = \"dangerouslySetInnerHTML with static/safe content (weak candidate)\";\n        } else {\n          label = \"dangerouslySetInnerHTML (classify source)\";\n        }\n\n        matches.push({\n          vulnSlug: \"dangerous-html\",",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.518Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "63da57412b6ab7fb200043f51fb9868b655fe405a1796325839fd7b3d3b52219",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:00.810Z",
+      "durationMs": 49234,
+      "durationApiMs": 46756,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "138fcf13-e4b7-4a3b-ac41-8724b22e1dfb",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.43548600000000004,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 3473,
+        "cacheReadInputTokens": 43952,
+        "cacheCreationInputTokens": 52264
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [
+      {
+        "name": "Malte Ubl",
+        "email": "malte@vercel.com",
+        "date": "2026-04-30T10:49:41-07:00"
+      }
+    ],
+    "enrichedAt": "2026-05-02T16:09:00.838Z"
+  },
+  "status": "analyzed",
+  "lockedByRunId": "20260506215246-46b46eb6e55984c8",
+  "lockedAt": "2026-05-06T21:52:46.776Z"
+}

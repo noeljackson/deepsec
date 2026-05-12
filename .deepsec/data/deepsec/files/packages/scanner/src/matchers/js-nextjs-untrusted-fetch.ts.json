@@ -1,0 +1,111 @@
+{
+  "filePath": "packages/scanner/src/matchers/js-nextjs-untrusted-fetch.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "ssrf",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "    `const url = req.url;\\nconst res = await fetch(url);`,\n    `const target = request.headers.get('x-target');\\nconst data = await fetch(target);`,\n    `const u = new URL(req.url);\\nawait fetch(u.searchParams.get('href'));`,\n    `const upstream = req.query.upstream;\\nawait globalThis.fetch(upstream);`,\n    `const path = request.nextUrl.searchParams.get('path');\\nconst r = await fetch(path);`,",
+      "matchedPattern": "new URL from request data"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"framework-untrusted-fetch\",\n  description: \"Framework code calling fetch with a URL derived from request input\",\n  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],\n  requires: { tech: [\"nextjs\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "open-redirect",
+      "lineNumbers": [
+        25,
+        48
+      ],
+      "snippet": "    `const u = new URL(req.url);\\nawait fetch(u.searchParams.get('href'));`,\n    `const upstream = req.query.upstream;\\nawait globalThis.fetch(upstream);`,\n    `const path = request.nextUrl.searchParams.get('path');\\nconst r = await fetch(path);`,\n    `const meta = getRequestMeta(req, 'origin');\\nconst r = await fetch(meta + '/api');`,\n    `const cookieVal = request.cookies.get('redirect')?.value;\\nconst r = await fetch(cookieVal);`,",
+      "matchedPattern": "redirect URL parameter"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "    `const target = request.headers.get('x-target');\\nconst data = await fetch(target);`,\n    `const u = new URL(req.url);\\nawait fetch(u.searchParams.get('href'));`,\n    `const upstream = req.query.upstream;\\nawait globalThis.fetch(upstream);`,\n    `const path = request.nextUrl.searchParams.get('path');\\nconst r = await fetch(path);`,",
+      "matchedPattern": "new URL() from request input without hostname validation"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "  examples: [\n    `const url = req.url;\\nconst res = await fetch(url);`,\n    `const target = request.headers.get('x-target');\\nconst data = await fetch(target);`,\n    `const u = new URL(req.url);\\nawait fetch(u.searchParams.get('href'));`,",
+      "matchedPattern": "fetch(url) — default redirect: follow + caller-style URL"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.827Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "17f94e64d38047db73e66b2cf211530473a136420831dcd44007d88f45c1c1ed",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-65dc94bca8cbf80e",
+      "investigatedAt": "2026-05-06T21:49:55.684Z",
+      "durationMs": 9301.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3045-7302-8227-b4ee5e620897",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0613255,
+      "usage": {
+        "inputTokens": 8093.5,
+        "outputTokens": 467,
+        "cacheReadInputTokens": 13696,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-028f56683dd5ae6a",
+      "investigatedAt": "2026-05-06T21:54:00.948Z",
+      "durationMs": 12194,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8baa-74b1-97e8-4be68be65e02",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0748896,
+      "usage": {
+        "inputTokens": 8932.8,
+        "outputTokens": 618.4,
+        "cacheReadInputTokens": 23347.2,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:54:00.950Z"
+  },
+  "status": "analyzed"
+}

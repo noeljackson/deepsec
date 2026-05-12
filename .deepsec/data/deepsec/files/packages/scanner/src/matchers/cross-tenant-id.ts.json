@@ -1,0 +1,142 @@
+{
+  "filePath": "packages/scanner/src/matchers/cross-tenant-id.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"cross-tenant-id\",\n  description:\n    \"User-supplied IDs used in DB lookups without ownership verification — cross-tenant risk\",\n  filePatterns: [",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "unverified-lookup",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "  examples: [\n    `const t = await getTeamById(parsed.body.teamId);`,\n    `const u = await getUserById(req.params.userId);`,\n    `const i = await getInstallationByUid(parsed.query.installationUid);`,\n    `const teamId = parsed.body.teamId;`,",
+      "matchedPattern": "DB lookup by ID without ownership check in next 15 lines"
+    },
+    {
+      "vulnSlug": "unverified-lookup",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `const t = await getTeamById(parsed.body.teamId);`,\n    `const u = await getUserById(req.params.userId);`,\n    `const i = await getInstallationByUid(parsed.query.installationUid);`,\n    `const teamId = parsed.body.teamId;`,\n    `const ownerId = req.params.ownerId;`,",
+      "matchedPattern": "DB lookup by ID without ownership check in next 15 lines"
+    },
+    {
+      "vulnSlug": "unverified-lookup",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "    `const u = await getUserById(req.params.userId);`,\n    `const i = await getInstallationByUid(parsed.query.installationUid);`,\n    `const teamId = parsed.body.teamId;`,\n    `const ownerId = req.params.ownerId;`,\n    `const userId = parsed.query.userId;`,",
+      "matchedPattern": "DB lookup by ID without ownership check in next 15 lines"
+    },
+    {
+      "vulnSlug": "unverified-lookup",
+      "lineNumbers": [
+        27
+      ],
+      "snippet": "    `const integrationConfigurationId = req.body.integrationConfigurationId;`,\n    `const t = getTeamById(install.ownerId);`,\n    `const t = getTeamById(record.teamId);`,\n    `const r = await findById(parsed.params.id);`,\n    `const r = await findOneById(req.body.id);`,",
+      "matchedPattern": "DB lookup by ID without ownership check in next 15 lines"
+    },
+    {
+      "vulnSlug": "unverified-lookup",
+      "lineNumbers": [
+        28
+      ],
+      "snippet": "    `const t = getTeamById(install.ownerId);`,\n    `const t = getTeamById(record.teamId);`,\n    `const r = await findById(parsed.params.id);`,\n    `const r = await findOneById(req.body.id);`,\n    `const r = await findByUid(parsed.body.uid);`,",
+      "matchedPattern": "DB lookup by ID without ownership check in next 15 lines"
+    },
+    {
+      "vulnSlug": "unverified-lookup",
+      "lineNumbers": [
+        29
+      ],
+      "snippet": "    `const t = getTeamById(record.teamId);`,\n    `const r = await findById(parsed.params.id);`,\n    `const r = await findOneById(req.body.id);`,\n    `const r = await findByUid(parsed.body.uid);`,\n  ],",
+      "matchedPattern": "DB lookup by ID without ownership check in next 15 lines"
+    },
+    {
+      "vulnSlug": "unverified-lookup",
+      "lineNumbers": [
+        30
+      ],
+      "snippet": "    `const r = await findById(parsed.params.id);`,\n    `const r = await findOneById(req.body.id);`,\n    `const r = await findByUid(parsed.body.uid);`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "DB lookup by ID without ownership check in next 15 lines"
+    },
+    {
+      "vulnSlug": "unverified-lookup",
+      "lineNumbers": [
+        31
+      ],
+      "snippet": "    `const r = await findOneById(req.body.id);`,\n    `const r = await findByUid(parsed.body.uid);`,\n  ],\n  match(content, filePath) {\n    if (/\\.(test|spec)\\./i.test(filePath)) return [];",
+      "matchedPattern": "DB lookup by ID without ownership check in next 15 lines"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.591Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "441ae6a6510d53db0e809ab247bfa5fe3e3a49ba3383e0c1c34f4efb77c9f4e5",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:36.138Z",
+      "durationMs": 35945,
+      "durationApiMs": 35212,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "7044606c-acf1-4534-96c0-8271cb1ede3d",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.215787,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2588,
+        "cacheReadInputTokens": 74554,
+        "cacheCreationInputTokens": 18204
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-1595aabe27b888ba",
+      "investigatedAt": "2026-05-06T21:53:35.392Z",
+      "durationMs": 9169.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b5a-7f10-a112-112258c4569b",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05889275,
+      "usage": {
+        "inputTokens": 7612.25,
+        "outputTokens": 404.25,
+        "cacheReadInputTokens": 17408,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:35.394Z"
+  },
+  "status": "analyzed"
+}

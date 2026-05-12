@@ -1,0 +1,53 @@
+{
+  "filePath": "packages/scanner/src/matchers/php-drupal-controller.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"php-drupal-controller\",\n  description: \"Drupal controllers, routes, and form callbacks (gated on Drupal)\",\n  filePatterns: [\n    \"**/src/Controller/**/*.php\",",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.482Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "3fa980f290223dd9bc79cbb563e5d05c741f2d70114628a179f214ad89bda929",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-2e1db247a78148bb",
+      "investigatedAt": "2026-05-06T21:49:57.010Z",
+      "durationMs": 9361,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-2ff7-74d3-83b4-9fbfcd55d290",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.053812,
+      "usage": {
+        "inputTokens": 6451.5,
+        "outputTokens": 434.75,
+        "cacheReadInputTokens": 17024,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:49:57.012Z"
+  },
+  "status": "analyzed",
+  "lockedByRunId": "20260506215247-405f13d06d5799f7",
+  "lockedAt": "2026-05-06T21:52:47.251Z"
+}

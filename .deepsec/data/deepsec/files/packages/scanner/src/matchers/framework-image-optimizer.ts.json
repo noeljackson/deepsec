@@ -1,0 +1,87 @@
+{
+  "filePath": "packages/scanner/src/matchers/framework-image-optimizer.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"framework-image-optimizer\",\n  description: \"Next.js image-optimizer and private-IP allow-list code (SSRF risk surface)\",\n  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "framework-image-optimizer",
+      "lineNumbers": [
+        15,
+        31
+      ],
+      "snippet": " *   - `match-remote-pattern.ts`, `match-host.ts`\n *\n * Plus any file that calls `imageOptimizer(...)` or imports from\n * `next/image-optimizer`.\n */",
+      "matchedPattern": "\\bimageOptimizer\\s*\\(|\\boptimizeImage\\s*, \\b(?:remotePatterns|domains|loaderFile)\\"
+    }
+  ],
+  "lastScannedAt": "2026-05-02T17:54:41.747Z",
+  "lastScannedRunId": "20260502175440-05201b02576fe6c2",
+  "fileHash": "4c0c349c879242f3a71fa631e5a475df7198bc212b6a078d40bc2aede9ed05a8",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:56.009Z",
+      "durationMs": 44252,
+      "durationApiMs": 41662,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "41de6492-d93b-43db-9e1d-4a2babea4197",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.52210075,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 2782,
+        "cacheReadInputTokens": 230479,
+        "cacheCreationInputTokens": 53961
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-df891dab3f17f60a",
+      "investigatedAt": "2026-05-06T21:54:06.917Z",
+      "durationMs": 17002,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c27-71a2-a797-7acb236cb9a9",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.091324,
+      "usage": {
+        "inputTokens": 9490.5,
+        "outputTokens": 820.25,
+        "cacheReadInputTokens": 38528,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:54:06.919Z"
+  },
+  "status": "analyzed"
+}

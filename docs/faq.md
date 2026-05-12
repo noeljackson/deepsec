@@ -1,78 +1,184 @@
 # FAQ
 
-## Why is this a rewrite?
+## How should I install deepsec?
 
-The original implementation was TypeScript, with TS-only matcher
-modules and tight coupling to the Anthropic and OpenAI Node SDKs. The
-Rust rewrite makes the scanner self-contained, declarative
-(TOML-driven matchers), and provider-agnostic (HTTP backends behind a
-single trait).
+deepsec lives in a `.deepsec/` directory at the root of the repo you
+want to scan, checked into git so teammates inherit project context.
+From the codebase's repo root:
 
-## Can I switch back to the TS version?
-
-The on-disk `data/<projectId>/` format is wire-compatible. Running the
-old TS tool against a data directory written by the Rust tool (and
-vice-versa) works.
-
-## How do I add a new AI backend?
-
-Implement `AgentBackend` in `crates/deepsec-processor/src/agents/`,
-register a `from_str` variant in `AgentBackendKind`, and add a branch
-in `make_backend`. See the Anthropic backend for the smallest example.
-
-## Can I use a local model?
-
-Yes. Point `OPENAI_BASE_URL` at any OpenAI-compatible server:
-
-- `OPENAI_BASE_URL=http://localhost:8080` with `llama.cpp --server`
-- `OPENAI_BASE_URL=https://your-vllm.example.com/v1` (drop the `/v1`
-  if the server already includes it)
-- `OPENAI_BASE_URL=https://openrouter.ai/api`
-
-## How much does a scan cost?
-
-Whatever the provider charges for input + output tokens. `deepsec
-metrics --project-id <id>` aggregates `totalCostUsd` across runs from
-each `RunMeta.stats`. Note: cost reporting is only as accurate as the
-backend's response; for backends that don't return cost, the field is
-zero.
-
-## What's the difference between `revalidate` and `triage`?
-
-`revalidate` re-checks an existing finding against the *current* file
-and assigns a verdict: `true-positive` / `false-positive` / `fixed` /
-`uncertain` / `accepted-risk`. Use it after a fix lands to confirm the
-issue is gone, or to age out stale findings.
-
-`triage` assigns priority (P0/P1/P2/skip), exploitability, and impact
-to an unverdicted finding. It doesn't re-read the file's current
-content; it's a pure-policy call.
-
-## Why TOML instead of YAML / JSON?
-
-TOML's quoting rules are easier to get right for regex-heavy content
-than YAML's, and unlike JSON it supports comments. The trade-off is
-that escaping backslashes is mandatory (`"\\b"`).
-
-## How do I run only a subset of matchers?
-
-```toml
-[matchers]
-only    = ["auth-bypass", "sql-injection-string-concat"]
-# or
-exclude = ["nextjs-route-no-auth"]
+```bash
+npx deepsec init       # creates .deepsec/ + registers this repo
+cd .deepsec
+pnpm install
 ```
 
-Or on the CLI: `deepsec scan --project-id <id> --matchers a,b,c`.
+`.deepsec/` has its own `package.json` and `node_modules/` — separate
+from the parent repo's lockfile and tooling. The parent repo only
+needs to know `.deepsec/` exists.
 
-## How is concurrency bounded?
+To scan another codebase from the same `.deepsec/`, run
+`pnpm deepsec init-project <path>`. Each project gets its own
+`data/<id>/` subdirectory.
 
-`process --concurrency N` (default 4) uses a `tokio::sync::Semaphore`
-to cap in-flight batches. Within a batch, all files are sent in one
-request. With `--batch-size 1 --concurrency 8`, each file is a
-separate request, eight in flight.
+### What about non-JS codebases?
 
-## Is there a daemon mode?
+deepsec is polyglot (TS, Go, Python, Lua, Terraform, …). The parent
+repo doesn't need to be a Node project — `.deepsec/` is self-contained
+and only needs `pnpm` (or `npm` / `yarn`) inside that one directory.
 
-No. `deepsec` is a one-shot CLI. State lives entirely on disk in
-`data/`. If you need continuous scanning, run it from cron or your CI.
+### `.gitignore` policy
+
+The scaffold's `.deepsec/.gitignore` keeps `INFO.md`, `SETUP.md`, and
+`deepsec.config.ts` tracked so teammates inherit project context, but
+ignores generated state (`data/*/files/`, `data/*/runs/`, etc.).
+
+## How much does it cost?
+
+The expensive stage is `process`. With Claude Opus and default settings
+(`--concurrency 5 --batch-size 5`):
+
+| Files | Approx cost | Approx wall time |
+|---|---|---|
+| 100 | $25–60 | 5–15 min |
+| 500 | $130–300 | 25–60 min |
+| 2,000 | $500–1200 | 1.5–4 hr |
+
+Costs swing 2–3x based on file complexity. Run `--limit 50` first to
+calibrate before committing to a full pass.
+
+`triage` is ~1¢/finding. `revalidate` is comparable to `process`.
+
+## Should I use Claude or Codex?
+
+Both work. Different strengths:
+
+- **Claude (Opus):** strong at reasoning about authorization shapes and
+  cross-file flows. The default. Most expensive.
+- **Codex (gpt-5.5):** runs in a strict sandbox (read-only, no network).
+  Fast at grep-heavy investigations. Cheaper.
+
+Mix them. Run Claude first, then re-process unconvincing findings with
+`--agent codex --reinvestigate` for a second opinion. Findings dedupe
+across agents.
+
+## Should I use Vercel AI Gateway or Anthropic directly?
+
+Either works. The gateway gives you provider failover, observability,
+and zero data retention. One token covers Claude and Codex. For a quick
+evaluation, use Anthropic directly. For ongoing production scanning, use
+the gateway.
+
+```bash
+# Direct Anthropic
+ANTHROPIC_AUTH_TOKEN=sk-ant-...
+ANTHROPIC_BASE_URL=https://api.anthropic.com
+
+# AI Gateway (recommended)
+ANTHROPIC_AUTH_TOKEN=vck_...
+ANTHROPIC_BASE_URL=https://ai-gateway.vercel.sh
+```
+
+If `claude` or `codex` is already logged in on this machine, non-sandbox
+runs reuse that subscription — no API key needed.
+
+See [vercel-setup.md](vercel-setup.md) for how to get a gateway key
+and how to wire up Vercel Sandbox auth (OIDC or access token).
+
+## How accurate is it? What's the FP rate?
+
+After revalidation: ~10–29% on `HIGH+.
+
+Two things help most:
+
+1. **Revalidate `HIGH+` before acting on findings.** Worth the cost.
+2. **Write a good `INFO.md` per project.** Even a paragraph describing
+   the auth shape and threat model improves precision a lot. See
+   [getting-started.md](getting-started.md).
+
+## When should I use sandbox mode?
+
+`deepsec sandbox process` fans work across [Vercel Sandbox][sb] microVMs
+in parallel. Worth it when:
+
+- The repo is large enough that local concurrency saturates your laptop.
+- You want results in under an hour on a 5k+ file repo.
+- You're running this as a scheduled job in CI/CD.
+
+Otherwise local execution is simpler. The sandbox path needs the
+`@vercel/sandbox` SDK (already a dep) and a Vercel account.
+
+[sb]: https://vercel.com/docs/sandbox
+
+## What happens to my code? Is it sent anywhere?
+
+The AI agents read source code from your local repo and send relevant
+snippets to the configured LLM provider as part of investigation
+prompts. With Vercel AI Gateway, the gateway has zero data retention;
+prompts aren't stored. With direct Anthropic, see Anthropic's data
+retention policy.
+
+deepsec itself doesn't phone home or report telemetry. The `data/<id>/`
+directory stays on your machine unless you explicitly export it.
+
+## Can I run this in CI?
+
+Yes. The natural shape:
+
+```bash
+# Cron — full scan every Sunday
+pnpm deepsec scan --project-id main --root .
+pnpm deepsec process --project-id main --concurrency 5
+pnpm deepsec revalidate --project-id main --min-severity HIGH
+pnpm deepsec export --project-id main --format json --out findings.json
+
+# Per-PR — incremental scan on changed files only
+pnpm deepsec scan --project-id main --root .
+pnpm deepsec process --project-id main --filter $CHANGED_PATH_PREFIX
+```
+
+The `data/` directory is your state — persist it between CI runs (cache
+it as a build artifact) or just re-scan from scratch each time.
+
+## Is it incremental?
+
+Yes:
+
+- `scan` merges new candidates into existing FileRecords; doesn't
+  re-investigate already-analyzed files.
+- `process` only touches files with `status: "pending"`, unless you
+  pass `--reinvestigate` (re-investigate everything) or
+  `--reinvestigate <N>` (re-investigate, tagged with wave marker N — a
+  later run with the same N skips files already processed in this wave).
+- `revalidate` only touches findings without a `revalidation` field
+  unless `--force` is set.
+
+## What if a run errors out partway through?
+
+Just re-run the same command. `process` and `revalidate` are safe to
+re-run — files that already finished are kept (no double billing), and
+only files that didn't finish get picked up. Same is true after a
+Ctrl-C, a network blip, a transient model error, or a quota stop. No
+state to clean up; no flag to set.
+
+If you specifically want to redo work that already succeeded, that's
+what `--reinvestigate` (process) and `--force` (revalidate) are for.
+
+## How do I add a matcher for my codebase?
+
+See [docs/writing-matchers.md](writing-matchers.md). Short version: hand
+your `.deepsec/data/` and the target repo to your coding agent with the
+prompt in that doc — it'll spot entry-point coverage gaps the default
+matchers miss and write matchers tailored to your codebase.
+
+## What if my codebase is in a language deepsec doesn't have matchers for?
+
+The AI processor is language-agnostic and will investigate any
+text-readable source file. The thinner the regex layer, the more the
+process stage carries. A few starter matchers for the new language are
+worth writing; they front-load file selection so the AI gets the most
+promising sites first.
+
+## What if I find a vulnerability in deepsec itself?
+
+See [SECURITY.md](../SECURITY.md). Don't open a public issue — use
+GitHub Security Advisories instead.

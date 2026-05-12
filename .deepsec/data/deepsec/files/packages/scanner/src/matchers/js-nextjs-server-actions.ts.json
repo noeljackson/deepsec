@@ -1,0 +1,79 @@
+{
+  "filePath": "packages/scanner/src/matchers/js-nextjs-server-actions.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7,
+        12
+      ],
+      "snippet": " * Comprehensive \"use server\" coverage. Any file with \"use server\" directive\n * has every exported function callable as a public POST endpoint.\n * This is the broadest net — flags every export, not just ones missing auth.\n */\nexport const allServerActionsMatcher: MatcherPlugin = {",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.485Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "18c6726360e72899ca7a6a2c5b66aceeca9b74974a5001558d6c40c7b0b3a9bb",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-68f0b363886cab0c",
+      "investigatedAt": "2026-05-06T21:50:01.472Z",
+      "durationMs": 10176,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3096-7c31-a926-50bedee3fb36",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05627,
+      "usage": {
+        "inputTokens": 6813,
+        "outputTokens": 473.5,
+        "cacheReadInputTokens": 16000,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      }
+    },
+    {
+      "runId": "20260506215246-9238dd8d422443e1",
+      "investigatedAt": "2026-05-06T21:53:47.939Z",
+      "durationMs": 11932.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8cda-71e1-8481-d7d8b41f97f4",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0700875,
+      "usage": {
+        "inputTokens": 8426,
+        "outputTokens": 569.25,
+        "cacheReadInputTokens": 21760,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:47.941Z"
+  },
+  "status": "analyzed"
+}

@@ -1,0 +1,245 @@
+{
+  "filePath": "packages/scanner/src/matchers/cache-key-poisoning.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7,
+        15,
+        18,
+        20,
+        23
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"cache-key-poisoning\",\n  description: \"Cache key construction with attacker-controlled values — poisoning risk\",\n  filePatterns: [\"**/*.{lua,go,ts,js}\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "cache-key-poisoning",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "      \"cache-key-poisoning\",\n      [\n        { regex: /cache.*key.*host|cache_key.*host/i, label: \"Cache key includes Host header\" },\n        {\n          regex: /cache.*key.*header|cache_key.*header/i,",
+      "matchedPattern": "Cache key includes Host header"
+    },
+    {
+      "vulnSlug": "cache-key-poisoning",
+      "lineNumbers": [
+        15,
+        17,
+        18
+      ],
+      "snippet": "      \"cache-key-poisoning\",\n      [\n        { regex: /cache.*key.*host|cache_key.*host/i, label: \"Cache key includes Host header\" },\n        {\n          regex: /cache.*key.*header|cache_key.*header/i,",
+      "matchedPattern": "Cache key includes request header"
+    },
+    {
+      "vulnSlug": "cache-key-poisoning",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "          label: \"Cache key includes request header\",\n        },\n        { regex: /cache.*key.*query|cache_key.*query/i, label: \"Cache key includes query params\" },\n        {\n          regex: /vary.*:.*accept|vary.*:.*cookie/i,",
+      "matchedPattern": "Cache key includes query params"
+    },
+    {
+      "vulnSlug": "cache-key-poisoning",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "        { regex: /cache.*key.*query|cache_key.*query/i, label: \"Cache key includes query params\" },\n        {\n          regex: /vary.*:.*accept|vary.*:.*cookie/i,\n          label: \"Vary header includes client-controlled values\",\n        },",
+      "matchedPattern": "Vary header includes client-controlled values"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7,
+        33,
+        37,
+        41,
+        45
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"cache-key-poisoning\",\n  description: \"Cache key construction with attacker-controlled values — poisoning risk\",\n  filePatterns: [\"**/*.{lua,go,ts,js}\"],\n  examples: [",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "cache-key-poisoning",
+      "lineNumbers": [
+        10,
+        11,
+        32,
+        33
+      ],
+      "snippet": "  filePatterns: [\"**/*.{lua,go,ts,js}\"],\n  examples: [\n    `const cacheKey = \"u:\" + req.headers.host;`,\n    `const cache_key = host + \":\" + path;`,\n    `const cacheKey = req.headers[\"x-tenant\"];`,",
+      "matchedPattern": "Cache key includes Host header"
+    },
+    {
+      "vulnSlug": "cache-key-poisoning",
+      "lineNumbers": [
+        10,
+        12,
+        13,
+        33,
+        36,
+        37
+      ],
+      "snippet": "  filePatterns: [\"**/*.{lua,go,ts,js}\"],\n  examples: [\n    `const cacheKey = \"u:\" + req.headers.host;`,\n    `const cache_key = host + \":\" + path;`,\n    `const cacheKey = req.headers[\"x-tenant\"];`,",
+      "matchedPattern": "Cache key includes request header"
+    },
+    {
+      "vulnSlug": "cache-key-poisoning",
+      "lineNumbers": [
+        14,
+        15,
+        40,
+        41
+      ],
+      "snippet": "    `const cacheKey = req.headers[\"x-tenant\"];`,\n    `const cache_key = req.header(\"x-trace\");`,\n    `const cacheKey = url + req.query.foo;`,\n    `const cache_key = JSON.stringify(query);`,\n    `Vary: Accept-Language, Accept-Encoding`,",
+      "matchedPattern": "Cache key includes query params"
+    },
+    {
+      "vulnSlug": "cache-key-poisoning",
+      "lineNumbers": [
+        16,
+        17,
+        44
+      ],
+      "snippet": "    `const cacheKey = url + req.query.foo;`,\n    `const cache_key = JSON.stringify(query);`,\n    `Vary: Accept-Language, Accept-Encoding`,\n    `Vary: Cookie`,\n    `ngx.shared.cache:set(ngx.var.host .. path, val)`,",
+      "matchedPattern": "Vary header includes client-controlled values"
+    },
+    {
+      "vulnSlug": "cache-key-poisoning",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "    `Vary: Accept-Language, Accept-Encoding`,\n    `Vary: Cookie`,\n    `ngx.shared.cache:set(ngx.var.host .. path, val)`,\n    `ngx.shared.dict:set(\"k:\" .. ngx.var.request_uri, val)`,\n    `redis.set(\"cache:\" + req.body.id, value);`,",
+      "matchedPattern": "Shared dict keyed by Host header"
+    },
+    {
+      "vulnSlug": "cache-key-poisoning",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `Vary: Cookie`,\n    `ngx.shared.cache:set(ngx.var.host .. path, val)`,\n    `ngx.shared.dict:set(\"k:\" .. ngx.var.request_uri, val)`,\n    `redis.set(\"cache:\" + req.body.id, value);`,\n    `redis.hset(\"cache:host\", host, value);`,",
+      "matchedPattern": "Shared dict keyed by request URI"
+    },
+    {
+      "vulnSlug": "cache-key-poisoning",
+      "lineNumbers": [
+        20,
+        21
+      ],
+      "snippet": "    `ngx.shared.cache:set(ngx.var.host .. path, val)`,\n    `ngx.shared.dict:set(\"k:\" .. ngx.var.request_uri, val)`,\n    `redis.set(\"cache:\" + req.body.id, value);`,\n    `redis.hset(\"cache:host\", host, value);`,\n    `store.set(\"cache:\" + req.body.k, v);`,",
+      "matchedPattern": "Redis set with request-derived key"
+    },
+    {
+      "vulnSlug": "cache-key-poisoning",
+      "lineNumbers": [
+        20,
+        22,
+        23
+      ],
+      "snippet": "    `ngx.shared.cache:set(ngx.var.host .. path, val)`,\n    `ngx.shared.dict:set(\"k:\" .. ngx.var.request_uri, val)`,\n    `redis.set(\"cache:\" + req.body.id, value);`,\n    `redis.hset(\"cache:host\", host, value);`,\n    `store.set(\"cache:\" + req.body.k, v);`,",
+      "matchedPattern": "Cache set with request-derived data"
+    },
+    {
+      "vulnSlug": "missing-await",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "    `ngx.shared.cache:set(ngx.var.host .. path, val)`,\n    `ngx.shared.dict:set(\"k:\" .. ngx.var.request_uri, val)`,\n    `redis.set(\"cache:\" + req.body.id, value);`,\n    `redis.hset(\"cache:host\", host, value);`,\n    `store.set(\"cache:\" + req.body.k, v);`,",
+      "matchedPattern": "redis call without await"
+    },
+    {
+      "vulnSlug": "missing-await",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "    `ngx.shared.dict:set(\"k:\" .. ngx.var.request_uri, val)`,\n    `redis.set(\"cache:\" + req.body.id, value);`,\n    `redis.hset(\"cache:host\", host, value);`,\n    `store.set(\"cache:\" + req.body.k, v);`,\n    `kv.set(\"cache:\" + host, blob);`,",
+      "matchedPattern": "redis call without await"
+    },
+    {
+      "vulnSlug": "cache-key-scope",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "    `ngx.shared.cache:set(ngx.var.host .. path, val)`,\n    `ngx.shared.dict:set(\"k:\" .. ngx.var.request_uri, val)`,\n    `redis.set(\"cache:\" + req.body.id, value);`,\n    `redis.hset(\"cache:host\", host, value);`,\n    `store.set(\"cache:\" + req.body.k, v);`,",
+      "matchedPattern": "Redis string key — no user/team scoping visible in key construction"
+    },
+    {
+      "vulnSlug": "cache-key-scope",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "    `ngx.shared.dict:set(\"k:\" .. ngx.var.request_uri, val)`,\n    `redis.set(\"cache:\" + req.body.id, value);`,\n    `redis.hset(\"cache:host\", host, value);`,\n    `store.set(\"cache:\" + req.body.k, v);`,\n    `kv.set(\"cache:\" + host, blob);`,",
+      "matchedPattern": "Redis string key — no user/team scoping visible in key construction"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.723Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "077427309942b80d69e17682377f83d3633f2d12f36da23f380b3b00b7e1bcd8",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:59.843Z",
+      "durationMs": 47743,
+      "durationApiMs": 45238,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "ff7f6164-5dbf-4b41-a0ba-89648fbae13a",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.81450425,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 3047,
+        "cacheReadInputTokens": 184486,
+        "cacheCreationInputTokens": 103365
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-409d9e44688f956b",
+      "investigatedAt": "2026-05-06T21:53:52.716Z",
+      "durationMs": 10689.6,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8bbe-7b71-bfea-e098d61e3433",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0442164,
+      "usage": {
+        "inputTokens": 4329.2,
+        "outputTokens": 484.4,
+        "cacheReadInputTokens": 16076.8,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [
+          {
+            "filePath": "packages/scanner/src/matchers/unsafe-json-in-html.ts",
+            "reason": "The exact target path did not exist in the checkout; I analyzed the registered equivalent matcher at packages/scanner/src/matchers/js-react-unsafe-json-in-html.ts instead."
+          }
+        ],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[{\"filePath\":\"packages/scanner/src/matchers/unsafe-json-in-html.ts\",\"reason\":\"The exact target path did not exist in the checkout; I analyzed the registered equivalent matcher at packages/scanner/src/matchers/js-react-unsafe-json-in-html.ts instead.\"}]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:52.720Z"
+  },
+  "status": "analyzed"
+}

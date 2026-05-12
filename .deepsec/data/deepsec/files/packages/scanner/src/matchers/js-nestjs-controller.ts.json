@@ -1,0 +1,94 @@
+{
+  "filePath": "packages/scanner/src/matchers/js-nestjs-controller.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        36
+      ],
+      "snippet": "        },\n        { regex: /@UseGuards\\s*\\(/, label: \"@UseGuards (auth gate)\" },\n        { regex: /@Public\\s*\\(\\s*\\)/, label: \"@Public() decorator (skips global auth)\" },\n        { regex: /@Body\\s*\\(\\s*\\)/, label: \"@Body() (request body sink)\" },\n      ],",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"js-nestjs-controller\",\n  description: \"NestJS controllers and route methods — entry-point surface (gated on @nestjs/*)\",\n  filePatterns: [\"**/*.{ts,js}\"],\n  requires: { tech: [\"nestjs\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "    `@Public()\\nopen() {}`,\n    `findOne(@Body() body: any) {}`,\n  ],\n  match(content, filePath) {\n    if (/\\.(test|spec)\\./i.test(filePath)) return [];\n    if (/node_modules/.test(filePath)) return [];",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.733Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "29a1d406c5b517b35fb1d72a2909401e87071f87c4b9730e3b524b9098d2a462",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214907-9891f87568394613",
+      "investigatedAt": "2026-05-06T21:50:09.548Z",
+      "durationMs": 12168,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3256-74b1-b5e4-3e09e151f284",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.06127525,
+      "usage": {
+        "inputTokens": 7450.25,
+        "outputTokens": 500,
+        "cacheReadInputTokens": 18048,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215247-339bb41812196c7b",
+      "investigatedAt": "2026-05-06T21:53:41.476Z",
+      "durationMs": 10341.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8dbb-7630-af10-8fa4a4cb0268",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.06273675,
+      "usage": {
+        "inputTokens": 7705.75,
+        "outputTokens": 440,
+        "cacheReadInputTokens": 22016,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:41.478Z"
+  },
+  "status": "analyzed"
+}

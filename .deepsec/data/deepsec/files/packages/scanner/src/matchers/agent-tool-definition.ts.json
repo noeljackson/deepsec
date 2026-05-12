@@ -1,0 +1,303 @@
+{
+  "filePath": "packages/scanner/src/matchers/agent-tool-definition.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"agent-tool-definition\",\n  description:\n    \"AI agent tool definitions — prompt injection attack surface (code execution, API access)\",\n  filePatterns: [",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        31
+      ],
+      "snippet": "      { regex: /tool\\s*\\(\\s*\\{/, label: \"AI SDK tool definition — agent-callable function\" },\n      { regex: /createTool|defineTool/, label: \"Tool factory — agent-callable function\" },\n      // Dangerous tool operations\n      {\n        regex: /exec\\(|execSync\\(|spawn\\(|child_process/,",
+      "matchedPattern": "Tool factory — agent-callable function"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        34
+      ],
+      "snippet": "      {\n        regex: /exec\\(|execSync\\(|spawn\\(|child_process/,\n        label: \"Tool executes shell commands — RCE via prompt injection\",\n      },\n      {",
+      "matchedPattern": "Tool executes shell commands — RCE via prompt injection"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        41
+      ],
+      "snippet": "      },\n      { regex: /writeFile|fs\\.write|fs\\.mkdir/, label: \"Tool writes to filesystem\" },\n      {\n        regex: /fetch\\(|axios|http\\.request/,\n        label: \"Tool makes HTTP requests — SSRF via prompt injection\",",
+      "matchedPattern": "Tool writes to filesystem"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        43
+      ],
+      "snippet": "      {\n        regex: /fetch\\(|axios|http\\.request/,\n        label: \"Tool makes HTTP requests — SSRF via prompt injection\",\n      },\n      // Sandbox execution",
+      "matchedPattern": "Tool makes HTTP requests — SSRF via prompt injection"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        46
+      ],
+      "snippet": "      },\n      // Sandbox execution\n      { regex: /sandbox|Sandbox|runCode|executeCode/, label: \"Sandbox code execution tool\" },\n      // LangChain/similar\n      { regex: /DynamicTool|StructuredTool|BaseTool/, label: \"LangChain tool definition\" },",
+      "matchedPattern": "Sandbox code execution tool"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        47
+      ],
+      "snippet": "      // Sandbox execution\n      { regex: /sandbox|Sandbox|runCode|executeCode/, label: \"Sandbox code execution tool\" },\n      // LangChain/similar\n      { regex: /DynamicTool|StructuredTool|BaseTool/, label: \"LangChain tool definition\" },\n    ];",
+      "matchedPattern": "Sandbox code execution tool"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        49
+      ],
+      "snippet": "      // LangChain/similar\n      { regex: /DynamicTool|StructuredTool|BaseTool/, label: \"LangChain tool definition\" },\n    ];\n\n    for (const { regex, label } of patterns) {",
+      "matchedPattern": "LangChain tool definition"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "    `const t = createTool({ name: \"x\", execute: async () => ({}) });`,\n    `const t = defineTool({ name: \"x\" });`,\n    `import { exec } from \"child_process\";\\nexec(userInput);`,\n    `eval(userInput);`,\n    `import fs from \"fs\";\\nfs.writeFile(path, data, () => {});`,",
+      "matchedPattern": "child_process exec"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        26
+      ],
+      "snippet": "    `const t = defineTool({ name: \"x\" });`,\n    `import { exec } from \"child_process\";\\nexec(userInput);`,\n    `eval(userInput);`,\n    `import fs from \"fs\";\\nfs.writeFile(path, data, () => {});`,\n    `await fetch(url);`,",
+      "matchedPattern": "eval"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "    `const t = createTool({ name: \"x\", execute: async () => ({}) });`,\n    `const t = defineTool({ name: \"x\" });`,\n    `import { exec } from \"child_process\";\\nexec(userInput);`,\n    `eval(userInput);`,\n    `import fs from \"fs\";\\nfs.writeFile(path, data, () => {});`,",
+      "matchedPattern": "child_process import"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        12,
+        22
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"agent-tool-definition\",\n  description:\n    \"AI agent tool definitions — prompt injection attack surface (code execution, API access)\",\n  filePatterns: [",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "  examples: [\n    `const myTool = tool({\\n  description: \"do thing\",\\n  parameters: z.object({}),\\n  execute: async () => ({}),\\n});`,\n    `const t = createTool({ name: \"x\", execute: async () => ({}) });`,\n    `const t = defineTool({ name: \"x\" });`,\n    `import { exec } from \"child_process\";\\nexec(userInput);`,",
+      "matchedPattern": "AI SDK tool definition — agent-callable function"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "    `const myTool = tool({\\n  description: \"do thing\",\\n  parameters: z.object({}),\\n  execute: async () => ({}),\\n});`,\n    `const t = createTool({ name: \"x\", execute: async () => ({}) });`,\n    `const t = defineTool({ name: \"x\" });`,\n    `import { exec } from \"child_process\";\\nexec(userInput);`,\n    `eval(userInput);`,",
+      "matchedPattern": "Tool factory — agent-callable function"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "    `const t = createTool({ name: \"x\", execute: async () => ({}) });`,\n    `const t = defineTool({ name: \"x\" });`,\n    `import { exec } from \"child_process\";\\nexec(userInput);`,\n    `eval(userInput);`,\n    `import fs from \"fs\";\\nfs.writeFile(path, data, () => {});`,",
+      "matchedPattern": "Tool factory — agent-callable function"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        42
+      ],
+      "snippet": "      { regex: /tool\\s*\\(\\s*\\{/, label: \"AI SDK tool definition — agent-callable function\" },\n      { regex: /createTool|defineTool/, label: \"Tool factory — agent-callable function\" },\n      // Dangerous tool operations\n      {\n        regex: /exec\\(|execSync\\(|spawn\\(|child_process/,",
+      "matchedPattern": "Tool factory — agent-callable function"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "    `const t = defineTool({ name: \"x\" });`,\n    `import { exec } from \"child_process\";\\nexec(userInput);`,\n    `eval(userInput);`,\n    `import fs from \"fs\";\\nfs.writeFile(path, data, () => {});`,\n    `await fetch(url);`,",
+      "matchedPattern": "Tool executes shell commands — RCE via prompt injection"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        45
+      ],
+      "snippet": "      {\n        regex: /exec\\(|execSync\\(|spawn\\(|child_process/,\n        label: \"Tool executes shell commands — RCE via prompt injection\",\n      },\n      {",
+      "matchedPattern": "Tool executes shell commands — RCE via prompt injection"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        26
+      ],
+      "snippet": "    `import { exec } from \"child_process\";\\nexec(userInput);`,\n    `eval(userInput);`,\n    `import fs from \"fs\";\\nfs.writeFile(path, data, () => {});`,\n    `await fetch(url);`,\n    `import { sandbox } from \"sandbox\";\\nawait sandbox.runCode(code);`,",
+      "matchedPattern": "Tool evaluates code — RCE via prompt injection"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        27
+      ],
+      "snippet": "    `eval(userInput);`,\n    `import fs from \"fs\";\\nfs.writeFile(path, data, () => {});`,\n    `await fetch(url);`,\n    `import { sandbox } from \"sandbox\";\\nawait sandbox.runCode(code);`,\n    `import { DynamicTool } from \"langchain/tools\";\\nconst t = new DynamicTool({ name: \"x\" });`,",
+      "matchedPattern": "Tool writes to filesystem"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        52
+      ],
+      "snippet": "      },\n      { regex: /writeFile|fs\\.write|fs\\.mkdir/, label: \"Tool writes to filesystem\" },\n      {\n        regex: /fetch\\(|axios|http\\.request/,\n        label: \"Tool makes HTTP requests — SSRF via prompt injection\",",
+      "matchedPattern": "Tool writes to filesystem"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        28
+      ],
+      "snippet": "    `import fs from \"fs\";\\nfs.writeFile(path, data, () => {});`,\n    `await fetch(url);`,\n    `import { sandbox } from \"sandbox\";\\nawait sandbox.runCode(code);`,\n    `import { DynamicTool } from \"langchain/tools\";\\nconst t = new DynamicTool({ name: \"x\" });`,\n  ],",
+      "matchedPattern": "Tool makes HTTP requests — SSRF via prompt injection"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        54
+      ],
+      "snippet": "      {\n        regex: /fetch\\(|axios|http\\.request/,\n        label: \"Tool makes HTTP requests — SSRF via prompt injection\",\n      },\n      // Sandbox execution",
+      "matchedPattern": "Tool makes HTTP requests — SSRF via prompt injection"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        29
+      ],
+      "snippet": "    `await fetch(url);`,\n    `import { sandbox } from \"sandbox\";\\nawait sandbox.runCode(code);`,\n    `import { DynamicTool } from \"langchain/tools\";\\nconst t = new DynamicTool({ name: \"x\" });`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "Sandbox code execution tool"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        57
+      ],
+      "snippet": "      },\n      // Sandbox execution\n      { regex: /sandbox|Sandbox|runCode|executeCode/, label: \"Sandbox code execution tool\" },\n      // LangChain/similar\n      { regex: /DynamicTool|StructuredTool|BaseTool/, label: \"LangChain tool definition\" },",
+      "matchedPattern": "Sandbox code execution tool"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        58
+      ],
+      "snippet": "      // Sandbox execution\n      { regex: /sandbox|Sandbox|runCode|executeCode/, label: \"Sandbox code execution tool\" },\n      // LangChain/similar\n      { regex: /DynamicTool|StructuredTool|BaseTool/, label: \"LangChain tool definition\" },\n    ];",
+      "matchedPattern": "Sandbox code execution tool"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        30
+      ],
+      "snippet": "    `import { sandbox } from \"sandbox\";\\nawait sandbox.runCode(code);`,\n    `import { DynamicTool } from \"langchain/tools\";\\nconst t = new DynamicTool({ name: \"x\" });`,\n  ],\n  match(content, filePath) {\n    if (/\\.(test|spec)\\./i.test(filePath)) return [];",
+      "matchedPattern": "LangChain tool definition"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        60
+      ],
+      "snippet": "      // LangChain/similar\n      { regex: /DynamicTool|StructuredTool|BaseTool/, label: \"LangChain tool definition\" },\n    ];\n\n    for (const { regex, label } of patterns) {",
+      "matchedPattern": "LangChain tool definition"
+    },
+    {
+      "vulnSlug": "untrusted-redirect-following",
+      "lineNumbers": [
+        28
+      ],
+      "snippet": "    `import fs from \"fs\";\\nfs.writeFile(path, data, () => {});`,\n    `await fetch(url);`,\n    `import { sandbox } from \"sandbox\";\\nawait sandbox.runCode(code);`,\n    `import { DynamicTool } from \"langchain/tools\";\\nconst t = new DynamicTool({ name: \"x\" });`,",
+      "matchedPattern": "fetch(url) — default redirect: follow + caller-style URL"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.828Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "a4514f0722db3c69f7a43136b9b47ddebb73d40f7694754510c0d059c3cc68ac",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:08.794Z",
+      "durationMs": 56042,
+      "durationApiMs": 53510,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "e43a028a-de8a-4dc7-8310-a9d2634f2ad6",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.5421327499999999,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 3782,
+        "cacheReadInputTokens": 236768,
+        "cacheCreationInputTokens": 52663
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215247-d54822996f49bf17",
+      "investigatedAt": "2026-05-06T21:53:44.009Z",
+      "durationMs": 9004,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8e73-7001-b338-b63d694b4240",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0524188,
+      "usage": {
+        "inputTokens": 6665.2,
+        "outputTokens": 373.6,
+        "cacheReadInputTokens": 15769.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:44.012Z"
+  },
+  "status": "analyzed"
+}

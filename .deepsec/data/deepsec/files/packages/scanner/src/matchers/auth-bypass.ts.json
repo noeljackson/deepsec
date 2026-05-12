@@ -1,0 +1,155 @@
+{
+  "filePath": "packages/scanner/src/matchers/auth-bypass.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "      [\n        { regex: /isAdmin\\s*[=!]==?\\s*(true|false|req\\.)/, label: \"admin check comparison\" },\n        { regex: /auth.*skip|skip.*auth|bypass.*auth/i, label: \"auth skip/bypass\" },\n        { regex: /if\\s*\\(\\s*!?\\s*session\\s*\\)/, label: \"session null check\" },\n        { regex: /verify(Token|JWT|Session|Auth)\\s*\\(/, label: \"auth verification call\" },",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        7,
+        17
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"auth-bypass\",\n  description: \"Auth checks, middleware guards, session validation that may be bypassable\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  match(content, _filePath) {",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"auth-bypass\",\n  description: \"Auth checks, middleware guards, session validation that may be bypassable\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  match(content, _filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        10,
+        11
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `if (isAdmin === true) { grant(); }`,\n    `user.isAdmin == req.body.isAdmin`,\n    `// skip auth in development`,",
+      "matchedPattern": "admin check comparison"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        12,
+        13,
+        31,
+        32
+      ],
+      "snippet": "    `if (isAdmin === true) { grant(); }`,\n    `user.isAdmin == req.body.isAdmin`,\n    `// skip auth in development`,\n    `const bypassAuth = true;`,\n    `if (!session) return null;`,",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        14,
+        15
+      ],
+      "snippet": "    `// skip auth in development`,\n    `const bypassAuth = true;`,\n    `if (!session) return null;`,\n    `if ( session ) { /* ok */ }`,\n    `await verifyToken(token);`,",
+      "matchedPattern": "session null check"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        16,
+        17,
+        18,
+        19
+      ],
+      "snippet": "    `if (!session) return null;`,\n    `if ( session ) { /* ok */ }`,\n    `await verifyToken(token);`,\n    `const ok = verifyJWT(t);`,\n    `verifySession(req);`,",
+      "matchedPattern": "auth verification call"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        7,
+        20,
+        21,
+        36
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"auth-bypass\",\n  description: \"Auth checks, middleware guards, session validation that may be bypassable\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        22,
+        23
+      ],
+      "snippet": "    `app.use(authMiddleware);`,\n    `const middlewareAuth = compose(...);`,\n    `const t = req.headers[\"authorization\"];`,\n    `req.headers['authorization']`,\n  ],",
+      "matchedPattern": "authorization header access"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.493Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "28b47011bb6ec2b368d79f40c5f871588e6bfbf451de98f2cd79225e3d0d4a6f",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:01.382Z",
+      "durationMs": 47741,
+      "durationApiMs": 45235,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "cd084360-af75-4dd9-a59d-04e0c819a753",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.4970532499999999,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 3107,
+        "cacheReadInputTokens": 226559,
+        "cacheCreationInputTokens": 48967
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-b34a23093a7f063f",
+      "investigatedAt": "2026-05-06T21:53:31.457Z",
+      "durationMs": 8262,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b3e-7931-b009-43059171fba6",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05549425,
+      "usage": {
+        "inputTokens": 7568.25,
+        "outputTokens": 349.5,
+        "cacheReadInputTokens": 14336,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:31.459Z"
+  },
+  "status": "analyzed"
+}

@@ -1,0 +1,168 @@
+{
+  "filePath": "packages/scanner/src/matchers/response-header-leak.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"response-header-leak\",\n  description: \"Response headers exposing internal infrastructure details\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx,lua,go,conf}\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "response-header-leak",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "      \"response-header-leak\",\n      [\n        { regex: /x-powered-by/i, label: \"X-Powered-By header\" },\n        { regex: /setHeader\\s*\\(\\s*['\"]server['\"]/i, label: \"Server header set\" },\n        { regex: /x-debug|x-internal|x-trace-id/i, label: \"Debug/internal header\" },",
+      "matchedPattern": "X-Powered-By header"
+    },
+    {
+      "vulnSlug": "response-header-leak",
+      "lineNumbers": [
+        17,
+        18,
+        19,
+        21
+      ],
+      "snippet": "        { regex: /x-powered-by/i, label: \"X-Powered-By header\" },\n        { regex: /setHeader\\s*\\(\\s*['\"]server['\"]/i, label: \"Server header set\" },\n        { regex: /x-debug|x-internal|x-trace-id/i, label: \"Debug/internal header\" },\n        { regex: /add_header.*server_version|add_header.*x-debug/i, label: \"Nginx debug header\" },\n        { regex: /ngx\\.header\\[['\"]x-debug/, label: \"Lua debug response header\" },",
+      "matchedPattern": "Debug/internal header"
+    },
+    {
+      "vulnSlug": "response-header-leak",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "        { regex: /setHeader\\s*\\(\\s*['\"]server['\"]/i, label: \"Server header set\" },\n        { regex: /x-debug|x-internal|x-trace-id/i, label: \"Debug/internal header\" },\n        { regex: /add_header.*server_version|add_header.*x-debug/i, label: \"Nginx debug header\" },\n        { regex: /ngx\\.header\\[['\"]x-debug/, label: \"Lua debug response header\" },\n        {",
+      "matchedPattern": "Nginx debug header"
+    },
+    {
+      "vulnSlug": "response-header-leak",
+      "lineNumbers": [
+        10,
+        11,
+        29
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx,lua,go,conf}\"],\n  examples: [\n    `res.setHeader(\"X-Powered-By\", \"Express\");`,\n    `app.set('x-powered-by', false);`,\n    `res.setHeader(\"Server\", \"nginx/1.21.0\");`,",
+      "matchedPattern": "X-Powered-By header"
+    },
+    {
+      "vulnSlug": "response-header-leak",
+      "lineNumbers": [
+        12,
+        13
+      ],
+      "snippet": "    `res.setHeader(\"X-Powered-By\", \"Express\");`,\n    `app.set('x-powered-by', false);`,\n    `res.setHeader(\"Server\", \"nginx/1.21.0\");`,\n    `response.setHeader('server', 'apache');`,\n    `res.setHeader(\"X-Debug\", \"true\");`,",
+      "matchedPattern": "Server header set"
+    },
+    {
+      "vulnSlug": "response-header-leak",
+      "lineNumbers": [
+        14,
+        15,
+        16,
+        18,
+        19,
+        20,
+        31,
+        33,
+        36,
+        38
+      ],
+      "snippet": "    `res.setHeader(\"Server\", \"nginx/1.21.0\");`,\n    `response.setHeader('server', 'apache');`,\n    `res.setHeader(\"X-Debug\", \"true\");`,\n    `res.setHeader(\"X-Internal-Trace\", id);`,\n    `res.setHeader(\"X-Trace-Id\", traceId);`,",
+      "matchedPattern": "Debug/internal header"
+    },
+    {
+      "vulnSlug": "response-header-leak",
+      "lineNumbers": [
+        17,
+        18,
+        33
+      ],
+      "snippet": "    `res.setHeader(\"X-Internal-Trace\", id);`,\n    `res.setHeader(\"X-Trace-Id\", traceId);`,\n    `add_header server_version $server_version;`,\n    `add_header x-debug \"1\";`,\n    `ngx.header[\"x-debug-info\"] = \"yes\"`,",
+      "matchedPattern": "Nginx debug header"
+    },
+    {
+      "vulnSlug": "response-header-leak",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `add_header server_version $server_version;`,\n    `add_header x-debug \"1\";`,\n    `ngx.header[\"x-debug-info\"] = \"yes\"`,\n    `w.Header().Set(\"X-Debug\", \"true\")`,\n    `w.Header().Set(\"Server\", \"Custom/1.0\")`,",
+      "matchedPattern": "Lua debug response header"
+    },
+    {
+      "vulnSlug": "response-header-leak",
+      "lineNumbers": [
+        20,
+        21
+      ],
+      "snippet": "    `add_header x-debug \"1\";`,\n    `ngx.header[\"x-debug-info\"] = \"yes\"`,\n    `w.Header().Set(\"X-Debug\", \"true\")`,\n    `w.Header().Set(\"Server\", \"Custom/1.0\")`,\n  ],",
+      "matchedPattern": "Go debug response header"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.636Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "84251b0faf0e8915f13b955f4ab61d523a658de3ba375258d46d8c03c98d8081",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:01.325Z",
+      "durationMs": 47741,
+      "durationApiMs": 45235,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "cd084360-af75-4dd9-a59d-04e0c819a753",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.4970532499999999,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 3107,
+        "cacheReadInputTokens": 226559,
+        "cacheCreationInputTokens": 48967
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-b34a23093a7f063f",
+      "investigatedAt": "2026-05-06T21:53:31.454Z",
+      "durationMs": 8262,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b3e-7931-b009-43059171fba6",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05549425,
+      "usage": {
+        "inputTokens": 7568.25,
+        "outputTokens": 349.5,
+        "cacheReadInputTokens": 14336,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:31.457Z"
+  },
+  "status": "analyzed"
+}

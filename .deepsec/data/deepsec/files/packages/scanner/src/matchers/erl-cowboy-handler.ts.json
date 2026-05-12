@@ -1,0 +1,22 @@
+{
+  "filePath": "packages/scanner/src/matchers/erl-cowboy-handler.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"erl-cowboy-handler\",\n  description: \"Erlang Cowboy HTTP handlers (gated on Erlang)\",\n  filePatterns: [\"**/*.erl\"],\n  requires: { tech: [\"erlang\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.490Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "e549c7613fdf75b1588a5b5d9a8a0a5144bf163abe074fdb045ab8f8b7fff9e1",
+  "findings": [],
+  "analysisHistory": [],
+  "status": "processing",
+  "lockedByRunId": "20260506215246-7f870d2495961b4e",
+  "lockedAt": "2026-05-06T21:52:46.606Z"
+}

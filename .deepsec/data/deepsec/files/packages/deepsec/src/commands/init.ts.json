@@ -1,0 +1,110 @@
+{
+  "filePath": "packages/deepsec/src/commands/init.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        93
+      ],
+      "snippet": "  console.log();\n  console.log(`  ${DIM}# --project-id is auto-resolved while there's only one project.${RESET}`);\n  console.log(`  ${DIM}# Register another codebase later: deepsec init-project <root>${RESET}`);\n}\n",
+      "matchedPattern": "template literal in HTML"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        134
+      ],
+      "snippet": "      version: \"0.1.0\",\n      private: true,\n      description: \"deepsec scanning workspace\",\n      type: \"module\",\n      dependencies: { deepsec: \"^0.1.0\" },",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        103
+      ],
+      "snippet": "  console.log();\n  console.log(`  ${DIM}# --project-id is auto-resolved while there's only one project.${RESET}`);\n  console.log(`  ${DIM}# Register another codebase later: deepsec init-project <root>${RESET}`);\n}\n",
+      "matchedPattern": "template literal in HTML"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        150
+      ],
+      "snippet": "      version: \"0.1.0\",\n      private: true,\n      description: \"deepsec scanning workspace\",\n      type: \"module\",\n      // Empty workspaces array marks this package.json as a workspace root",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        181
+      ],
+      "snippet": "function detectPackageManager(): string {\n  const ua = process.env.npm_config_user_agent;\n  if (ua) {",
+      "matchedPattern": "process.env.npm_config_user_agent"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.684Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "1379b014ddbfcb0b73387d10c0195b72856f0db7d6afba4a81d7014a7d40d48b",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:16:38.647Z",
+      "durationMs": 404873,
+      "durationApiMs": 403181,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "88ed0b7c-a3fd-4046-8aac-ec8125710cdf",
+      "findingCount": 0,
+      "numTurns": 19,
+      "costUsd": 1.8812119999999997,
+      "usage": {
+        "inputTokens": 24,
+        "outputTokens": 28083,
+        "cacheReadInputTokens": 1375409,
+        "cacheCreationInputTokens": 78610
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-f808d3de8281a89b",
+      "investigatedAt": "2026-05-06T21:54:41.491Z",
+      "durationMs": 20551,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b7e-7593-9578-497e60738dbd",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1004848,
+      "usage": {
+        "inputTokens": 10084.8,
+        "outputTokens": 851.2,
+        "cacheReadInputTokens": 49049.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:54:41.492Z"
+  },
+  "status": "analyzed"
+}

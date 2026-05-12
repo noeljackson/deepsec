@@ -1,0 +1,276 @@
+{
+  "filePath": "packages/scanner/src/matchers/js-sql-raw.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        137
+      ],
+      "snippet": "            \"better-sqlite3 db.prepare with template-literal interpolation — use bound parameters\",\n        },\n        // better-sqlite3: db.exec(`...${x}...`)\n        {\n          regex: /\\bdb\\.exec\\s*\\(\\s*`[^`]{0,400}\\$\\{/,",
+      "matchedPattern": "exec with string"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        31,
+        34,
+        36,
+        39,
+        40,
+        41
+      ],
+      "snippet": "  examples: [\n    `client.query(\"SELECT * FROM users WHERE id = \" + userId)`,\n    `pool.query(\\`SELECT * FROM users WHERE id = \\${id}\\`)`,\n    `await conn.query(\"DELETE FROM x WHERE y = '\" + name + \"'\")`,\n    `repo.query(\\`UPDATE users SET role = '\\${role}' WHERE id = \\${id}\\`)`,",
+      "matchedPattern": "template literal SELECT with interpolation"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        33
+      ],
+      "snippet": "    `pool.query(\\`SELECT * FROM users WHERE id = \\${id}\\`)`,\n    `await conn.query(\"DELETE FROM x WHERE y = '\" + name + \"'\")`,\n    `repo.query(\\`UPDATE users SET role = '\\${role}' WHERE id = \\${id}\\`)`,\n    `sequelize.query(\\`SELECT * FROM t WHERE col = '\\${input}'\\`)`,\n    `Sequelize.literal(\\`COUNT(*) FILTER (WHERE x = \\${x})\\`)`,",
+      "matchedPattern": "template literal UPDATE with interpolation"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        30
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx,mjs,cjs}\"],\n  examples: [\n    `client.query(\"SELECT * FROM users WHERE id = \" + userId)`,\n    `pool.query(\\`SELECT * FROM users WHERE id = \\${id}\\`)`,\n    `await conn.query(\"DELETE FROM x WHERE y = '\" + name + \"'\")`,",
+      "matchedPattern": "string concat SELECT"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        38
+      ],
+      "snippet": "    `knex.raw(\\`SELECT * FROM users WHERE id = \\${id}\\`)`,\n    `qb.whereRaw(\"col = '\" + value + \"'\")`,\n    `db.selectFrom(\"users\").where(sql.raw(\"col = \" + x))`,\n    `sql.unsafe(\\`SELECT * FROM x WHERE y = \\${y}\\`)`,\n    `db.prepare(\\`SELECT * FROM users WHERE name = '\\${name}'\\`)`,",
+      "matchedPattern": "sql.raw() — raw SQL (verify parameterized)"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        26
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"js-sql-raw\",\n  description:\n    \"Raw SQL escape hatches across popular JS/TS DB drivers (pg, mysql2, TypeORM, Sequelize, Knex, Kysely, postgres.js, better-sqlite3) — interpolated input is SQL injection\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx,mjs,cjs}\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        30
+      ],
+      "snippet": "  examples: [\n    `client.query(\"SELECT * FROM users WHERE id = \" + userId)`,\n    `pool.query(\\`SELECT * FROM users WHERE id = \\${id}\\`)`,\n    `await conn.query(\"DELETE FROM x WHERE y = '\" + name + \"'\")`,\n    `repo.query(\\`UPDATE users SET role = '\\${role}' WHERE id = \\${id}\\`)`,\n    `sequelize.query(\\`SELECT * FROM t WHERE col = '\\${input}'\\`)`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        31
+      ],
+      "snippet": "    `client.query(\"SELECT * FROM users WHERE id = \" + userId)`,\n    `pool.query(\\`SELECT * FROM users WHERE id = \\${id}\\`)`,\n    `await conn.query(\"DELETE FROM x WHERE y = '\" + name + \"'\")`,\n    `repo.query(\\`UPDATE users SET role = '\\${role}' WHERE id = \\${id}\\`)`,\n    `sequelize.query(\\`SELECT * FROM t WHERE col = '\\${input}'\\`)`,\n    `Sequelize.literal(\\`COUNT(*) FILTER (WHERE x = \\${x})\\`)`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        39
+      ],
+      "snippet": "    `db.selectFrom(\"users\").where(sql.raw(\"col = \" + x))`,\n    `sql.unsafe(\\`SELECT * FROM x WHERE y = \\${y}\\`)`,\n    `db.prepare(\\`SELECT * FROM users WHERE name = '\\${name}'\\`)`,\n    `@Query(\\`SELECT * FROM x WHERE y = '\\${z}'\\` + suffix)`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        40
+      ],
+      "snippet": "    `sql.unsafe(\\`SELECT * FROM x WHERE y = \\${y}\\`)`,\n    `db.prepare(\\`SELECT * FROM users WHERE name = '\\${name}'\\`)`,\n    `@Query(\\`SELECT * FROM x WHERE y = '\\${z}'\\` + suffix)`,\n  ],\n  match(content, filePath) {\n    if (/\\.(test|spec)\\.(ts|tsx|js|jsx|mjs|cjs)$/.test(filePath)) return [];",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        41
+      ],
+      "snippet": "    `db.prepare(\\`SELECT * FROM users WHERE name = '\\${name}'\\`)`,\n    `@Query(\\`SELECT * FROM x WHERE y = '\\${z}'\\` + suffix)`,\n  ],\n  match(content, filePath) {\n    if (/\\.(test|spec)\\.(ts|tsx|js|jsx|mjs|cjs)$/.test(filePath)) return [];\n    if (/\\.d\\.ts$/.test(filePath)) return [];",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        50
+      ],
+      "snippet": "      [\n        // node-postgres / pg-pool / generic `client|pool|conn.query(\"SELECT ...${x}\")`\n        {\n          regex:\n            /\\b(?:client|pool|conn)\\.query\\s*\\(\\s*['\"`]\\s*(?:SELECT|INSERT|UPDATE|DELETE|CREATE|DROP)\\b[^)]{0,400}\\$\\{/i,\n          label:",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        53
+      ],
+      "snippet": "          regex:\n            /\\b(?:client|pool|conn)\\.query\\s*\\(\\s*['\"`]\\s*(?:SELECT|INSERT|UPDATE|DELETE|CREATE|DROP)\\b[^)]{0,400}\\$\\{/i,\n          label:\n            \"node-postgres/pg: client/pool/conn.query with template-literal interpolation — SQL injection\",\n        },\n        // Generic .query(\"...\") + something — concatenation onto a SQL literal",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        143
+      ],
+      "snippet": "        },\n        // Generic catch-all: query(\"SELECT ...\") + ... for drivers we don't name\n        {\n          regex: /\\bquery\\s*\\(\\s*['\"`]\\s*(?:SELECT|INSERT|UPDATE|DELETE)\\b[^)]{0,400}['\"`]\\s*\\+/i,\n          label: \"Generic .query('SELECT/INSERT/...') with string concatenation — SQL injection\",\n        },",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        145
+      ],
+      "snippet": "        {\n          regex: /\\bquery\\s*\\(\\s*['\"`]\\s*(?:SELECT|INSERT|UPDATE|DELETE)\\b[^)]{0,400}['\"`]\\s*\\+/i,\n          label: \"Generic .query('SELECT/INSERT/...') with string concatenation — SQL injection\",\n        },\n      ],\n      content,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        50
+      ],
+      "snippet": "      \"js-sql-raw\",\n      [\n        // node-postgres / pg-pool / generic `client|pool|conn.query(\"SELECT ...${x}\")`\n        {\n          regex:",
+      "matchedPattern": "node-postgres/pg: client/pool/conn.query with template-literal interpolation — SQL injection"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        30
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx,mjs,cjs}\"],\n  examples: [\n    `client.query(\"SELECT * FROM users WHERE id = \" + userId)`,\n    `pool.query(\\`SELECT * FROM users WHERE id = \\${id}\\`)`,\n    `await conn.query(\"DELETE FROM x WHERE y = '\" + name + \"'\")`,",
+      "matchedPattern": ".query('...') with string concatenation — SQL injection"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        33
+      ],
+      "snippet": "    `pool.query(\\`SELECT * FROM users WHERE id = \\${id}\\`)`,\n    `await conn.query(\"DELETE FROM x WHERE y = '\" + name + \"'\")`,\n    `repo.query(\\`UPDATE users SET role = '\\${role}' WHERE id = \\${id}\\`)`,\n    `sequelize.query(\\`SELECT * FROM t WHERE col = '\\${input}'\\`)`,\n    `Sequelize.literal(\\`COUNT(*) FILTER (WHERE x = \\${x})\\`)`,",
+      "matchedPattern": "TypeORM repository/manager.query — raw SQL, must use parameter array not interpolation"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        35
+      ],
+      "snippet": "    `repo.query(\\`UPDATE users SET role = '\\${role}' WHERE id = \\${id}\\`)`,\n    `sequelize.query(\\`SELECT * FROM t WHERE col = '\\${input}'\\`)`,\n    `Sequelize.literal(\\`COUNT(*) FILTER (WHERE x = \\${x})\\`)`,\n    `knex.raw(\\`SELECT * FROM users WHERE id = \\${id}\\`)`,\n    `qb.whereRaw(\"col = '\" + value + \"'\")`,",
+      "matchedPattern": "Sequelize.literal — bypasses escaping; must not include user input"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        37
+      ],
+      "snippet": "    `Sequelize.literal(\\`COUNT(*) FILTER (WHERE x = \\${x})\\`)`,\n    `knex.raw(\\`SELECT * FROM users WHERE id = \\${id}\\`)`,\n    `qb.whereRaw(\"col = '\" + value + \"'\")`,\n    `db.selectFrom(\"users\").where(sql.raw(\"col = \" + x))`,\n    `sql.unsafe(\\`SELECT * FROM x WHERE y = \\${y}\\`)`,",
+      "matchedPattern": "Knex .whereRaw — verify bindings are passed as second argument, not interpolated"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        38
+      ],
+      "snippet": "    `knex.raw(\\`SELECT * FROM users WHERE id = \\${id}\\`)`,\n    `qb.whereRaw(\"col = '\" + value + \"'\")`,\n    `db.selectFrom(\"users\").where(sql.raw(\"col = \" + x))`,\n    `sql.unsafe(\\`SELECT * FROM x WHERE y = \\${y}\\`)`,\n    `db.prepare(\\`SELECT * FROM users WHERE name = '\\${name}'\\`)`,",
+      "matchedPattern": "Kysely sql.raw — bypasses parameterization, must not include user input"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        39
+      ],
+      "snippet": "    `qb.whereRaw(\"col = '\" + value + \"'\")`,\n    `db.selectFrom(\"users\").where(sql.raw(\"col = \" + x))`,\n    `sql.unsafe(\\`SELECT * FROM x WHERE y = \\${y}\\`)`,\n    `db.prepare(\\`SELECT * FROM users WHERE name = '\\${name}'\\`)`,\n    `@Query(\\`SELECT * FROM x WHERE y = '\\${z}'\\` + suffix)`,",
+      "matchedPattern": "postgres.js sql.unsafe — bypasses parameterization, must not include user input"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        131
+      ],
+      "snippet": "          label: \"postgres.js sql.unsafe — bypasses parameterization, must not include user input\",\n        },\n        // better-sqlite3: db.prepare(`...${x}...`)\n        {\n          regex: /\\bdb\\.prepare\\s*\\(\\s*`[^`]{0,400}\\$\\{/,",
+      "matchedPattern": "better-sqlite3 db.prepare with template-literal interpolation — use bound parameters"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        137
+      ],
+      "snippet": "            \"better-sqlite3 db.prepare with template-literal interpolation — use bound parameters\",\n        },\n        // better-sqlite3: db.exec(`...${x}...`)\n        {\n          regex: /\\bdb\\.exec\\s*\\(\\s*`[^`]{0,400}\\$\\{/,",
+      "matchedPattern": "better-sqlite3 db.exec with template-literal interpolation — db.exec cannot bind, refactor to prepare()"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        30,
+        32
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx,mjs,cjs}\"],\n  examples: [\n    `client.query(\"SELECT * FROM users WHERE id = \" + userId)`,\n    `pool.query(\\`SELECT * FROM users WHERE id = \\${id}\\`)`,\n    `await conn.query(\"DELETE FROM x WHERE y = '\" + name + \"'\")`,",
+      "matchedPattern": "Generic .query('SELECT/INSERT/...') with string concatenation — SQL injection"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.856Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "8e6da34315798ef2a280d27bf0eab85a0f6c52ddc1445f8c606fb5d0c8fa3d4f",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-ab77ad581398dd81",
+      "investigatedAt": "2026-05-06T21:49:46.962Z",
+      "durationMs": 7095.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3009-7b10-96bf-3827eb699d84",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.047835,
+      "usage": {
+        "inputTokens": 6867.5,
+        "outputTokens": 311.25,
+        "cacheReadInputTokens": 8320,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215247-d54822996f49bf17",
+      "investigatedAt": "2026-05-06T21:53:37.951Z",
+      "durationMs": 9526.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8e73-7dd3-b6a8-093f2eb1e172",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.06494775,
+      "usage": {
+        "inputTokens": 8802.75,
+        "outputTokens": 429,
+        "cacheReadInputTokens": 16128,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:37.955Z"
+  },
+  "status": "analyzed"
+}

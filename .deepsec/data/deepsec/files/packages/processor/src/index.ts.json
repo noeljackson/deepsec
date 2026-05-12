@@ -1,0 +1,279 @@
+{
+  "filePath": "packages/processor/src/index.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        53,
+        116,
+        128,
+        129
+      ],
+      "snippet": "| Slug | Category |\n|------|----------|\n| auth-bypass | Authentication checks that can be circumvented |\n| missing-auth | HTTP endpoints without authentication |\n| acl-check | Missing or incorrect RBAC/permission checks |",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        93,
+        96,
+        122,
+        128,
+        129
+      ],
+      "snippet": "Before classifying an issue, check for mitigations:\n- Is the input sanitized or escaped before use? (e.g., parameterized queries, HTML escaping, safeJsonStringify)\n- Is there middleware or a framework guard that protects this code path? (e.g., withSchema auth, withAuthentication, CSRF tokens)\n- Is the vulnerable pattern only used with trusted/internal data, not user input?\n- Does the framework (Next.js, Express, etc.) provide built-in protection?",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        56,
+        101,
+        103
+      ],
+      "snippet": "| missing-auth | HTTP endpoints without authentication |\n| acl-check | Missing or incorrect RBAC/permission checks |\n| xss | Cross-site scripting via innerHTML, dangerouslySetInnerHTML, etc. |\n| dangerous-html | Unsafe HTML rendering with user-controlled data |\n| rce | Remote code execution via exec, eval, spawn, etc. |",
+      "matchedPattern": "dangerouslySetInnerHTML"
+    },
+    {
+      "vulnSlug": "path-traversal",
+      "lineNumbers": [
+        238,
+        650
+      ],
+      "snippet": "  let manifestFilePaths: Set<string> | undefined;\n  if (params.manifestPath) {\n    const raw = JSON.parse(fs.readFileSync(params.manifestPath, \"utf-8\"));\n    if (!Array.isArray(raw)) throw new Error(\"Manifest must be a JSON array of file paths\");\n    manifestFilePaths = new Set(raw as string[]);",
+      "matchedPattern": "readFile with request-derived path"
+    },
+    {
+      "vulnSlug": "path-traversal",
+      "lineNumbers": [
+        223,
+        635
+      ],
+      "snippet": "  const project = readProjectConfig(projectId);\n  const effectiveRootPath = params.rootPathOverride\n    ? path.resolve(params.rootPathOverride)\n    : project.rootPath;\n",
+      "matchedPattern": "path.resolve with request-derived input"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        44,
+        87
+      ],
+      "snippet": "\n- **CRITICAL**: Remote Code Execution (RCE), authentication bypass allowing full access, SQL injection on sensitive data, unrestricted file upload leading to RCE, SSRF to internal services\n- **HIGH**: Cross-Site Scripting (XSS), Server-Side Request Forgery (SSRF), privilege escalation, hardcoded secrets/credentials in source code, insecure deserialization, missing authorization on sensitive operations\n- **MEDIUM**: Open redirect, weak cryptographic algorithms, missing rate limiting, information disclosure, insecure direct object references, race conditions, logic bugs in auth/permission checks\n",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        126
+      ],
+      "snippet": "\n### Auth Flow Bypasses\n- **OAuth callback manipulation**: State parameter tampering, redirect_uri manipulation, custom URI scheme injection\n- **Session/JWT weaknesses**: Missing algorithm pinning, stub sessions when auth not configured, test tokens reachable in prod\n- **Middleware bypass**: Routes that escape the middleware matcher pattern or hit before auth middleware runs",
+      "matchedPattern": "Redirect URL from header/param (validNextRedirect in scope — verify usage)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        56
+      ],
+      "snippet": "| auth-bypass | Authentication checks that can be circumvented |\n| missing-auth | HTTP endpoints without authentication |\n| acl-check | Missing or incorrect RBAC/permission checks |\n| xss | Cross-site scripting via innerHTML, dangerouslySetInnerHTML, etc. |\n| dangerous-html | Unsafe HTML rendering with user-controlled data |\n| rce | Remote code execution via exec, eval, spawn, etc. |\n| sql-injection | SQL injection via string interpolation/concatenation |\n| ssrf | Server-side request forgery via user-controlled URLs |",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        101
+      ],
+      "snippet": "\nIf fully mitigated, do NOT flag it. Report only genuine, exploitable vulnerabilities.\n\n## JSON.stringify in dangerouslySetInnerHTML / script tags\n\n\\`JSON.stringify(data)\\` inside \\`dangerouslySetInnerHTML\\` or inline \\`<script>\\` tags is an XSS vulnerability. If \\`data\\` contains \\`</script>\\`, the browser closes the script tag early and interprets the rest as HTML — enabling arbitrary script injection.\n\n**Example attack:** If data contains \\`{\"name\":\"</script><script>alert(1)</script>\"}\\`, the JSON breaks out of the script block.",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        103
+      ],
+      "snippet": "\n## JSON.stringify in dangerouslySetInnerHTML / script tags\n\n\\`JSON.stringify(data)\\` inside \\`dangerouslySetInnerHTML\\` or inline \\`<script>\\` tags is an XSS vulnerability. If \\`data\\` contains \\`</script>\\`, the browser closes the script tag early and interprets the rest as HTML — enabling arbitrary script injection.\n\n**Example attack:** If data contains \\`{\"name\":\"</script><script>alert(1)</script>\"}\\`, the JSON breaks out of the script block.\n\n**Mitigations to check for:**",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "jwt-handling",
+      "lineNumbers": [
+        123
+      ],
+      "snippet": "- **Route param injection**: Can dynamic route segments like \\`[teamSlug]\\` or \\`[...path]\\` be manipulated to access other users' data?\n- **Search params as auth input**: If middleware reads \\`searchParams\\` for redirects or tokens, can those be spoofed?\n- **Token refresh abuse**: Query params like \\`force_refresh_access_token=true\\` — are they rate-limited?\n\n### Auth Flow Bypasses",
+      "matchedPattern": "Token refresh logic (verify validation)"
+    },
+    {
+      "vulnSlug": "unsafe-json-in-html",
+      "lineNumbers": [
+        101
+      ],
+      "snippet": "If fully mitigated, do NOT flag it. Report only genuine, exploitable vulnerabilities.\n\n## JSON.stringify in dangerouslySetInnerHTML / script tags\n\n\\`JSON.stringify(data)\\` inside \\`dangerouslySetInnerHTML\\` or inline \\`<script>\\` tags is an XSS vulnerability. If \\`data\\` contains \\`</script>\\`, the browser closes the script tag early and interprets the rest as HTML — enabling arbitrary script injection.",
+      "matchedPattern": "JSON.stringify near HTML injection point (safeJsonStringify in scope — verify usage)"
+    },
+    {
+      "vulnSlug": "unsafe-json-in-html",
+      "lineNumbers": [
+        103
+      ],
+      "snippet": "## JSON.stringify in dangerouslySetInnerHTML / script tags\n\n\\`JSON.stringify(data)\\` inside \\`dangerouslySetInnerHTML\\` or inline \\`<script>\\` tags is an XSS vulnerability. If \\`data\\` contains \\`</script>\\`, the browser closes the script tag early and interprets the rest as HTML — enabling arbitrary script injection.\n\n**Example attack:** If data contains \\`{\"name\":\"</script><script>alert(1)</script>\"}\\`, the JSON breaks out of the script block.",
+      "matchedPattern": "JSON.stringify near HTML injection point (safeJsonStringify in scope — verify usage)"
+    },
+    {
+      "vulnSlug": "path-traversal",
+      "lineNumbers": [
+        158,
+        737
+      ],
+      "snippet": "  let manifestFilePaths: Set<string> | undefined;\n  if (params.manifestPath) {\n    const raw = JSON.parse(fs.readFileSync(params.manifestPath, \"utf-8\"));\n    if (!Array.isArray(raw)) throw new Error(\"Manifest must be a JSON array of file paths\");\n    manifestFilePaths = new Set(raw as string[]);",
+      "matchedPattern": "readFile with request-derived path"
+    },
+    {
+      "vulnSlug": "path-traversal",
+      "lineNumbers": [
+        143,
+        722
+      ],
+      "snippet": "  const project = readProjectConfig(projectId);\n  const effectiveRootPath = params.rootPathOverride\n    ? path.resolve(params.rootPathOverride)\n    : project.rootPath;\n",
+      "matchedPattern": "path.resolve with request-derived input"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.441Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "65a6d19f1725b0a93fd2549dd8540c4f736072cb89f75b079dcd4cb452298c70",
+  "findings": [
+    {
+      "severity": "HIGH_BUG",
+      "vulnSlug": "other-race-condition",
+      "title": "Concurrent process runs can claim and write the same file records",
+      "description": "The processor selects work from a snapshot of all file records, then later writes `status = \"processing\"` and `lockedByRunId` for every selected record without an atomic claim or re-read. If two `process()` invocations start at the same time against the same project, both can observe the same `pending` or `error` records before either lock is written. Both then process the same files and later call `writeFileRecord`, so the last writer can clobber findings, analysis history, status, and lock metadata from the other run. The stale-lock logic only helps with records that were already marked `processing` before selection; it does not protect the pending-to-processing transition.",
+      "lineNumbers": [
+        307,
+        357,
+        431,
+        437
+      ],
+      "recommendation": "Make file claiming atomic: re-read each record immediately before locking and skip it unless it is still claimable, write via a compare-and-swap style lock file/rename, or introduce a per-project process lock around selection plus lock writes.",
+      "confidence": "high",
+      "producedByRunId": "20260506215246-3a3061e5bb87dbb9",
+      "revalidation": {
+        "verdict": "true-positive",
+        "reasoning": "The current processor has been improved from the snapshot-only behavior described in the finding: after selecting records from `loadAllFileRecords`, it re-reads each record before claiming it, writes `status = \"processing\"`, and then reads the record back to verify `lockedByRunId`. That reduces the common race, but it is still not an atomic claim. `writeFileRecord` in `packages/core/src/run.ts` is a plain `fs.writeFileSync` of the JSON file, with no exclusive lock, compare-and-swap, hard-link lock, or atomic rename conditioned on prior state. A concrete interleaving remains possible: run A and run B both read the same pending record, A writes and verifies its own lock, then B writes and verifies its own lock; both have pushed the record into `claimed` and both proceed to process and later write results. The comment in the current code explicitly acknowledges this limitation, saying `writeFileRecord is not a true CAS` and that last-writer races are still possible. Force modes make the behavior even weaker because `reinvestigate` or direct `filePaths` bypass the normal claimability skip and can overwrite another run's processing lock. The stale-lock logic only governs records already observed as `processing`; it does not provide an atomic pending-to-processing transition. This is a real local data-integrity bug rather than a remote security boundary issue, so the original `HIGH_BUG` severity is appropriate.",
+        "revalidatedAt": "2026-05-06T22:53:31.741Z",
+        "runId": "20260506225212-5caaae95a2b00493",
+        "model": "gpt-5.5"
+      }
+    }
+  ],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:16:23.392Z",
+      "durationMs": 390624,
+      "durationApiMs": 388060,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "8065c73f-0323-4e92-b23a-ddf054c61090",
+      "findingCount": 0,
+      "numTurns": 10,
+      "costUsd": 2.08821755,
+      "usage": {
+        "inputTokens": 15,
+        "outputTokens": 25045,
+        "cacheReadInputTokens": 653901,
+        "cacheCreationInputTokens": 169435
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-3a3061e5bb87dbb9",
+      "investigatedAt": "2026-05-06T21:56:18.394Z",
+      "durationMs": 39887.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c3c-7b43-b419-c899fb7eac8f",
+      "findingCount": 1,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1639258,
+      "usage": {
+        "inputTokens": 12793.8,
+        "outputTokens": 1900,
+        "cacheReadInputTokens": 85913.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    },
+    {
+      "runId": "20260506223949-bd2cf1d45b776494",
+      "investigatedAt": "2026-05-06T22:40:48.234Z",
+      "durationMs": 14013.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff72-8994-71d3-9be2-dbac69e4c2f1",
+      "findingCount": 1,
+      "numTurns": 0.25,
+      "phase": "revalidate",
+      "costUsd": 0.13210575,
+      "usage": {
+        "inputTokens": 13765.25,
+        "outputTokens": 1228.25,
+        "cacheReadInputTokens": 52864,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506225212-5caaae95a2b00493",
+      "investigatedAt": "2026-05-06T22:53:31.741Z",
+      "durationMs": 33776,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff7d-f2a9-7dc3-bd44-c78eb1048e33",
+      "findingCount": 1,
+      "numTurns": 0.5,
+      "phase": "revalidate",
+      "costUsd": 0.1678645,
+      "usage": {
+        "inputTokens": 16724.5,
+        "outputTokens": 1639,
+        "cacheReadInputTokens": 70144,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T22:53:31.746Z"
+  },
+  "status": "analyzed"
+}

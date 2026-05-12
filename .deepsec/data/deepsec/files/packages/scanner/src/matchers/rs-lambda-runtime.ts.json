@@ -1,0 +1,78 @@
+{
+  "filePath": "packages/scanner/src/matchers/rs-lambda-runtime.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"rs-lambda-runtime\",\n  description: \"Rust AWS Lambda handlers via lambda_runtime (gated on lambda-rs)\",\n  filePatterns: [\"**/*.rs\"],\n  requires: { tech: [\"lambda-rs\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.480Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "8c1692c528c6211ae066f647eb9e768d645a60370557ad8d4e1c6c9c2dbcd0e2",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-44ea5602af34a739",
+      "investigatedAt": "2026-05-06T21:50:02.528Z",
+      "durationMs": 10908.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-30e4-71f0-b629-1ca0f31749b8",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.069451,
+      "usage": {
+        "inputTokens": 8177,
+        "outputTokens": 517,
+        "cacheReadInputTokens": 26112,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      }
+    },
+    {
+      "runId": "20260506215246-47d6a0335f7d16bd",
+      "investigatedAt": "2026-05-06T21:53:54.166Z",
+      "durationMs": 13800,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b8a-7481-a5e0-b07fed07f0b9",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.084834,
+      "usage": {
+        "inputTokens": 9010.5,
+        "outputTokens": 705.25,
+        "cacheReadInputTokens": 37248,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:54.168Z"
+  },
+  "status": "analyzed"
+}

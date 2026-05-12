@@ -1,0 +1,374 @@
+{
+  "filePath": "packages/scanner/src/matchers/expensive-api-abuse.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"expensive-api-abuse\",\n  description:\n    \"Endpoints calling expensive APIs (LLM, AI, paid services) that may lack abuse protection\",\n  filePatterns: [",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        28
+      ],
+      "snippet": "  ],\n  examples: [\n    `export async function POST(req: Request) {\n  const { text } = await generateText({ model, prompt: \"hi\" });\n  return Response.json({ text });",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        32
+      ],
+      "snippet": "  return Response.json({ text });\n}`,\n    `export async function POST(req: Request) {\n  const result = streamText({ model, messages: [] });\n  return result.toAIStreamResponse();",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        36
+      ],
+      "snippet": "  return result.toAIStreamResponse();\n}`,\n    `export async function POST() {\n  const out = await generateObject({ model, schema, prompt: \"x\" });\n  return Response.json(out);",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        44
+      ],
+      "snippet": "  return new Response(stream.textStream);\n};`,\n    `export async function POST() {\n  const v = await embed({ model, value: \"hello\" });\n  return Response.json(v);",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        48
+      ],
+      "snippet": "  return Response.json(v);\n}`,\n    `export async function POST() {\n  const vs = await embedMany({ model, values: [\"a\", \"b\"] });\n  return Response.json(vs);",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        56
+      ],
+      "snippet": "  return openai.chat.completions.create({ model: \"gpt-4\", messages: [] });\n}`,\n    `export async function POST() {\n  return openai.completions.create({ model: \"gpt-3.5\", prompt: \"x\" });\n}`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        59
+      ],
+      "snippet": "  return openai.completions.create({ model: \"gpt-3.5\", prompt: \"x\" });\n}`,\n    `export async function POST() {\n  return openai.embeddings.create({ model: \"text-embed\", input: \"x\" });\n}`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        62
+      ],
+      "snippet": "  return openai.embeddings.create({ model: \"text-embed\", input: \"x\" });\n}`,\n    `export async function POST() {\n  return openai.images.generate({ prompt: \"x\" });\n}`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        65
+      ],
+      "snippet": "  return openai.images.generate({ prompt: \"x\" });\n}`,\n    `export async function POST() {\n  return anthropic.messages.create({ model: \"claude\", messages: [] });\n}`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        68
+      ],
+      "snippet": "  return anthropic.messages.create({ model: \"claude\", messages: [] });\n}`,\n    `export async function POST() {\n  return anthropic.completions.create({ model: \"claude\", prompt: \"x\" });\n}`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        71
+      ],
+      "snippet": "  return anthropic.completions.create({ model: \"claude\", prompt: \"x\" });\n}`,\n    `export async function POST() {\n  await fetch(\"https://ai-gateway.vercel.sh/v1/chat\", { method: \"POST\" });\n  return new Response(\"ok\");",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        75
+      ],
+      "snippet": "  return new Response(\"ok\");\n}`,\n    `export async function POST() {\n  await fetch(\"https://api.openai.com/v1/chat/completions\", { method: \"POST\" });\n  return new Response(\"ok\");",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        79
+      ],
+      "snippet": "  return new Response(\"ok\");\n}`,\n    `export async function POST() {\n  await fetch(\"https://api.openai.com/v1/completions\", { method: \"POST\" });\n  return new Response(\"ok\");",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        83
+      ],
+      "snippet": "  return new Response(\"ok\");\n}`,\n    `export async function POST() {\n  await fetch(\"https://api.openai.com/v1/embeddings\", { method: \"POST\" });\n  return new Response(\"ok\");",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        87
+      ],
+      "snippet": "  return new Response(\"ok\");\n}`,\n    `export async function POST() {\n  await fetch(\"https://api.openai.com/v1/images/generations\", { method: \"POST\" });\n  return new Response(\"ok\");",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        40
+      ],
+      "snippet": "  return Response.json(out);\n}`,\n    `export const POST = async () => {\n  const stream = streamObject({ model, schema, prompt: \"y\" });\n  return new Response(stream.textStream);",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (arrow) (weak candidate)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        29
+      ],
+      "snippet": "  examples: [\n    `export async function POST(req: Request) {\n  const { text } = await generateText({ model, prompt: \"hi\" });\n  return Response.json({ text });\n}`,",
+      "matchedPattern": "Expensive API call: AI SDK generateText — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        33
+      ],
+      "snippet": "}`,\n    `export async function POST(req: Request) {\n  const result = streamText({ model, messages: [] });\n  return result.toAIStreamResponse();\n}`,",
+      "matchedPattern": "Expensive API call: AI SDK streamText — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        37
+      ],
+      "snippet": "}`,\n    `export async function POST() {\n  const out = await generateObject({ model, schema, prompt: \"x\" });\n  return Response.json(out);\n}`,",
+      "matchedPattern": "Expensive API call: AI SDK generateObject — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        41
+      ],
+      "snippet": "}`,\n    `export const POST = async () => {\n  const stream = streamObject({ model, schema, prompt: \"y\" });\n  return new Response(stream.textStream);\n};`,",
+      "matchedPattern": "Expensive API call: AI SDK streamObject — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        45
+      ],
+      "snippet": "};`,\n    `export async function POST() {\n  const v = await embed({ model, value: \"hello\" });\n  return Response.json(v);\n}`,",
+      "matchedPattern": "Expensive API call: AI SDK embed — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        49
+      ],
+      "snippet": "}`,\n    `export async function POST() {\n  const vs = await embedMany({ model, values: [\"a\", \"b\"] });\n  return Response.json(vs);\n}`,",
+      "matchedPattern": "Expensive API call: AI SDK embedMany — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        54
+      ],
+      "snippet": "    `\"use server\";\nexport async function ask(prompt: string) {\n  return openai.chat.completions.create({ model: \"gpt-4\", messages: [] });\n}`,\n    `export async function POST() {",
+      "matchedPattern": "Expensive API call: OpenAI chat completion — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        57
+      ],
+      "snippet": "}`,\n    `export async function POST() {\n  return openai.completions.create({ model: \"gpt-3.5\", prompt: \"x\" });\n}`,\n    `export async function POST() {",
+      "matchedPattern": "Expensive API call: OpenAI completion — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        60
+      ],
+      "snippet": "}`,\n    `export async function POST() {\n  return openai.embeddings.create({ model: \"text-embed\", input: \"x\" });\n}`,\n    `export async function POST() {",
+      "matchedPattern": "Expensive API call: OpenAI embedding — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        63
+      ],
+      "snippet": "}`,\n    `export async function POST() {\n  return openai.images.generate({ prompt: \"x\" });\n}`,\n    `export async function POST() {",
+      "matchedPattern": "Expensive API call: OpenAI image generation — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        66
+      ],
+      "snippet": "}`,\n    `export async function POST() {\n  return anthropic.messages.create({ model: \"claude\", messages: [] });\n}`,\n    `export async function POST() {",
+      "matchedPattern": "Expensive API call: Anthropic messages — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        69
+      ],
+      "snippet": "}`,\n    `export async function POST() {\n  return anthropic.completions.create({ model: \"claude\", prompt: \"x\" });\n}`,\n    `export async function POST() {",
+      "matchedPattern": "Expensive API call: Anthropic completion — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        72
+      ],
+      "snippet": "}`,\n    `export async function POST() {\n  await fetch(\"https://ai-gateway.vercel.sh/v1/chat\", { method: \"POST\" });\n  return new Response(\"ok\");\n}`,",
+      "matchedPattern": "Expensive API call: Vercel AI Gateway — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        76
+      ],
+      "snippet": "}`,\n    `export async function POST() {\n  await fetch(\"https://api.openai.com/v1/chat/completions\", { method: \"POST\" });\n  return new Response(\"ok\");\n}`,",
+      "matchedPattern": "Expensive API call: Chat completions API — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        80
+      ],
+      "snippet": "}`,\n    `export async function POST() {\n  await fetch(\"https://api.openai.com/v1/completions\", { method: \"POST\" });\n  return new Response(\"ok\");\n}`,",
+      "matchedPattern": "Expensive API call: Completions API — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        84
+      ],
+      "snippet": "}`,\n    `export async function POST() {\n  await fetch(\"https://api.openai.com/v1/embeddings\", { method: \"POST\" });\n  return new Response(\"ok\");\n}`,",
+      "matchedPattern": "Expensive API call: Embeddings API — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        88
+      ],
+      "snippet": "}`,\n    `export async function POST() {\n  await fetch(\"https://api.openai.com/v1/images/generations\", { method: \"POST\" });\n  return new Response(\"ok\");\n}`,",
+      "matchedPattern": "Expensive API call: Image generation API — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        93
+      ],
+      "snippet": "    `\"use server\";\nexport async function notify() {\n  await sendgrid.send({ to: \"x@x.com\", subject: \"hi\" });\n}`,\n    `\"use server\";",
+      "matchedPattern": "Expensive API call: SendGrid email — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        97
+      ],
+      "snippet": "    `\"use server\";\nexport async function notify() {\n  await resend.emails.send({ to: \"x@x.com\" });\n}`,\n    `\"use server\";",
+      "matchedPattern": "Expensive API call: Resend email — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        101
+      ],
+      "snippet": "    `\"use server\";\nexport async function send() {\n  await twilio.messages.create({ to: \"+1\", body: \"hi\" });\n}`,\n    `\"use server\";",
+      "matchedPattern": "Expensive API call: Twilio SMS — check for abuse protection (auth, rate limit, captcha)"
+    },
+    {
+      "vulnSlug": "expensive-api-abuse",
+      "lineNumbers": [
+        105
+      ],
+      "snippet": "    `\"use server\";\nexport async function pay() {\n  await stripe.charges.create({ amount: 100, currency: \"usd\" });\n}`,\n  ],",
+      "matchedPattern": "Expensive API call: Stripe API — check for abuse protection (auth, rate limit, captcha)"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.675Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "c32caf10207273629c454af244005733694bd83278e89d0ac2357afb7039adbf",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:49.474Z",
+      "durationMs": 46585,
+      "durationApiMs": 45752,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "f48e32e1-34fa-4b2e-a329-6658bb21e698",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.25357875,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 3469,
+        "cacheReadInputTokens": 74550,
+        "cacheCreationInputTokens": 20727
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215247-d54822996f49bf17",
+      "investigatedAt": "2026-05-06T21:53:44.006Z",
+      "durationMs": 9004,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8e73-7001-b338-b63d694b4240",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0524188,
+      "usage": {
+        "inputTokens": 6665.2,
+        "outputTokens": 373.6,
+        "cacheReadInputTokens": 15769.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:44.009Z"
+  },
+  "status": "analyzed"
+}

@@ -1,0 +1,102 @@
+{
+  "filePath": "packages/scanner/src/matchers/js-nextjs-edge-sandbox.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "  examples: [\n    `const fn = new Function('a', 'return a + 1');`,\n    `const result = eval(userCode);`,\n    `await context.evaluate(moduleSource);`,\n    `const script = new vm.Script(code);`,",
+      "matchedPattern": "eval"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "  requires: { tech: [\"nextjs\"] },\n  examples: [\n    `const fn = new Function('a', 'return a + 1');`,\n    `const result = eval(userCode);`,\n    `await context.evaluate(moduleSource);`,",
+      "matchedPattern": "new Function()"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        26
+      ],
+      "snippet": "    `await context.evaluate(moduleSource);`,\n    `const script = new vm.Script(code);`,\n    `vm.runInNewContext(code, sandbox);`,\n    `vm.runInContext(code, ctx);`,\n    `const ctx = vm.createContext({});`,",
+      "matchedPattern": "vm context execution"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"framework-edge-sandbox\",\n  description: \"Edge runtime sandbox + global shims (Buffer/process/fetch leak risk)\",\n  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],\n  requires: { tech: [\"nextjs\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.486Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "8f46135ca8c84d4ecc323bda3d282e023d026c40861e0f7d6ac490454d19d0ec",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-65dc94bca8cbf80e",
+      "investigatedAt": "2026-05-06T21:49:55.685Z",
+      "durationMs": 9301.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3045-7302-8227-b4ee5e620897",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0613255,
+      "usage": {
+        "inputTokens": 8093.5,
+        "outputTokens": 467,
+        "cacheReadInputTokens": 13696,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-028f56683dd5ae6a",
+      "investigatedAt": "2026-05-06T21:54:00.954Z",
+      "durationMs": 12194,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8baa-74b1-97e8-4be68be65e02",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0748896,
+      "usage": {
+        "inputTokens": 8932.8,
+        "outputTokens": 618.4,
+        "cacheReadInputTokens": 23347.2,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:54:00.955Z"
+  },
+  "status": "analyzed"
+}

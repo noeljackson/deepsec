@@ -1,0 +1,86 @@
+{
+  "filePath": "packages/scanner/src/matchers/trpc-public-procedure.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"trpc-public-procedure\",\n  description:\n    \"tRPC publicProcedure used in a router that looks authenticated — verify it should not be authedProcedure\",\n  filePatterns: [\"**/*.ts\", \"**/*.tsx\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "missing-await",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "  requires: { tech: [\"trpc\"] },\n  examples: [\n    `export const listUsers = publicProcedure.query(({ ctx }) => {\\n  return ctx.prisma.user.findMany({ where: { id: ctx.session.user.id } });\\n});`,\n    `publicProcedure.input(z.object({})).mutation(({ ctx }) => {\\n  return ctx.user.id;\\n});`,\n    `publicProcedure.input(schema).query(async ({ ctx, input }) => {\\n  const userId = ctx.userId;\\n  return userId;\\n});`,",
+      "matchedPattern": "prisma call without await"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.688Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "9edb13a3ad60e88fefc9cc779be1a38da10824735dd631eecc4cff165ed11401",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:10:20.286Z",
+      "durationMs": 40308,
+      "durationApiMs": 39609,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "c0d09f95-7ba2-439a-91c5-142da7edb665",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.22457,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2975,
+        "cacheReadInputTokens": 74545,
+        "cacheCreationInputTokens": 18062
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-b5432b498c77e52f",
+      "investigatedAt": "2026-05-06T21:53:41.353Z",
+      "durationMs": 10730.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b8b-7982-9789-c528bf7d360a",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05994175,
+      "usage": {
+        "inputTokens": 7908.75,
+        "outputTokens": 409,
+        "cacheReadInputTokens": 16256,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:41.356Z"
+  },
+  "status": "analyzed"
+}

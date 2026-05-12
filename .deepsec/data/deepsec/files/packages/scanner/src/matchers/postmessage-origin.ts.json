@@ -1,0 +1,134 @@
+{
+  "filePath": "packages/scanner/src/matchers/postmessage-origin.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"postmessage-origin\",\n  description: \"postMessage handlers without origin validation — XSS via malicious parent frame\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  examples: [\n    `window.addEventListener(\"message\", (event) => {\n  document.body.innerHTML = event.data;\n});`,\n    `window.addEventListener('message', handleMsg);`,",
+      "matchedPattern": "innerHTML assignment"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `window.addEventListener(\"message\", (event) => {\n  document.body.innerHTML = event.data;\n});`,\n    `window.addEventListener('message', handleMsg);`,\n    `iframe.onmessage = (e) => {\n  console.log(e.data);",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "postmessage-origin",
+      "lineNumbers": [
+        10
+      ],
+      "snippet": "  examples: [\n    `window.addEventListener(\"message\", (event) => {\n  document.body.innerHTML = event.data;\n});`,\n    `window.addEventListener('message', handleMsg);`,\n    `iframe.onmessage = (e) => {",
+      "matchedPattern": "postMessage handler with origin check (verify strictness)"
+    },
+    {
+      "vulnSlug": "postmessage-origin",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "});`,\n    `window.addEventListener('message', handleMsg);`,\n    `iframe.onmessage = (e) => {\n  console.log(e.data);\n};`,\n    `frame.onmessage = function (e) { dispatch(e.data); };`,",
+      "matchedPattern": "postMessage handler with origin check (verify strictness)"
+    },
+    {
+      "vulnSlug": "postmessage-origin",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    `window.addEventListener('message', handleMsg);`,\n    `iframe.onmessage = (e) => {\n  console.log(e.data);\n};`,\n    `frame.onmessage = function (e) { dispatch(e.data); };`,\n    `addEventListener(\"message\", function (event) {",
+      "matchedPattern": "postMessage handler with origin check (verify strictness)"
+    },
+    {
+      "vulnSlug": "postmessage-origin",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "};`,\n    `frame.onmessage = function (e) { dispatch(e.data); };`,\n    `addEventListener(\"message\", function (event) {\n  if (event.origin !== \"https://trusted.example\") return;\n  doStuff(event.data);\n});`,",
+      "matchedPattern": "postMessage handler with origin check (verify strictness)"
+    },
+    {
+      "vulnSlug": "postmessage-origin",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "    `frame.onmessage = function (e) { dispatch(e.data); };`,\n    `addEventListener(\"message\", function (event) {\n  if (event.origin !== \"https://trusted.example\") return;\n  doStuff(event.data);\n});`,\n  ],",
+      "matchedPattern": "postMessage handler with origin check (verify strictness)"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.616Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "be0870d1a3374d0d895d4f5ea925fbd58db43babb5837224d954f86bd23bda4a",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:41.781Z",
+      "durationMs": 31559,
+      "durationApiMs": 30882,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "2d2b9aec-6d9c-4fcc-8a55-45e23407d214",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.2008875,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2366,
+        "cacheReadInputTokens": 74530,
+        "cacheCreationInputTokens": 16710
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-cbb34644b25b760b",
+      "investigatedAt": "2026-05-06T21:53:41.959Z",
+      "durationMs": 10812.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c2a-79d2-bed1-7fab0db59914",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.073648,
+      "usage": {
+        "inputTokens": 8926,
+        "outputTokens": 547,
+        "cacheReadInputTokens": 25216,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:41.960Z"
+  },
+  "status": "analyzed"
+}

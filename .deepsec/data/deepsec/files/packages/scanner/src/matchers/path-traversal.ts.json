@@ -1,0 +1,127 @@
+{
+  "filePath": "packages/scanner/src/matchers/path-traversal.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"path-traversal\",\n  description: \"File system operations with user-controlled paths\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "path-traversal",
+      "lineNumbers": [
+        10,
+        11
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `readFile(req.body.path, cb);`,\n    `readFileSync(params.file);`,\n    \"readFile(`${root}/${req.body.path}`);\",",
+      "matchedPattern": "readFile with request-derived path"
+    },
+    {
+      "vulnSlug": "path-traversal",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "    `readFile(req.body.path, cb);`,\n    `readFileSync(params.file);`,\n    \"readFile(`${root}/${req.body.path}`);\",\n    `writeFile(req.body.target, data, cb);`,\n    \"writeFileSync(`/data/${request.body.name}`, blob);\",",
+      "matchedPattern": "readFile with request-derived interpolation"
+    },
+    {
+      "vulnSlug": "path-traversal",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    `readFileSync(params.file);`,\n    \"readFile(`${root}/${req.body.path}`);\",\n    `writeFile(req.body.target, data, cb);`,\n    \"writeFileSync(`/data/${request.body.name}`, blob);\",\n    `path.join(root, req.body.subdir);`,",
+      "matchedPattern": "writeFile with request-derived path"
+    },
+    {
+      "vulnSlug": "path-traversal",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    \"readFile(`${root}/${req.body.path}`);\",\n    `writeFile(req.body.target, data, cb);`,\n    \"writeFileSync(`/data/${request.body.name}`, blob);\",\n    `path.join(root, req.body.subdir);`,\n    `path.resolve(base, params.dir);`,",
+      "matchedPattern": "writeFile with request-derived interpolation"
+    },
+    {
+      "vulnSlug": "path-traversal",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "    `writeFile(req.body.target, data, cb);`,\n    \"writeFileSync(`/data/${request.body.name}`, blob);\",\n    `path.join(root, req.body.subdir);`,\n    `path.resolve(base, params.dir);`,\n  ],",
+      "matchedPattern": "path.join with request-derived input"
+    },
+    {
+      "vulnSlug": "path-traversal",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "    \"writeFileSync(`/data/${request.body.name}`, blob);\",\n    `path.join(root, req.body.subdir);`,\n    `path.resolve(base, params.dir);`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "path.resolve with request-derived input"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.482Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "b25489f8084800da89e853bd7e98724b13ee34205c4dbfeceb03609d580d8417",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:41.751Z",
+      "durationMs": 31559,
+      "durationApiMs": 30882,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "2d2b9aec-6d9c-4fcc-8a55-45e23407d214",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.2008875,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2366,
+        "cacheReadInputTokens": 74530,
+        "cacheCreationInputTokens": 16710
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-b5432b498c77e52f",
+      "investigatedAt": "2026-05-06T21:53:41.358Z",
+      "durationMs": 10730.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b8b-7982-9789-c528bf7d360a",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05994175,
+      "usage": {
+        "inputTokens": 7908.75,
+        "outputTokens": 409,
+        "cacheReadInputTokens": 16256,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:41.360Z"
+  },
+  "status": "analyzed"
+}

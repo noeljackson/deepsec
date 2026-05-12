@@ -1,0 +1,107 @@
+{
+  "filePath": "packages/scanner/src/matchers/lua-regex-bypass.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"lua-regex-bypass\",\n  description: \"Lua regex patterns validating URLs/hosts — potential bypass via greedy wildcards\",\n  filePatterns: [\"**/*.lua\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        6
+      ],
+      "snippet": "export const luaRegexBypassMatcher: MatcherPlugin = {\n  noiseTier: \"precise\" as const,\n  slug: \"lua-regex-bypass\",\n  description: \"Lua regex patterns validating URLs/hosts — potential bypass via greedy wildcards\",\n  filePatterns: [\"**/*.lua\"],",
+      "matchedPattern": "x-bypass header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        30
+      ],
+      "snippet": "        const end = Math.min(lines.length, i + 3);\n        matches.push({\n          vulnSlug: \"lua-regex-bypass\",\n          lineNumbers: [i + 1],\n          snippet: lines.slice(start, end).join(\"\\n\"),",
+      "matchedPattern": "x-bypass header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        38
+      ],
+      "snippet": "        const end = Math.min(lines.length, i + 3);\n        matches.push({\n          vulnSlug: \"lua-regex-bypass\",\n          lineNumbers: [i + 1],\n          snippet: lines.slice(start, end).join(\"\\n\"),",
+      "matchedPattern": "x-bypass header — may bypass security in production"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.746Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "3d493cd1b8164577cf97ae672108aaf1ac400be5dc45bc09a8c434026457f3da",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:52.200Z",
+      "durationMs": 39999,
+      "durationApiMs": 37583,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "6e1bc416-d19e-4cf0-9899-296107ff9cc4",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.4026835,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2725,
+        "cacheReadInputTokens": 43672,
+        "cacheCreationInputTokens": 50030
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-028f56683dd5ae6a",
+      "investigatedAt": "2026-05-06T21:53:52.441Z",
+      "durationMs": 13314.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8baa-7842-b44c-83cebf446c82",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.04750175,
+      "usage": {
+        "inputTokens": 4813.25,
+        "outputTokens": 542.25,
+        "cacheReadInputTokens": 14336,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [
+          {
+            "filePath": "packages/scanner/src/matchers/framework-server-action.ts",
+            "reason": "The requested path did not exist; I inspected the matching registered implementation at packages/scanner/src/matchers/js-nextjs-fw-server-action.ts instead."
+          }
+        ],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[{\"filePath\":\"packages/scanner/src/matchers/framework-server-action.ts\",\"reason\":\"The requested path did not exist; I inspected the matching registered implementation at packages/scanner/src/matchers/js-nextjs-fw-server-action.ts instead.\"}]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:52.443Z"
+  },
+  "status": "analyzed"
+}

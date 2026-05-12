@@ -36,6 +36,11 @@ type ProcessOptions struct {
 	ReinvestigateMark int // 0 = no marker
 	MaxCostUSD        float64
 	Detected          *scanner.DetectedTech
+	// ModelSettings captures the pinned inference knobs (temperature,
+	// top-p, seed) for this run. Persisted in
+	// ProcessorConfig.ModelConfig and replayed on each AnalysisEntry so
+	// processor evaluations are reproducible.
+	ModelSettings ModelSettings
 }
 
 // ProcessOutcome summarizes one Process run.
@@ -67,7 +72,7 @@ func Process(ctx context.Context, opts ProcessOptions) (*ProcessOutcome, error) 
 	meta.ProcessorConfig = &core.ProcessorConfig{
 		AgentType:      opts.ProviderName,
 		Model:          opts.Backend.Model(),
-		ModelConfig:    map[string]any{},
+		ModelConfig:    opts.ModelSettings.AsMap(),
 		InvocationMode: invocationMode,
 		Source:         opts.DirectSource,
 	}
@@ -256,7 +261,7 @@ func applyBatch(opts ProcessOptions, runID string, paths []string, out *Investig
 				DurationMs:     perDur,
 				AgentType:      opts.ProviderName,
 				Model:          opts.Backend.Model(),
-				ModelConfig:    map[string]any{},
+				ModelConfig:    opts.ModelSettings.AsMap(),
 				FindingCount:   0,
 				Phase:          core.PhaseProcess,
 				CostUSD:        ptr(perCost),
@@ -276,7 +281,7 @@ func applyBatch(opts ProcessOptions, runID string, paths []string, out *Investig
 			DurationMs:     perDur,
 			AgentType:      opts.ProviderName,
 			Model:          opts.Backend.Model(),
-			ModelConfig:    map[string]any{},
+			ModelConfig:    opts.ModelSettings.AsMap(),
 			FindingCount:   len(findings),
 			NumTurns:       intPtr(out.NumTurns),
 			Phase:          core.PhaseProcess,

@@ -13,6 +13,8 @@ import (
 func NewRevalidateCmd(loader func() (*cli.Context, error)) *cobra.Command {
 	var projectID, agent, model, filter string
 	var force bool
+	var temperature, topP float64
+	var seed int64
 	cmd := &cobra.Command{
 		Use:   "revalidate",
 		Short: "Re-verify existing findings against the current code",
@@ -34,18 +36,20 @@ func NewRevalidateCmd(loader func() (*cli.Context, error)) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			backend, err := processor.NewBackend(profile, model, apiKey)
+			settings := modelSettingsFromFlags(cmd, temperature, topP, seed)
+			backend, err := processor.NewBackend(profile, model, apiKey, settings)
 			if err != nil {
 				return err
 			}
 			out, err := processor.Revalidate(context.Background(), processor.RevalidateOptions{
-				ProjectID:    projectID,
-				ProjectRoot:  proj.Root,
-				DataRoot:     ctx.DataRoot,
-				Backend:      backend,
-				ProviderName: agentName,
-				FilterPrefix: filter,
-				Force:        force,
+				ProjectID:     projectID,
+				ProjectRoot:   proj.Root,
+				DataRoot:      ctx.DataRoot,
+				Backend:       backend,
+				ProviderName:  agentName,
+				FilterPrefix:  filter,
+				Force:         force,
+				ModelSettings: settings,
 			})
 			if err != nil {
 				return err
@@ -61,5 +65,8 @@ func NewRevalidateCmd(loader func() (*cli.Context, error)) *cobra.Command {
 	cmd.Flags().StringVar(&model, "model", "", "Override the backend model")
 	cmd.Flags().StringVar(&filter, "filter", "", "Path-prefix filter")
 	cmd.Flags().BoolVar(&force, "force", false, "Re-revalidate findings that already have a verdict")
+	cmd.Flags().Float64Var(&temperature, "temperature", 0, "Pin sampling temperature (default: provider SDK default)")
+	cmd.Flags().Float64Var(&topP, "top-p", 0, "Pin nucleus sampling (default: provider SDK default)")
+	cmd.Flags().Int64Var(&seed, "seed", 0, "Pin sampler seed; OpenAI-compatible providers only")
 	return cmd
 }

@@ -10,13 +10,14 @@ import (
 
 // RevalidateOptions configures a revalidate run.
 type RevalidateOptions struct {
-	ProjectID    string
-	ProjectRoot  string
-	DataRoot     core.DataRoot
-	Backend      AgentBackend
-	ProviderName string
-	FilterPrefix string
-	Force        bool
+	ProjectID     string
+	ProjectRoot   string
+	DataRoot      core.DataRoot
+	Backend       AgentBackend
+	ProviderName  string
+	FilterPrefix  string
+	Force         bool
+	ModelSettings ModelSettings
 }
 
 // RevalidateOutcome summarizes the run.
@@ -37,7 +38,7 @@ func Revalidate(ctx context.Context, opts RevalidateOptions) (*RevalidateOutcome
 	meta.ProcessorConfig = &core.ProcessorConfig{
 		AgentType:      opts.ProviderName,
 		Model:          opts.Backend.Model(),
-		ModelConfig:    map[string]any{},
+		ModelConfig:    opts.ModelSettings.AsMap(),
 		InvocationMode: core.InvocationModeScan,
 	}
 	if err := opts.DataRoot.WriteRunMeta(meta); err != nil {

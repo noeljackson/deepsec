@@ -1,0 +1,5 @@
+# Sever this directory from any ancestor pnpm workspace. pnpm walks up
+# until it finds a pnpm-workspace.yaml and uses that directory as the
+# workspace root — having one here means `pnpm install` from `.deepsec/`
+# manages only `.deepsec/`, no matter what the parent repo defines.
+packages: []

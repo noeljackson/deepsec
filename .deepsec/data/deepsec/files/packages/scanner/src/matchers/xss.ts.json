@@ -1,0 +1,185 @@
+{
+  "filePath": "packages/scanner/src/matchers/xss.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        7,
+        13
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"xss\",\n  description: \"Unsafe innerHTML, dangerouslySetInnerHTML, template injection patterns\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx,html,ejs,hbs}\"],\n  match(content, _filePath) {",
+      "matchedPattern": "dangerouslySetInnerHTML"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"xss\",\n  description: \"Unsafe innerHTML, dangerouslySetInnerHTML, template injection patterns\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx,html,ejs,hbs}\"],\n  match(content, _filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "export const xssMatcher: MatcherPlugin = {\n  noiseTier: \"normal\" as const,\n  slug: \"xss\",\n  description: \"Unsafe innerHTML, dangerouslySetInnerHTML, template injection patterns\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx,html,ejs,hbs}\"],\n  match(content, _filePath) {\n    return regexMatcher(\n      \"xss\",",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    return regexMatcher(\n      \"xss\",\n      [\n        { regex: /dangerouslySetInnerHTML/, label: \"dangerouslySetInnerHTML\" },\n        { regex: /\\.innerHTML\\s*=/, label: \"innerHTML assignment\" },\n        { regex: /\\.outerHTML\\s*=/, label: \"outerHTML assignment\" },\n        { regex: /document\\.write\\s*\\(/, label: \"document.write\" },\n        { regex: /\\$\\{.*\\}.*<\\/?\\w+>|<\\w+[^>]*\\$\\{/, label: \"template literal in HTML\" },",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        7,
+        10,
+        22
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"xss\",\n  description: \"Unsafe innerHTML, dangerouslySetInnerHTML, template injection patterns\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx,html,ejs,hbs}\"],\n  examples: [",
+      "matchedPattern": "dangerouslySetInnerHTML"
+    },
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  examples: [\n    `<div dangerouslySetInnerHTML={{ __html: x }} />`,\n    `el.innerHTML = userInput;`,\n    `node.outerHTML = data;`,\n    `document.write(payload);`,",
+      "matchedPattern": "innerHTML assignment"
+    },
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "    `<div dangerouslySetInnerHTML={{ __html: x }} />`,\n    `el.innerHTML = userInput;`,\n    `node.outerHTML = data;`,\n    `document.write(payload);`,\n    `const html = \\`<p>\\${value}</p>\\`;`,",
+      "matchedPattern": "outerHTML assignment"
+    },
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    `el.innerHTML = userInput;`,\n    `node.outerHTML = data;`,\n    `document.write(payload);`,\n    `const html = \\`<p>\\${value}</p>\\`;`,\n    `<div v-html=\"raw\" />`,",
+      "matchedPattern": "document.write"
+    },
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    `node.outerHTML = data;`,\n    `document.write(payload);`,\n    `const html = \\`<p>\\${value}</p>\\`;`,\n    `<div v-html=\"raw\" />`,\n    `<span [innerHTML]=\"bound\"></span>`,",
+      "matchedPattern": "template literal in HTML"
+    },
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "    `document.write(payload);`,\n    `const html = \\`<p>\\${value}</p>\\`;`,\n    `<div v-html=\"raw\" />`,\n    `<span [innerHTML]=\"bound\"></span>`,\n  ],",
+      "matchedPattern": "Vue v-html directive"
+    },
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "    `const html = \\`<p>\\${value}</p>\\`;`,\n    `<div v-html=\"raw\" />`,\n    `<span [innerHTML]=\"bound\"></span>`,\n  ],\n  match(content, _filePath) {",
+      "matchedPattern": "Angular innerHTML binding"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        10
+      ],
+      "snippet": "  description: \"Unsafe innerHTML, dangerouslySetInnerHTML, template injection patterns\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx,html,ejs,hbs}\"],\n  examples: [\n    `<div dangerouslySetInnerHTML={{ __html: x }} />`,\n    `el.innerHTML = userInput;`,\n    `node.outerHTML = data;`,\n    `document.write(payload);`,\n    `const html = \\`<p>\\${value}</p>\\`;`,",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx,html,ejs,hbs}\"],\n  examples: [\n    `<div dangerouslySetInnerHTML={{ __html: x }} />`,\n    `el.innerHTML = userInput;`,\n    `node.outerHTML = data;`,\n    `document.write(payload);`,\n    `const html = \\`<p>\\${value}</p>\\`;`,\n    `<div v-html=\"raw\" />`,",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    },
+    {
+      "vulnSlug": "dangerous-html",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "    return regexMatcher(\n      \"xss\",\n      [\n        { regex: /dangerouslySetInnerHTML/, label: \"dangerouslySetInnerHTML\" },\n        { regex: /\\.innerHTML\\s*=/, label: \"innerHTML assignment\" },\n        { regex: /\\.outerHTML\\s*=/, label: \"outerHTML assignment\" },\n        { regex: /document\\.write\\s*\\(/, label: \"document.write\" },\n        // Bounded `.{0,120}` between `}` and the tag avoids the O(n²)",
+      "matchedPattern": "dangerouslySetInnerHTML from props (trace source)"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.516Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "1304af4284fb977350c1f356fd876d355d731721f42d718c2c0c84f0051a0332",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:01.354Z",
+      "durationMs": 47741,
+      "durationApiMs": 45235,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "cd084360-af75-4dd9-a59d-04e0c819a753",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.4970532499999999,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 3107,
+        "cacheReadInputTokens": 226559,
+        "cacheCreationInputTokens": 48967
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-46b46eb6e55984c8",
+      "investigatedAt": "2026-05-06T21:53:40.207Z",
+      "durationMs": 10471.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8ba1-7460-ad8b-33c65a58b451",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.073563,
+      "usage": {
+        "inputTokens": 8391.5,
+        "outputTokens": 473.25,
+        "cacheReadInputTokens": 34816,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:40.208Z"
+  },
+  "status": "analyzed"
+}

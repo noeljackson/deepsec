@@ -1,0 +1,78 @@
+{
+  "filePath": "samples/webapp/matchers/webapp-route-no-rate-limit.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "export const webappRouteNoRateLimit: MatcherPlugin = {\n  slug: \"webapp-route-no-rate-limit\",\n  description: \"Public API handler not wrapped in withRateLimit / rateLimiter.check\",\n  noiseTier: \"normal\",\n  filePatterns: [\"src/api/**/route.ts\", \"src/api/**/handler.ts\"],",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.470Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "f9199c73ea12ee9b90c0f9fb585367c6a4c4520f6c8880e5fe194dfaef04626b",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:12:14.505Z",
+      "durationMs": 117575,
+      "durationApiMs": 116792,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "08d7a51e-42e1-40cc-a9f0-182ed2a3cf1f",
+      "findingCount": 0,
+      "numTurns": 8,
+      "costUsd": 0.53009325,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 8544,
+        "cacheReadInputTokens": 291289,
+        "cacheCreationInputTokens": 27327
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215247-19f2b7ae62f3f309",
+      "investigatedAt": "2026-05-06T21:53:43.989Z",
+      "durationMs": 14849.333333333334,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8e1a-7800-b002-1dfd4b82478b",
+      "findingCount": 0,
+      "numTurns": 0.3333333333333333,
+      "phase": "process",
+      "costUsd": 0.08173666666666667,
+      "usage": {
+        "inputTokens": 10001.333333333334,
+        "outputTokens": 716.3333333333334,
+        "cacheReadInputTokens": 20480,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:43.991Z"
+  },
+  "status": "analyzed"
+}

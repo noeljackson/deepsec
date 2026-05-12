@@ -1,0 +1,129 @@
+{
+  "filePath": "packages/scanner/src/matchers/fs-write-symlink-boundary.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        44
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"fs-write-symlink-boundary\",\n  description:\n    \"Filesystem write to dynamic path — verify symlink boundary check (realpath/canonical resolve)\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx,mjs,cjs}\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "path-traversal",
+      "lineNumbers": [
+        59
+      ],
+      "snippet": "    `fs.writeFileSync(rootDir + \"/\" + name, data);`,\n    `fs.mkdirSync(baseDir + relative);`,\n    `fs.writeFileSync(path.join(uploadDir, req.body.name), buf);`,\n    `fs.writeFile(path.resolve(uploadDir, req.params.id), data, () => {});`,\n  ],",
+      "matchedPattern": "path.join with request-derived input"
+    },
+    {
+      "vulnSlug": "path-traversal",
+      "lineNumbers": [
+        60
+      ],
+      "snippet": "    `fs.mkdirSync(baseDir + relative);`,\n    `fs.writeFileSync(path.join(uploadDir, req.body.name), buf);`,\n    `fs.writeFile(path.resolve(uploadDir, req.params.id), data, () => {});`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "path.resolve with request-derived input"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        44,
+        51,
+        56
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"fs-write-symlink-boundary\",\n  description:\n    \"Filesystem write to dynamic path — verify symlink boundary check (realpath/canonical resolve)\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx,mjs,cjs}\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "fs-write-symlink-boundary",
+      "lineNumbers": [
+        57,
+        58
+      ],
+      "snippet": "    `fsp.writeFile(\\`/data/\\${id}.json\\`, JSON.stringify(payload));`,\n    `await fsp.copyFile(\\`/tmp/\\${dest}\\`, src);`,\n    `fs.writeFileSync(rootDir + \"/\" + name, data);`,\n    `fs.mkdirSync(baseDir + relative);`,\n    `fs.writeFileSync(path.join(uploadDir, req.body.name), buf);`,",
+      "matchedPattern": "fs write to concatenated path"
+    },
+    {
+      "vulnSlug": "fs-write-symlink-boundary",
+      "lineNumbers": [
+        59
+      ],
+      "snippet": "    `fs.writeFileSync(rootDir + \"/\" + name, data);`,\n    `fs.mkdirSync(baseDir + relative);`,\n    `fs.writeFileSync(path.join(uploadDir, req.body.name), buf);`,\n    `fs.writeFile(path.resolve(uploadDir, req.params.id), data, () => {});`,\n  ],",
+      "matchedPattern": "fs write to path.join with req.* component"
+    },
+    {
+      "vulnSlug": "fs-write-symlink-boundary",
+      "lineNumbers": [
+        60
+      ],
+      "snippet": "    `fs.mkdirSync(baseDir + relative);`,\n    `fs.writeFileSync(path.join(uploadDir, req.body.name), buf);`,\n    `fs.writeFile(path.resolve(uploadDir, req.params.id), data, () => {});`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "fs write to path.resolve with req.* component"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.840Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "40242eafb2116c7d644b456e6b7c9d3cb0de62b6463654a1ddc7b1b7525b0110",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:49.529Z",
+      "durationMs": 46585,
+      "durationApiMs": 45752,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "f48e32e1-34fa-4b2e-a329-6658bb21e698",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.25357875,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 3469,
+        "cacheReadInputTokens": 74550,
+        "cacheCreationInputTokens": 20727
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-b5432b498c77e52f",
+      "investigatedAt": "2026-05-06T21:53:41.356Z",
+      "durationMs": 10730.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b8b-7982-9789-c528bf7d360a",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05994175,
+      "usage": {
+        "inputTokens": 7908.75,
+        "outputTokens": 409,
+        "cacheReadInputTokens": 16256,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:41.358Z"
+  },
+  "status": "analyzed"
+}

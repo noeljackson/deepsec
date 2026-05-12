@@ -1,0 +1,78 @@
+{
+  "filePath": "packages/deepsec/src/commands/process.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        213
+      ],
+      "snippet": " *   3. Run a scoped `scanFiles()` so each path has a FileRecord — this\n *      gives the agent regex-derived signals to anchor on, even when the\n *      diff includes files outside any matcher's pattern set.\n *   4. Run `process()` over those exact paths.\n *   5. Optionally render a PR-comment markdown.",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.501Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "bd653022287a4e678a348ce889ff8c046dd506bb4bf5d0d0098025c9953e13fe",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-e8344a39c222e863",
+      "investigatedAt": "2026-05-06T21:51:13.978Z",
+      "durationMs": 38064.333333333336,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-305a-7b10-b4f8-ec1465617bb1",
+      "findingCount": 0,
+      "numTurns": 0.3333333333333333,
+      "phase": "process",
+      "costUsd": 0.12562633333333334,
+      "usage": {
+        "inputTokens": 12258.333333333334,
+        "outputTokens": 1848.6666666666667,
+        "cacheReadInputTokens": 17749.333333333332,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-f808d3de8281a89b",
+      "investigatedAt": "2026-05-06T21:54:08.176Z",
+      "durationMs": 17398.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b7e-7fc1-9515-b35b5e5c7706",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.110869,
+      "usage": {
+        "inputTokens": 12309.5,
+        "outputTokens": 831.25,
+        "cacheReadInputTokens": 48768,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:54:08.178Z"
+  },
+  "status": "analyzed"
+}

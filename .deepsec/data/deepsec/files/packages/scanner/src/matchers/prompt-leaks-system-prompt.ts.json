@@ -1,0 +1,161 @@
+{
+  "filePath": "packages/scanner/src/matchers/prompt-leaks-system-prompt.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        41
+      ],
+      "snippet": "\n    const SECRET_ENV_VAR =\n      /process\\.env\\.[A-Z_][A-Z0-9_]*(?:KEY|TOKEN|SECRET|PASSWORD|PASS|CREDS|CREDENTIAL|API_KEY|BYPASS|AUTH)\\b/;\n    const HARDCODED_SECRET =\n      /(?:sk-[A-Za-z0-9]{20,}|vck_[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|xoxb-[A-Za-z0-9-]+|xoxp-[A-Za-z0-9-]+|AIza[A-Za-z0-9_-]{30,}|AKIA[0-9A-Z]{16})/;",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"prompt-leaks-system-prompt\",\n  description:\n    \"System prompt embeds env-var secrets / API tokens — verify nothing leaks via traces or model output\",\n  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        55
+      ],
+      "snippet": "\n    const SECRET_ENV_VAR =\n      /process\\.env\\.[A-Z_][A-Z0-9_]*(?:KEY|TOKEN|SECRET|PASSWORD|PASS|CREDS|CREDENTIAL|API_KEY|BYPASS|AUTH)\\b/;\n    const HARDCODED_SECRET =\n      /(?:sk-[A-Za-z0-9]{20,}|vck_[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|xoxb-[A-Za-z0-9-]+|xoxp-[A-Za-z0-9-]+|AIza[A-Za-z0-9_-]{30,}|AKIA[0-9A-Z]{16})/;",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "env-var-as-bool",
+      "lineNumbers": [
+        33,
+        34,
+        35,
+        36
+      ],
+      "snippet": "  // AWS key shape, even when the body is obvious-placeholder.\n  examples: [\n    `await streamText({\\n  system: \\`You are an agent. API key: \\${process.env.OPENAI_API_KEY}\\`,\\n  prompt: \"hi\",\\n});`,\n    `await generateText({\\n  instructions: \\`Auth token is \\${process.env.GITHUB_TOKEN}\\`,\\n});`,\n    `const config = {\\n  messages: [\\n    { role: \"system\", content: \\`Your secret: \\${process.env.SLACK_SIGNING_SECRET}\\` },\\n  ],\\n};`,",
+      "matchedPattern": "Secret env var used as boolean"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        33
+      ],
+      "snippet": "  examples: [\n    `await streamText({\\n  system: \\`You are an agent. API key: \\${process.env.OPENAI_API_KEY}\\`,\\n  prompt: \"hi\",\\n});`,\n    `await generateText({\\n  instructions: \\`Auth token is \\${process.env.GITHUB_TOKEN}\\`,\\n});`,",
+      "matchedPattern": "process.env.OPENAI_API_KEY"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        34
+      ],
+      "snippet": "    `await streamText({\\n  system: \\`You are an agent. API key: \\${process.env.OPENAI_API_KEY}\\`,\\n  prompt: \"hi\",\\n});`,\n    `await generateText({\\n  instructions: \\`Auth token is \\${process.env.GITHUB_TOKEN}\\`,\\n});`,\n    `const config = {\\n  messages: [\\n    { role: \"system\", content: \\`Your secret: \\${process.env.SLACK_SIGNING_SECRET}\\` },\\n  ],\\n};`,",
+      "matchedPattern": "process.env.GITHUB_TOKEN"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        35
+      ],
+      "snippet": "    `await generateText({\\n  instructions: \\`Auth token is \\${process.env.GITHUB_TOKEN}\\`,\\n});`,\n    `const config = {\\n  messages: [\\n    { role: \"system\", content: \\`Your secret: \\${process.env.SLACK_SIGNING_SECRET}\\` },\\n  ],\\n};`,\n    `await generateText({\\n  system: \\`Bearer: \\${process.env.AUTH_TOKEN}\\`,\\n});`,",
+      "matchedPattern": "process.env.SLACK_SIGNING_SECRET"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        36
+      ],
+      "snippet": "    `const config = {\\n  messages: [\\n    { role: \"system\", content: \\`Your secret: \\${process.env.SLACK_SIGNING_SECRET}\\` },\\n  ],\\n};`,\n    `await generateText({\\n  system: \\`Bearer: \\${process.env.AUTH_TOKEN}\\`,\\n});`,\n    `await streamText({\\n  system: \\`Password: \\${process.env.DB_PASSWORD}\\`,\\n});`,",
+      "matchedPattern": "process.env.AUTH_TOKEN"
+    },
+    {
+      "vulnSlug": "process-env-access",
+      "lineNumbers": [
+        37
+      ],
+      "snippet": "    `await generateText({\\n  system: \\`Bearer: \\${process.env.AUTH_TOKEN}\\`,\\n});`,\n    `await streamText({\\n  system: \\`Password: \\${process.env.DB_PASSWORD}\\`,\\n});`,\n  ],",
+      "matchedPattern": "process.env.DB_PASSWORD"
+    },
+    {
+      "vulnSlug": "prompt-leaks-system-prompt",
+      "lineNumbers": [
+        33
+      ],
+      "snippet": " *\n * Flags `system: \\`...\\`` / `system: \"...\"` / `instructions: \"...\"` (and\n * messages-array `role: \"system\"` blocks) where the prompt body contains:\n *   - `process.env.*_KEY` / `_TOKEN` / `_SECRET` / `_PASSWORD` references\n *   - Hardcoded looking-like-secrets strings (sk-*, vck_*, ghp_*, xoxb-*, etc.)\n *   - References to env vars whose names commonly hold secrets\n */\nexport const promptLeaksSystemPromptMatcher: MatcherPlugin = {\n  noiseTier: \"normal\" as const,\n  slug: \"prompt-leaks-system-prompt\",\n  description:\n    \"System prompt embeds env-var secrets / API tokens — verify nothing leaks via traces or model output\",\n  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],\n  // Examples cover the env-var leak path (the higher-signal one — most\n  // hardcoded-secret bugs are also caught by `secrets-exposure`). The\n  // hardcoded-token-prefix path is exercised by the SECRET_ENV_VAR /\n  // HARDCODED_SECRET regexes below; we don't include literal example\n  // strings of those shapes here because GitHub push-protection rejects\n  // any diff that contains a contiguous Stripe / GitHub-PAT / Slack /\n  // AWS key shape, even when the body is obvious-placeholder.\n  examples: [\n    `await streamText({\\n  system: \\`You are an agent. API key: \\${process.env.OPENAI_API_KEY}\\`,\\n  prompt: \"hi\",\\n});`,\n    `await generateText({\\n  instructions: \\`Auth token is \\${process.env.GITHUB_TOKEN}\\`,\\n});`,\n    `const config = {\\n  messages: [\\n    { role: \"system\", content: \\`Your secret: \\${process.env.SLACK_SIGNING_SECRET}\\` },\\n  ],\\n};`,",
+      "matchedPattern": "system prompt references process.env.OPENAI_API_KEY"
+    },
+    {
+      "vulnSlug": "prompt-leaks-system-prompt",
+      "lineNumbers": [
+        35
+      ],
+      "snippet": "    `await generateText({\\n  instructions: \\`Auth token is \\${process.env.GITHUB_TOKEN}\\`,\\n});`,\n    `const config = {\\n  messages: [\\n    { role: \"system\", content: \\`Your secret: \\${process.env.SLACK_SIGNING_SECRET}\\` },\\n  ],\\n};`,\n    `await generateText({\\n  system: \\`Bearer: \\${process.env.AUTH_TOKEN}\\`,\\n});`,\n    `await streamText({\\n  system: \\`Password: \\${process.env.DB_PASSWORD}\\`,\\n});`,",
+      "matchedPattern": "system prompt references process.env.SLACK_SIGNING_SECRET"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.832Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "5175053a27c8b14bb6aec74e23855485e583ac10c6da94f4a30c5ca6264f8fc9",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:41.996Z",
+      "durationMs": 48368,
+      "durationApiMs": 47673,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "d517afb6-ca17-4bda-83aa-911304bf5d54",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.248668,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 3584,
+        "cacheReadInputTokens": 74641,
+        "cacheCreationInputTokens": 19474
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-b34a23093a7f063f",
+      "investigatedAt": "2026-05-06T21:53:49.453Z",
+      "durationMs": 10005.2,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b3e-7863-93e9-93441614ba27",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0592852,
+      "usage": {
+        "inputTokens": 6833.2,
+        "outputTokens": 528.4,
+        "cacheReadInputTokens": 18534.4,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:49.455Z"
+  },
+  "status": "analyzed"
+}

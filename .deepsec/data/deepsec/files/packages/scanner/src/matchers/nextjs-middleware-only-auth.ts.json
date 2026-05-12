@@ -1,0 +1,92 @@
+{
+  "filePath": "packages/scanner/src/matchers/nextjs-middleware-only-auth.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        4,
+        6,
+        8,
+        36,
+        42,
+        57,
+        61
+      ],
+      "snippet": "import type { MatcherPlugin } from \"../types.js\";\n\nexport const nextjsMiddlewareOnlyAuthMatcher: MatcherPlugin = {\n  noiseTier: \"normal\" as const,\n  slug: \"nextjs-middleware-only-auth\",",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"nextjs-middleware-only-auth\",\n  description:\n    \"Route handlers in protected route groups without their own auth check — relying solely on Next.js middleware\",\n  filePatterns: [",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-02T17:54:41.508Z",
+  "lastScannedRunId": "20260502175440-05201b02576fe6c2",
+  "fileHash": "0b408251c75b42c332a873381a703a97ebff4b90617fb6410aac1dbcbdafc43c",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:50.710Z",
+      "durationMs": 37975,
+      "durationApiMs": 35462,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "d8f6357f-7fc5-4642-9ffb-b41b8741689c",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.39885175000000006,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2743,
+        "cacheReadInputTokens": 43521,
+        "cacheCreationInputTokens": 49357
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-6c96b5768e32f822",
+      "investigatedAt": "2026-05-06T21:53:54.022Z",
+      "durationMs": 13906.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c2d-7df0-b577-c64e83ece222",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0626195,
+      "usage": {
+        "inputTokens": 6995,
+        "outputTokens": 637.75,
+        "cacheReadInputTokens": 17024,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:54.024Z"
+  },
+  "status": "analyzed"
+}

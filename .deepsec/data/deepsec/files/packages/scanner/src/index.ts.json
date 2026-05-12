@@ -1,0 +1,182 @@
+{
+  "filePath": "packages/scanner/src/index.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "path-traversal",
+      "lineNumbers": [
+        260,
+        272
+      ],
+      "snippet": "  if (!ignorePaths) {\n    try {\n      const cfgPath = path.resolve(`data/${params.projectId}/config.json`);\n      if (fs.existsSync(cfgPath)) {\n        const cfg = JSON.parse(fs.readFileSync(cfgPath, \"utf-8\"));",
+      "matchedPattern": "path.resolve with request-derived input"
+    },
+    {
+      "vulnSlug": "crypto-usage",
+      "lineNumbers": [
+        1,
+        186
+      ],
+      "snippet": "import crypto from \"node:crypto\";\nimport fs from \"node:fs\";\nimport path from \"node:path\";",
+      "matchedPattern": "Node crypto import, Node crypto.create*"
+    },
+    {
+      "vulnSlug": "path-traversal",
+      "lineNumbers": [
+        261,
+        273
+      ],
+      "snippet": "  if (!ignorePaths) {\n    try {\n      const cfgPath = path.resolve(dataDir(params.projectId), \"config.json\");\n      if (fs.existsSync(cfgPath)) {\n        const cfg = JSON.parse(fs.readFileSync(cfgPath, \"utf-8\"));",
+      "matchedPattern": "path.resolve with request-derived input"
+    },
+    {
+      "vulnSlug": "crypto-usage",
+      "lineNumbers": [
+        1,
+        187
+      ],
+      "snippet": "import crypto from \"node:crypto\";\nimport fs from \"node:fs\";\nimport path from \"node:path\";",
+      "matchedPattern": "Node crypto import, Node crypto.create*"
+    },
+    {
+      "vulnSlug": "path-traversal",
+      "lineNumbers": [
+        397,
+        421,
+        433,
+        486,
+        566
+      ],
+      "snippet": "  const activeMatchers: MatcherPlugin[] = [];\n  const skipped: string[] = [];\n  const absRoot = path.resolve(params.root);\n  for (const m of allSelected) {\n    if (honorAllSelected || evaluateGate(m.requires, detected, absRoot)) {",
+      "matchedPattern": "path.resolve with request-derived input"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        59,
+        336
+      ],
+      "snippet": "      // Synchronous glob — gate evaluation is rare (once per scan) and\n      // we don't want to bubble async up into the registry.\n      const candidates = pattern.includes(\"*\")\n        ? (globSync(pattern, {\n            cwd: rootPath,",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "crypto-usage",
+      "lineNumbers": [
+        1,
+        268,
+        633
+      ],
+      "snippet": "import crypto from \"node:crypto\";\nimport fs from \"node:fs\";\nimport path from \"node:path\";",
+      "matchedPattern": "Node crypto import, Node crypto.create*"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.764Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "727a5699e65dbc3c3f9302ea90b799a48724e6ddcb0ca54749a85114b3c72e91",
+  "findings": [
+    {
+      "severity": "BUG",
+      "vulnSlug": "other-data-root-mismatch",
+      "title": "Scanner hardcodes 'data/' instead of using dataDir(), ignoring DEEPSEC_DATA_ROOT",
+      "description": "At L260, the fallback that loads per-project ignorePaths uses path.resolve(`data/${params.projectId}/config.json`) with a hardcoded 'data/' prefix. The rest of the codebase (paths.ts, processor, sandbox orchestrator, init-project, export, triage) consistently uses dataDir(projectId) which honors process.env.DEEPSEC_DATA_ROOT. When DEEPSEC_DATA_ROOT is set to anything other than 'data', this fallback silently misses the user's config.json (the catch swallows ENOENT/JSON errors), so config.json:ignorePaths is never applied. Because the IGNORE_DIRS defaults are then the only filter, files the user explicitly told the scanner to skip will be scanned and stored as candidate snippets in data/<id>/files/*.json. If those excluded paths contain credentials, secrets, or other sensitive content, the snippets land in the local mirror — a data-handling concern even though the directory is gitignored. Recommend: import dataDir from @deepsec/core and use path.resolve(dataDir(params.projectId), 'config.json'), matching the rest of the codebase.",
+      "lineNumbers": [
+        260
+      ],
+      "recommendation": "Replace `path.resolve(\\`data/${params.projectId}/config.json\\`)` with `path.resolve(dataDir(params.projectId), 'config.json')`, importing dataDir from @deepsec/core. This unifies the data-root resolution with the rest of the codebase and ensures DEEPSEC_DATA_ROOT is honored.",
+      "confidence": "high",
+      "revalidation": {
+        "verdict": "fixed",
+        "reasoning": "The current scanner imports dataDir from @deepsec/core and uses path.resolve(dataDir(params.projectId), \"config.json\") when loading project config ignorePaths. In packages/core/src/paths.ts, dataDir(projectId) is backed by getDataRoot(), which returns process.env.DEEPSEC_DATA_ROOT or falls back to \"data\", so the environment override is honored. I searched the scanner file for the reported hardcoded data/${params.projectId}/config.json pattern and did not find it. The remaining comments mention data/<projectId>/config.json as documentation, not as a path construction bug. With the current code, a user setting DEEPSEC_DATA_ROOT will have the same config root used by this fallback and the rest of the core path helpers. I could not cite the patch commit because the sandbox lacks git metadata, but the vulnerable line described in the finding has been replaced in the current source.",
+        "revalidatedAt": "2026-05-06T22:53:17.568Z",
+        "runId": "20260506225213-a24434e8e112616a",
+        "model": "gpt-5.5"
+      }
+    }
+  ],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:12:14.392Z",
+      "durationMs": 117575,
+      "durationApiMs": 116792,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "08d7a51e-42e1-40cc-a9f0-182ed2a3cf1f",
+      "findingCount": 1,
+      "numTurns": 8,
+      "costUsd": 0.53009325,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 8544,
+        "cacheReadInputTokens": 291289,
+        "cacheCreationInputTokens": 27327
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215247-19f2b7ae62f3f309",
+      "investigatedAt": "2026-05-06T21:53:43.983Z",
+      "durationMs": 14849.333333333334,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8e1a-7800-b002-1dfd4b82478b",
+      "findingCount": 0,
+      "numTurns": 0.3333333333333333,
+      "phase": "process",
+      "costUsd": 0.08173666666666667,
+      "usage": {
+        "inputTokens": 10001.333333333334,
+        "outputTokens": 716.3333333333334,
+        "cacheReadInputTokens": 20480,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    },
+    {
+      "runId": "20260506225213-a24434e8e112616a",
+      "investigatedAt": "2026-05-06T22:53:17.568Z",
+      "durationMs": 26199,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff7d-f8cd-7013-8dc9-2787b888e7c2",
+      "findingCount": 1,
+      "numTurns": 0.5,
+      "phase": "revalidate",
+      "costUsd": 0.101808,
+      "usage": {
+        "inputTokens": 8887,
+        "outputTokens": 1289.5,
+        "cacheReadInputTokens": 37376,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T22:53:17.576Z"
+  },
+  "status": "analyzed"
+}

@@ -1,0 +1,101 @@
+{
+  "filePath": "packages/scanner/src/matchers/framework-server-action.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        6,
+        17
+      ],
+      "snippet": "/**\n * Server-Action handler entry-point matcher. Flags the framework code that\n * receives `__Next-Action` requests, looks up the action by ID, deserializes\n * the args, invokes the user function, and serializes the result back into\n * the RSC stream.",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "framework-internal-header",
+      "lineNumbers": [
+        6
+      ],
+      "snippet": "/**\n * Server-Action handler entry-point matcher. Flags the framework code that\n * receives `__Next-Action` requests, looks up the action by ID, deserializes\n * the args, invokes the user function, and serializes the result back into\n * the RSC stream.",
+      "matchedPattern": "__next-action"
+    },
+    {
+      "vulnSlug": "framework-server-action",
+      "lineNumbers": [
+        6,
+        29
+      ],
+      "snippet": "/**\n * Server-Action handler entry-point matcher. Flags the framework code that\n * receives `__Next-Action` requests, looks up the action by ID, deserializes\n * the args, invokes the user function, and serializes the result back into\n * the RSC stream.\n *",
+      "matchedPattern": "\\b__Next[-_]Action\\b, \\baction\\.id\\s*===|actionManifest\\b|acti"
+    }
+  ],
+  "lastScannedAt": "2026-05-02T17:54:41.738Z",
+  "lastScannedRunId": "20260502175440-05201b02576fe6c2",
+  "fileHash": "d748dbbb3b7caa679aee9531238c7d196505ea93d66382834350066e0a89ff86",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:52.168Z",
+      "durationMs": 39999,
+      "durationApiMs": 37583,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "6e1bc416-d19e-4cf0-9899-296107ff9cc4",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.4026835,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2725,
+        "cacheReadInputTokens": 43672,
+        "cacheCreationInputTokens": 50030
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-028f56683dd5ae6a",
+      "investigatedAt": "2026-05-06T21:53:52.447Z",
+      "durationMs": 13314.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8baa-7842-b44c-83cebf446c82",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.04750175,
+      "usage": {
+        "inputTokens": 4813.25,
+        "outputTokens": 542.25,
+        "cacheReadInputTokens": 14336,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [
+          {
+            "filePath": "packages/scanner/src/matchers/framework-server-action.ts",
+            "reason": "The requested path did not exist; I inspected the matching registered implementation at packages/scanner/src/matchers/js-nextjs-fw-server-action.ts instead."
+          }
+        ],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[{\"filePath\":\"packages/scanner/src/matchers/framework-server-action.ts\",\"reason\":\"The requested path did not exist; I inspected the matching registered implementation at packages/scanner/src/matchers/js-nextjs-fw-server-action.ts instead.\"}]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:52.449Z"
+  },
+  "status": "analyzed"
+}

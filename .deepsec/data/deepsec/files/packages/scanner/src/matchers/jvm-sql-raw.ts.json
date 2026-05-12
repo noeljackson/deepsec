@@ -1,0 +1,185 @@
+{
+  "filePath": "packages/scanner/src/matchers/jvm-sql-raw.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        23,
+        110
+      ],
+      "snippet": "    `jdbcTemplate.update(\"UPDATE users SET role = '\" + role + \"' WHERE id = \" + id)`,\n    `@Select(\"SELECT * FROM users WHERE id = \\${id}\")`,\n    `val rows = exec(\"SELECT * FROM users WHERE name = '\\${name}'\")`,\n    `val sql = \"SELECT * FROM t WHERE col = '\\${input}'\"`,\n    `DSL.field(\"a.\" + col)`,",
+      "matchedPattern": "exec with string"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        12,
+        17,
+        20
+      ],
+      "snippet": "  requires: { tech: [\"jvm\"] },\n  examples: [\n    `stmt.executeQuery(\"SELECT * FROM users WHERE id = \" + userId);`,\n    `stmt.executeQuery(\"SELECT * FROM x WHERE y = '\" + name + \"'\")`,\n    `stmt.executeUpdate(\"DELETE FROM users WHERE id = \" + id)`,",
+      "matchedPattern": "string concat SELECT"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    `stmt.executeQuery(\"SELECT * FROM users WHERE id = \" + userId);`,\n    `stmt.executeQuery(\"SELECT * FROM x WHERE y = '\" + name + \"'\")`,\n    `stmt.executeUpdate(\"DELETE FROM users WHERE id = \" + id)`,\n    `Connection conn = DriverManager.getConnection(url);`,\n    `connection.prepareStatement(\"SELECT * FROM users WHERE name = '\" + name + \"'\")`,",
+      "matchedPattern": "string concat DELETE"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"jvm-sql-raw\",\n  description:\n    \"Raw SQL across JVM DB libraries (JDBC, JPA/Hibernate, Spring JdbcTemplate, MyBatis, jOOQ, Exposed) — string concatenation or interpolation is SQL injection\",\n  filePatterns: [\"**/*.{java,kt}\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  examples: [\n    `stmt.executeQuery(\"SELECT * FROM users WHERE id = \" + userId);`,\n    `stmt.executeQuery(\"SELECT * FROM x WHERE y = '\" + name + \"'\")`,\n    `stmt.executeUpdate(\"DELETE FROM users WHERE id = \" + id)`,\n    `Connection conn = DriverManager.getConnection(url);`,\n    `connection.prepareStatement(\"SELECT * FROM users WHERE name = '\" + name + \"'\")`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    `stmt.executeQuery(\"SELECT * FROM users WHERE id = \" + userId);`,\n    `stmt.executeQuery(\"SELECT * FROM x WHERE y = '\" + name + \"'\")`,\n    `stmt.executeUpdate(\"DELETE FROM users WHERE id = \" + id)`,\n    `Connection conn = DriverManager.getConnection(url);`,\n    `connection.prepareStatement(\"SELECT * FROM users WHERE name = '\" + name + \"'\")`,\n    `em.createNativeQuery(\"SELECT * FROM users WHERE id = \" + id)`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "    `Connection conn = DriverManager.getConnection(url);`,\n    `connection.prepareStatement(\"SELECT * FROM users WHERE name = '\" + name + \"'\")`,\n    `em.createNativeQuery(\"SELECT * FROM users WHERE id = \" + id)`,\n    `em.createQuery(\"FROM User u WHERE u.name = '\" + name + \"'\")`,\n    `session.createSQLQuery(\"SELECT * FROM x WHERE col = '\" + col + \"'\")`,\n    `jdbcTemplate.query(\"SELECT * FROM users WHERE id = \" + id, mapper)`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "    `connection.prepareStatement(\"SELECT * FROM users WHERE name = '\" + name + \"'\")`,\n    `em.createNativeQuery(\"SELECT * FROM users WHERE id = \" + id)`,\n    `em.createQuery(\"FROM User u WHERE u.name = '\" + name + \"'\")`,\n    `session.createSQLQuery(\"SELECT * FROM x WHERE col = '\" + col + \"'\")`,\n    `jdbcTemplate.query(\"SELECT * FROM users WHERE id = \" + id, mapper)`,\n    `jdbcTemplate.update(\"UPDATE users SET role = '\" + role + \"' WHERE id = \" + id)`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `em.createQuery(\"FROM User u WHERE u.name = '\" + name + \"'\")`,\n    `session.createSQLQuery(\"SELECT * FROM x WHERE col = '\" + col + \"'\")`,\n    `jdbcTemplate.query(\"SELECT * FROM users WHERE id = \" + id, mapper)`,\n    `jdbcTemplate.update(\"UPDATE users SET role = '\" + role + \"' WHERE id = \" + id)`,\n    `@Select(\"SELECT * FROM users WHERE id = \\${id}\")`,\n    `val rows = exec(\"SELECT * FROM users WHERE name = '\\${name}'\")`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "    `session.createSQLQuery(\"SELECT * FROM x WHERE col = '\" + col + \"'\")`,\n    `jdbcTemplate.query(\"SELECT * FROM users WHERE id = \" + id, mapper)`,\n    `jdbcTemplate.update(\"UPDATE users SET role = '\" + role + \"' WHERE id = \" + id)`,\n    `@Select(\"SELECT * FROM users WHERE id = \\${id}\")`,\n    `val rows = exec(\"SELECT * FROM users WHERE name = '\\${name}'\")`,\n    `val sql = \"SELECT * FROM t WHERE col = '\\${input}'\"`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        119
+      ],
+      "snippet": "        {\n          regex: /\"\\s*(?:SELECT|INSERT|UPDATE|DELETE)[^\"]{0,400}\\$\\{/,\n          label: '\"SELECT/INSERT/UPDATE/DELETE ...${...}\" — Kotlin string template into raw SQL',\n        },\n      ],\n      content,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        120
+      ],
+      "snippet": "          regex: /\"\\s*(?:SELECT|INSERT|UPDATE|DELETE)[^\"]{0,400}\\$\\{/,\n          label: '\"SELECT/INSERT/UPDATE/DELETE ...${...}\" — Kotlin string template into raw SQL',\n        },\n      ],\n      content,\n    );",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "    `em.createQuery(\"FROM User u WHERE u.name = '\" + name + \"'\")`,\n    `session.createSQLQuery(\"SELECT * FROM x WHERE col = '\" + col + \"'\")`,\n    `jdbcTemplate.query(\"SELECT * FROM users WHERE id = \" + id, mapper)`,\n    `jdbcTemplate.update(\"UPDATE users SET role = '\" + role + \"' WHERE id = \" + id)`,\n    `@Select(\"SELECT * FROM users WHERE id = \\${id}\")`,",
+      "matchedPattern": ".query('...') with string concatenation — SQL injection"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "    `em.createQuery(\"FROM User u WHERE u.name = '\" + name + \"'\")`,\n    `session.createSQLQuery(\"SELECT * FROM x WHERE col = '\" + col + \"'\")`,\n    `jdbcTemplate.query(\"SELECT * FROM users WHERE id = \" + id, mapper)`,\n    `jdbcTemplate.update(\"UPDATE users SET role = '\" + role + \"' WHERE id = \" + id)`,\n    `@Select(\"SELECT * FROM users WHERE id = \\${id}\")`,",
+      "matchedPattern": "Generic .query('SELECT/INSERT/...') with string concatenation — SQL injection"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.856Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "a95b183ae997beb53704929081d039e0aa3035fa5758dd8e60f5d0a92941e5b8",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-ab77ad581398dd81",
+      "investigatedAt": "2026-05-06T21:49:46.965Z",
+      "durationMs": 7095.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3009-7b10-96bf-3827eb699d84",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.047835,
+      "usage": {
+        "inputTokens": 6867.5,
+        "outputTokens": 311.25,
+        "cacheReadInputTokens": 8320,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-409d9e44688f956b",
+      "investigatedAt": "2026-05-06T21:53:31.621Z",
+      "durationMs": 8354,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8bbe-7872-8058-bc2832193f0f",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0533665,
+      "usage": {
+        "inputTokens": 7103.5,
+        "outputTokens": 379.5,
+        "cacheReadInputTokens": 12928,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:31.622Z"
+  },
+  "status": "analyzed"
+}

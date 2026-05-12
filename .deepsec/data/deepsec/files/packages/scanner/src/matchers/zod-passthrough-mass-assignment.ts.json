@@ -1,0 +1,166 @@
+{
+  "filePath": "packages/scanner/src/matchers/zod-passthrough-mass-assignment.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"zod-passthrough-mass-assignment\",\n  description:\n    \"Zod schema with .passthrough() — verify parsed output isn't passed to DB write unfiltered\",\n  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "zod-passthrough-mass-assignment",
+      "lineNumbers": [
+        5
+      ],
+      "snippet": "\n/**\n * Zod schemas declared with `.passthrough()` accept arbitrary extra fields\n * beyond what's declared. If that schema's parsed output is then used to\n * populate a DB write (Drizzle insert/update), every extra field flows\n * through unfiltered — classic mass-assignment hole.",
+      "matchedPattern": ".passthrough() in file with DB insert/update — mass-assignment risk"
+    },
+    {
+      "vulnSlug": "zod-passthrough-mass-assignment",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": " *\n * Flags files where:\n *   - A Zod schema uses `.passthrough()` AND\n *   - The same file performs a DB insert/update (Drizzle context)\n *\n * Even without the Drizzle pairing, `.passthrough()` on input schemas is",
+      "matchedPattern": ".passthrough() in file with DB insert/update — mass-assignment risk"
+    },
+    {
+      "vulnSlug": "zod-passthrough-mass-assignment",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": " *   - The same file performs a DB insert/update (Drizzle context)\n *\n * Even without the Drizzle pairing, `.passthrough()` on input schemas is\n * worth investigating since it widens the trust boundary of validation.\n */\nexport const zodPassthroughMassAssignmentMatcher: MatcherPlugin = {",
+      "matchedPattern": ".passthrough() in file with DB insert/update — mass-assignment risk"
+    },
+    {
+      "vulnSlug": "zod-passthrough-mass-assignment",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "  slug: \"zod-passthrough-mass-assignment\",\n  description:\n    \"Zod schema with .passthrough() — verify parsed output isn't passed to DB write unfiltered\",\n  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],\n  examples: [\n    `import { z } from \"zod\";\\nconst schema = z.object({ name: z.string() }).passthrough();`,",
+      "matchedPattern": ".passthrough() in file with DB insert/update — mass-assignment risk"
+    },
+    {
+      "vulnSlug": "zod-passthrough-mass-assignment",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],\n  examples: [\n    `import { z } from \"zod\";\\nconst schema = z.object({ name: z.string() }).passthrough();`,\n    `import { z } from \"zod\";\\nconst input = z.object({ id: z.string() }).passthrough();\\nconst parsed = input.parse(req.body);\\nawait db.insert(users).values(parsed);`,\n    `import { z } from \"zod\";\\nconst schema = z.object({}).passthrough();\\nawait db.update(users).set(parsed);`,\n    `import { z } from \"zod\";\\nexport const userInput = z.object({ name: z.string() }).strict().passthrough();`,",
+      "matchedPattern": ".passthrough() in file with DB insert/update — mass-assignment risk"
+    },
+    {
+      "vulnSlug": "zod-passthrough-mass-assignment",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "  examples: [\n    `import { z } from \"zod\";\\nconst schema = z.object({ name: z.string() }).passthrough();`,\n    `import { z } from \"zod\";\\nconst input = z.object({ id: z.string() }).passthrough();\\nconst parsed = input.parse(req.body);\\nawait db.insert(users).values(parsed);`,\n    `import { z } from \"zod\";\\nconst schema = z.object({}).passthrough();\\nawait db.update(users).set(parsed);`,\n    `import { z } from \"zod\";\\nexport const userInput = z.object({ name: z.string() }).strict().passthrough();`,\n    `import { z } from \"zod\";\\nconst s = z\\n  .object({ name: z.string() })\\n  .passthrough();`,",
+      "matchedPattern": ".passthrough() in file with DB insert/update — mass-assignment risk"
+    },
+    {
+      "vulnSlug": "zod-passthrough-mass-assignment",
+      "lineNumbers": [
+        26
+      ],
+      "snippet": "    `import { z } from \"zod\";\\nconst schema = z.object({ name: z.string() }).passthrough();`,\n    `import { z } from \"zod\";\\nconst input = z.object({ id: z.string() }).passthrough();\\nconst parsed = input.parse(req.body);\\nawait db.insert(users).values(parsed);`,\n    `import { z } from \"zod\";\\nconst schema = z.object({}).passthrough();\\nawait db.update(users).set(parsed);`,\n    `import { z } from \"zod\";\\nexport const userInput = z.object({ name: z.string() }).strict().passthrough();`,\n    `import { z } from \"zod\";\\nconst s = z\\n  .object({ name: z.string() })\\n  .passthrough();`,\n  ],",
+      "matchedPattern": ".passthrough() in file with DB insert/update — mass-assignment risk"
+    },
+    {
+      "vulnSlug": "zod-passthrough-mass-assignment",
+      "lineNumbers": [
+        27
+      ],
+      "snippet": "    `import { z } from \"zod\";\\nconst input = z.object({ id: z.string() }).passthrough();\\nconst parsed = input.parse(req.body);\\nawait db.insert(users).values(parsed);`,\n    `import { z } from \"zod\";\\nconst schema = z.object({}).passthrough();\\nawait db.update(users).set(parsed);`,\n    `import { z } from \"zod\";\\nexport const userInput = z.object({ name: z.string() }).strict().passthrough();`,\n    `import { z } from \"zod\";\\nconst s = z\\n  .object({ name: z.string() })\\n  .passthrough();`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": ".passthrough() in file with DB insert/update — mass-assignment risk"
+    },
+    {
+      "vulnSlug": "zod-passthrough-mass-assignment",
+      "lineNumbers": [
+        28
+      ],
+      "snippet": "    `import { z } from \"zod\";\\nconst schema = z.object({}).passthrough();\\nawait db.update(users).set(parsed);`,\n    `import { z } from \"zod\";\\nexport const userInput = z.object({ name: z.string() }).strict().passthrough();`,\n    `import { z } from \"zod\";\\nconst s = z\\n  .object({ name: z.string() })\\n  .passthrough();`,\n  ],\n  match(content, filePath) {\n    if (/\\.(test|spec)\\.(ts|tsx|js|jsx|mjs|cjs)$/.test(filePath)) return [];",
+      "matchedPattern": ".passthrough() in file with DB insert/update — mass-assignment risk"
+    },
+    {
+      "vulnSlug": "zod-passthrough-mass-assignment",
+      "lineNumbers": [
+        57
+      ],
+      "snippet": "          snippet: lines.slice(start, end).join(\"\\n\"),\n          matchedPattern: writeContext\n            ? \".passthrough() in file with DB insert/update — mass-assignment risk\"\n            : \".passthrough() — verify parsed output trust boundary\",\n        });\n      }",
+      "matchedPattern": ".passthrough() in file with DB insert/update — mass-assignment risk"
+    },
+    {
+      "vulnSlug": "zod-passthrough-mass-assignment",
+      "lineNumbers": [
+        58
+      ],
+      "snippet": "          matchedPattern: writeContext\n            ? \".passthrough() in file with DB insert/update — mass-assignment risk\"\n            : \".passthrough() — verify parsed output trust boundary\",\n        });\n      }\n    }",
+      "matchedPattern": ".passthrough() in file with DB insert/update — mass-assignment risk"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.825Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "9694777c908c5699318b0df79732e381bb871c2ab3a3da5c7d76a37e22af521e",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:10:13.049Z",
+      "durationMs": 27891,
+      "durationApiMs": 27224,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "af31fb8c-ff26-4376-88c2-1a55eebeecfc",
+      "findingCount": 0,
+      "numTurns": 3,
+      "costUsd": 0.17779525,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 1989,
+        "cacheReadInputTokens": 74383,
+        "cacheCreationInputTokens": 14535
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-b34a23093a7f063f",
+      "investigatedAt": "2026-05-06T21:53:49.447Z",
+      "durationMs": 10005.2,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b3e-7863-93e9-93441614ba27",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0592852,
+      "usage": {
+        "inputTokens": 6833.2,
+        "outputTokens": 528.4,
+        "cacheReadInputTokens": 18534.4,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:49.449Z"
+  },
+  "status": "analyzed"
+}

@@ -1,0 +1,102 @@
+{
+  "filePath": "packages/scanner/src/matchers/js-astro-endpoint.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  examples: [\n    `export const GET: APIRoute = async ({ request }) => {}`,\n    `export async function POST({ request }) { return new Response(null) }`,\n    `export const PUT = ({ request }) => {}`,\n    `export function DELETE({ params }) {}`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    `export async function POST({ request }) { return new Response(null) }`,\n    `export const PUT = ({ request }) => {}`,\n    `export function DELETE({ params }) {}`,\n    `export const ALL: APIRoute = async ({ request }) => {}`,\n    `const url = Astro.request.url`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    `export const GET: APIRoute = async ({ request }) => {}`,\n    `export async function POST({ request }) { return new Response(null) }`,\n    `export const PUT = ({ request }) => {}`,\n    `export function DELETE({ params }) {}`,\n    `export const ALL: APIRoute = async ({ request }) => {}`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (arrow) (weak candidate)"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"js-astro-endpoint\",\n  description: \"Astro API endpoints and SSR routes (gated on Astro)\",\n  filePatterns: [\"**/pages/**/*.{ts,js}\", \"**/pages/api/**/*.{ts,js}\", \"**/src/pages/**/*.astro\"],\n  requires: { tech: [\"astro\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.486Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "029e9076b30848ceb6d63300d2b3c118677e4a6a40cc3d8fa2db7c2ef8574f0c",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-df24f2705e085bee",
+      "investigatedAt": "2026-05-06T21:49:55.094Z",
+      "durationMs": 9051.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-307a-7390-99a3-9d5ad05b5428",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0688055,
+      "usage": {
+        "inputTokens": 8643.5,
+        "outputTokens": 454,
+        "cacheReadInputTokens": 23936,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215247-339bb41812196c7b",
+      "investigatedAt": "2026-05-06T21:53:41.468Z",
+      "durationMs": 10341.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8dbb-7630-af10-8fa4a4cb0268",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.06273675,
+      "usage": {
+        "inputTokens": 7705.75,
+        "outputTokens": 440,
+        "cacheReadInputTokens": 22016,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:41.471Z"
+  },
+  "status": "analyzed"
+}

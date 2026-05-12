@@ -1,0 +1,88 @@
+{
+  "filePath": "packages/deepsec/src/pr-comment.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        94,
+        106
+      ],
+      "snippet": "  if (source) {\n    lines.push(\"\");\n    lines.push(`<sub>scope: \\`${source}\\` · run \\`${runId}\\`</sub>`);\n  }\n  lines.push(\"\");",
+      "matchedPattern": "template literal in HTML"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        109,
+        110
+      ],
+      "snippet": "    }\n    lines.push(\"\");\n    if (finding.description) {\n      lines.push(truncate(finding.description, 600));\n      lines.push(\"\");",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.473Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "ff95db08517f0ec6245f94bb8aa35e34a06b0ea7ffd02c126c87e4e4d611b2db",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-f220f11856a9cbbb",
+      "investigatedAt": "2026-05-06T21:50:29.250Z",
+      "durationMs": 23194,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3113-7e52-896e-4cecbb17bd3e",
+      "findingCount": 0,
+      "numTurns": 0.3333333333333333,
+      "phase": "process",
+      "costUsd": 0.120446,
+      "usage": {
+        "inputTokens": 13941.333333333334,
+        "outputTokens": 1057,
+        "cacheReadInputTokens": 38058.666666666664,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"reason\": null, \"skipped\": []}"
+      }
+    },
+    {
+      "runId": "20260506215246-3a3061e5bb87dbb9",
+      "investigatedAt": "2026-05-06T21:56:18.404Z",
+      "durationMs": 39887.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c3c-7b43-b419-c899fb7eac8f",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1639258,
+      "usage": {
+        "inputTokens": 12793.8,
+        "outputTokens": 1900,
+        "cacheReadInputTokens": 85913.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:56:18.406Z"
+  },
+  "status": "analyzed"
+}

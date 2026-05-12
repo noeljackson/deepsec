@@ -1,0 +1,78 @@
+{
+  "filePath": "packages/scanner/src/matchers/py-tornado-handler.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"py-tornado-handler\",\n  description: \"Tornado RequestHandler subclasses and routing (gated on Tornado)\",\n  filePatterns: [\"**/*.py\"],\n  requires: { tech: [\"tornado\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.480Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "b361bebf4a6ad0fba366fa4520e27e8d12e5b198a4860ad1079373458454914b",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-cd3538f953c87753",
+      "investigatedAt": "2026-05-06T21:50:25.719Z",
+      "durationMs": 16303.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-30e2-76f2-99b3-470691e9d2a1",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.080629,
+      "usage": {
+        "inputTokens": 10014.5,
+        "outputTokens": 557.75,
+        "cacheReadInputTokens": 27648,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-98cfa0eac2aaa1f1",
+      "investigatedAt": "2026-05-06T21:53:44.406Z",
+      "durationMs": 11097,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b91-7b80-be3e-13913ef2f572",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0511625,
+      "usage": {
+        "inputTokens": 5600.5,
+        "outputTokens": 452,
+        "cacheReadInputTokens": 19200,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:44.407Z"
+  },
+  "status": "analyzed"
+}

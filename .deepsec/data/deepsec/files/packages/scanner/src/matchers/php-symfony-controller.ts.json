@@ -1,0 +1,53 @@
+{
+  "filePath": "packages/scanner/src/matchers/php-symfony-controller.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"php-symfony-controller\",\n  description: \"Symfony controllers and route attributes (gated on Symfony)\",\n  filePatterns: [\"**/src/**/*.php\", \"**/src/Controller/**/*.php\", \"**/Controller/**/*.php\"],\n  requires: { tech: [\"symfony\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.482Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "af5509706fbca3c7e73c306815b4a18502b05625829431734583070cb9edd1fd",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-b2821a4c40d07c21",
+      "investigatedAt": "2026-05-06T21:50:01.701Z",
+      "durationMs": 10727.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-30b9-73e0-8861-702c568a9253",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.087354,
+      "usage": {
+        "inputTokens": 11525,
+        "outputTokens": 583.5,
+        "cacheReadInputTokens": 24448,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:50:01.703Z"
+  },
+  "status": "analyzed",
+  "lockedByRunId": "20260506215247-405f13d06d5799f7",
+  "lockedAt": "2026-05-06T21:52:47.251Z"
+}

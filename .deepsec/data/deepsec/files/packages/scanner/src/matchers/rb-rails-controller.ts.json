@@ -1,0 +1,87 @@
+{
+  "filePath": "packages/scanner/src/matchers/rb-rails-controller.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        19,
+        39
+      ],
+      "snippet": "    `class PostsController < BaseController`,\n    `  before_action :authenticate_user!, only: [:show, :edit]`,\n    `  skip_before_action :verify_authenticity_token`,\n    `resources :articles`,\n    `get \"/health\", to: \"health#index\"`,",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"rb-rails-controller\",\n  description: \"Rails controllers, routes, and action methods (gated on Rails)\",\n  filePatterns: [\n    \"**/app/controllers/**/*.rb\",",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.480Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "3997434f02d2d69af0c2171d077fd051383886d8f822655c6c8c33a2850a6c1b",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-50cdef6ba19e673a",
+      "investigatedAt": "2026-05-06T21:50:07.568Z",
+      "durationMs": 12221.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3080-7a61-95f3-19c3f30cea48",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0695545,
+      "usage": {
+        "inputTokens": 8432.5,
+        "outputTokens": 512,
+        "cacheReadInputTokens": 24064,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-b5432b498c77e52f",
+      "investigatedAt": "2026-05-06T21:53:57.202Z",
+      "durationMs": 11760.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b8b-7480-bd91-dc6d97001c23",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0765332,
+      "usage": {
+        "inputTokens": 8055.6,
+        "outputTokens": 566.8,
+        "cacheReadInputTokens": 38502.4,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:57.203Z"
+  },
+  "status": "analyzed"
+}

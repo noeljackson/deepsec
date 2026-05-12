@@ -1,0 +1,78 @@
+{
+  "filePath": "packages/scanner/src/matchers/iam-permissions.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"iam-permissions\",\n  description: \"withAuthentication/IAM permission checks — audit for correct Action/Resource pairs\",\n  filePatterns: [\n    \"**/app/api/**/route.{ts,tsx}\",",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.487Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "6af2b5a0da163db3dc6ce338200b869e5baecb74e37bd0a1e5d7427a7f31df0e",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:59.994Z",
+      "durationMs": 56997,
+      "durationApiMs": 56109,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "3cd5ffb5-8a81-4f32-8437-ee1362282417",
+      "findingCount": 0,
+      "numTurns": 8,
+      "costUsd": 0.405597,
+      "usage": {
+        "inputTokens": 13,
+        "outputTokens": 3814,
+        "cacheReadInputTokens": 361539,
+        "cacheCreationInputTokens": 20706
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215247-31d278227f55711b",
+      "investigatedAt": "2026-05-06T21:53:54.199Z",
+      "durationMs": 13648,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8f1d-70e1-bde6-e66e7f56b51d",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.07806825,
+      "usage": {
+        "inputTokens": 9041.75,
+        "outputTokens": 566.25,
+        "cacheReadInputTokens": 31744,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:54.202Z"
+  },
+  "status": "analyzed"
+}

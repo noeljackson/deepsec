@@ -1,0 +1,124 @@
+{
+  "filePath": "packages/scanner/src/matchers/soql-injection.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": " *   - `tooling.query(...)` (Tooling API)\n *   - `sf.query(...)` / `salesforce.query(...)` aliases\n *   - String concat building SOQL: `\"SELECT ... FROM ... WHERE \" + name`\n */\nexport const soqlInjectionMatcher: MatcherPlugin = {",
+      "matchedPattern": "string concat SELECT"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"soql-injection\",\n  description: \"Salesforce SOQL built with template/string interpolation\",\n  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        23,
+        24,
+        26,
+        27,
+        28,
+        29
+      ],
+      "snippet": "  requires: { tech: [\"apex\", \"salesforce\"] },\n  examples: [\n    `import jsforce from \"jsforce\";\\nawait conn.query(\\`SELECT Id FROM Account WHERE Name = '\\${name}'\\`);`,\n    `import jsforce from \"jsforce\";\\nawait conn.queryAll(\\`SELECT Id FROM Lead WHERE Email = '\\${email}'\\`);`,\n    `import jsforce from \"jsforce\";\\nawait conn.query(\"SELECT Id FROM Account WHERE Id = \" + id);`,",
+      "matchedPattern": "template literal SELECT with interpolation"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        14,
+        25
+      ],
+      "snippet": " *   - `tooling.query(...)` (Tooling API)\n *   - `sf.query(...)` / `salesforce.query(...)` aliases\n *   - String concat building SOQL: `\"SELECT ... FROM ... WHERE \" + name`\n */\nexport const soqlInjectionMatcher: MatcherPlugin = {",
+      "matchedPattern": "string concat SELECT"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "    `import jsforce from \"jsforce\";\\nawait conn.query(\\`SELECT Id FROM Account WHERE Name = '\\${name}'\\`);`,\n    `import jsforce from \"jsforce\";\\nawait conn.queryAll(\\`SELECT Id FROM Lead WHERE Email = '\\${email}'\\`);`,\n    `import jsforce from \"jsforce\";\\nawait conn.query(\"SELECT Id FROM Account WHERE Id = \" + id);`,\n    `import { Connection } from \"@jsforce/jsforce-node\";\\nawait sf.query(\\`SELECT Id FROM Account WHERE Id = '\\${id}'\\`);`,\n    `import jsforce from \"jsforce\";\\nawait tooling.query(\\`SELECT Id FROM ApexClass WHERE Name = '\\${name}'\\`);`,",
+      "matchedPattern": ".query('...') with string concatenation — SQL injection"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "    `import jsforce from \"jsforce\";\\nawait conn.query(\\`SELECT Id FROM Account WHERE Name = '\\${name}'\\`);`,\n    `import jsforce from \"jsforce\";\\nawait conn.queryAll(\\`SELECT Id FROM Lead WHERE Email = '\\${email}'\\`);`,\n    `import jsforce from \"jsforce\";\\nawait conn.query(\"SELECT Id FROM Account WHERE Id = \" + id);`,\n    `import { Connection } from \"@jsforce/jsforce-node\";\\nawait sf.query(\\`SELECT Id FROM Account WHERE Id = '\\${id}'\\`);`,\n    `import jsforce from \"jsforce\";\\nawait tooling.query(\\`SELECT Id FROM ApexClass WHERE Name = '\\${name}'\\`);`,",
+      "matchedPattern": "Generic .query('SELECT/INSERT/...') with string concatenation — SQL injection"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.852Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "6ed0415156c08c62e1cff6078026499d6ed153dff6966a84cf24c4bd50291c95",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:00.746Z",
+      "durationMs": 49234,
+      "durationApiMs": 46756,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "138fcf13-e4b7-4a3b-ac41-8724b22e1dfb",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.43548600000000004,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 3473,
+        "cacheReadInputTokens": 43952,
+        "cacheCreationInputTokens": 52264
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-028f56683dd5ae6a",
+      "investigatedAt": "2026-05-06T21:54:00.946Z",
+      "durationMs": 12194,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8baa-74b1-97e8-4be68be65e02",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0748896,
+      "usage": {
+        "inputTokens": 8932.8,
+        "outputTokens": 618.4,
+        "cacheReadInputTokens": 23347.2,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:54:00.948Z"
+  },
+  "status": "analyzed"
+}

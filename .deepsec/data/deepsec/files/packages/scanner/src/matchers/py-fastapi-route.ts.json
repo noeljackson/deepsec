@@ -1,0 +1,110 @@
+{
+  "filePath": "packages/scanner/src/matchers/py-fastapi-route.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  examples: [\n    `@app.get(\"/users\")`,\n    `@router.post(\"/items\", response_model=Item)`,\n    `@api.put(\"/things/{id}\")`,\n    `@app.delete(\"/users/{user_id}\")`,",
+      "matchedPattern": "HTTP entry point: router method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "    `@api.put(\"/things/{id}\")`,\n    `@app.delete(\"/users/{user_id}\")`,\n    `   @router.patch(\"/x\")`,\n    `@app.websocket(\"/ws\")`,\n    `router = APIRouter(prefix=\"/v1\")`,",
+      "matchedPattern": "HTTP entry point: router method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  requires: { tech: [\"fastapi\"] },\n  examples: [\n    `@app.get(\"/users\")`,\n    `@router.post(\"/items\", response_model=Item)`,\n    `@api.put(\"/things/{id}\")`,",
+      "matchedPattern": "HTTP entry point: app method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    `@router.post(\"/items\", response_model=Item)`,\n    `@api.put(\"/things/{id}\")`,\n    `@app.delete(\"/users/{user_id}\")`,\n    `   @router.patch(\"/x\")`,\n    `@app.websocket(\"/ws\")`,",
+      "matchedPattern": "HTTP entry point: app method handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"py-fastapi-route\",\n  description: \"FastAPI route handlers — entry points (gated on FastAPI)\",\n  filePatterns: [\"**/*.py\"],\n  requires: { tech: [\"fastapi\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.481Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "2921fc6f850477697e514301ec531ccf4af24f5bfee15ca7507399a49154533b",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-df24f2705e085bee",
+      "investigatedAt": "2026-05-06T21:49:55.089Z",
+      "durationMs": 9051.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-307a-7390-99a3-9d5ad05b5428",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0688055,
+      "usage": {
+        "inputTokens": 8643.5,
+        "outputTokens": 454,
+        "cacheReadInputTokens": 23936,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215247-339bb41812196c7b",
+      "investigatedAt": "2026-05-06T21:53:42.610Z",
+      "durationMs": 8625.6,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8dbb-7fb1-8d2a-e3566e1d1ef2",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.063703,
+      "usage": {
+        "inputTokens": 8334.6,
+        "outputTokens": 444.2,
+        "cacheReadInputTokens": 17408,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:42.612Z"
+  },
+  "status": "analyzed"
+}

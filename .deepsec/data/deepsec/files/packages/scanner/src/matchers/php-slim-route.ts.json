@@ -1,0 +1,86 @@
+{
+  "filePath": "packages/scanner/src/matchers/php-slim-route.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "    `$app->any('/health', $healthHandler);`,\n    `$app->map(['GET', 'POST'], '/x', $h);`,\n    `$app->group('/api', function ($group) { /* ... */ })->add(new AuthMiddleware());`,\n    `$app->add(new SessionMiddleware($settings));`,\n    `$body = $request->getParsedBody();`,",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"php-slim-route\",\n  description: \"Slim Framework route registrations (gated on Slim)\",\n  filePatterns: [\"**/*.php\"],\n  requires: { tech: [\"slim\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.482Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "1f3e23d01e24feb0486f6e6815992abd399e89cc60369a7eefec17413227e8b2",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-3da0e5a463b2e8bc",
+      "investigatedAt": "2026-05-06T21:50:03.552Z",
+      "durationMs": 11197,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3095-7231-94fd-7a711923958d",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.071321,
+      "usage": {
+        "inputTokens": 9183,
+        "outputTokens": 529,
+        "cacheReadInputTokens": 19072,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-b5432b498c77e52f",
+      "investigatedAt": "2026-05-06T21:53:57.196Z",
+      "durationMs": 11760.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b8b-7480-bd91-dc6d97001c23",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0765332,
+      "usage": {
+        "inputTokens": 8055.6,
+        "outputTokens": 566.8,
+        "cacheReadInputTokens": 38502.4,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:57.198Z"
+  },
+  "status": "analyzed"
+}

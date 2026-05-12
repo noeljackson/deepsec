@@ -1,0 +1,78 @@
+{
+  "filePath": "packages/scanner/src/matchers/rs-tonic-grpc.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"rs-tonic-grpc\",\n  description: \"Tonic gRPC service implementations (gated on Tonic)\",\n  filePatterns: [\"**/*.rs\"],\n  requires: { tech: [\"tonic\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.479Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "367047595bb1172ef368f3e86178df56c0b05e63a3aba66e537de26cc1163334",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214907-2289abb168d88736",
+      "investigatedAt": "2026-05-06T21:49:59.605Z",
+      "durationMs": 9874.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3503-7950-99cf-4dff0fe7662f",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.077197,
+      "usage": {
+        "inputTokens": 10882.5,
+        "outputTokens": 507.75,
+        "cacheReadInputTokens": 15104,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      }
+    },
+    {
+      "runId": "20260506215246-47d6a0335f7d16bd",
+      "investigatedAt": "2026-05-06T21:53:54.173Z",
+      "durationMs": 13800,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b8a-7481-a5e0-b07fed07f0b9",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.084834,
+      "usage": {
+        "inputTokens": 9010.5,
+        "outputTokens": 705.25,
+        "cacheReadInputTokens": 37248,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:54.174Z"
+  },
+  "status": "analyzed"
+}

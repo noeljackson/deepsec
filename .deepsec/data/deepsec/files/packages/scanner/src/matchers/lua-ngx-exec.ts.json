@@ -1,0 +1,87 @@
+{
+  "filePath": "packages/scanner/src/matchers/lua-ngx-exec.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"lua-ngx-exec\",\n  description: \"Lua ngx.exec/ngx.redirect/os.execute/io.popen with dynamic content\",\n  filePatterns: [\"**/*.lua\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        10,
+        15
+      ],
+      "snippet": "  filePatterns: [\"**/*.lua\"],\n  examples: [\n    `ngx.exec(\"/internal/\" .. user_path)`,\n    `ngx.redirect(\"https://example.com/\" .. target)`,\n    `os.execute(\"rm -rf \" .. dir)`,",
+      "matchedPattern": "exec with string"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.483Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "4d2a7dbed5183b630a6a76105769dbf56487866b84c5addbf52514ab50a4268c",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:44.124Z",
+      "durationMs": 35112,
+      "durationApiMs": 34471,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "8a02acbe-c232-4126-88c3-6190ee5d52b6",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.21208,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2708,
+        "cacheReadInputTokens": 74540,
+        "cacheCreationInputTokens": 17132
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-df891dab3f17f60a",
+      "investigatedAt": "2026-05-06T21:54:06.920Z",
+      "durationMs": 17002,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c27-71a2-a797-7acb236cb9a9",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.091324,
+      "usage": {
+        "inputTokens": 9490.5,
+        "outputTokens": 820.25,
+        "cacheReadInputTokens": 38528,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:54:06.921Z"
+  },
+  "status": "analyzed"
+}

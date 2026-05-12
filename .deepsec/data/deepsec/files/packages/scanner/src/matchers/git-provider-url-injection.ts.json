@@ -1,0 +1,133 @@
+{
+  "filePath": "packages/scanner/src/matchers/git-provider-url-injection.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"git-provider-url-injection\",\n  description:\n    \"Git provider API URLs constructed with interpolated user input — path injection risk\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "        { regex: /bitbucket\\.org.*\\$\\{/, label: \"Bitbucket URL with interpolation\" },\n        { regex: /`https?:\\/\\/.*git.*\\$\\{/, label: \"Git provider URL with interpolation\" },\n      ],\n      content,",
+      "matchedPattern": "URL validation regex with greedy wildcard (.+ or .*) — may be bypassable"
+    },
+    {
+      "vulnSlug": "git-provider-url-injection",
+      "lineNumbers": [
+        11,
+        12
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `const url = \\`https://api.github.com/repos/\\${owner}/\\${repo}\\`;`,\n    `await fetch(\\`https://api.github.com/orgs/\\${org}/members\\`);`,\n    `const link = \\`https://github.com/\\${user}/\\${repo}/commits\\`;`,",
+      "matchedPattern": "GitHub API URL with interpolation"
+    },
+    {
+      "vulnSlug": "git-provider-url-injection",
+      "lineNumbers": [
+        11,
+        12,
+        13
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `const url = \\`https://api.github.com/repos/\\${owner}/\\${repo}\\`;`,\n    `await fetch(\\`https://api.github.com/orgs/\\${org}/members\\`);`,\n    `const link = \\`https://github.com/\\${user}/\\${repo}/commits\\`;`,",
+      "matchedPattern": "GitHub URL with interpolated path"
+    },
+    {
+      "vulnSlug": "git-provider-url-injection",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    `await fetch(\\`https://api.github.com/orgs/\\${org}/members\\`);`,\n    `const link = \\`https://github.com/\\${user}/\\${repo}/commits\\`;`,\n    `const url = \\`https://gitlab.com/api/v4/projects/\\${id}\\`;`,\n    `const url = \\`https://bitbucket.org/api/2.0/repositories/\\${slug}\\`;`,\n    `const u = \\`https://git.example.com/repos/\\${slug}\\`;`,",
+      "matchedPattern": "GitLab URL with interpolation"
+    },
+    {
+      "vulnSlug": "git-provider-url-injection",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "    `const link = \\`https://github.com/\\${user}/\\${repo}/commits\\`;`,\n    `const url = \\`https://gitlab.com/api/v4/projects/\\${id}\\`;`,\n    `const url = \\`https://bitbucket.org/api/2.0/repositories/\\${slug}\\`;`,\n    `const u = \\`https://git.example.com/repos/\\${slug}\\`;`,\n  ],",
+      "matchedPattern": "Bitbucket URL with interpolation"
+    },
+    {
+      "vulnSlug": "git-provider-url-injection",
+      "lineNumbers": [
+        11,
+        12,
+        13,
+        14,
+        16
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `const url = \\`https://api.github.com/repos/\\${owner}/\\${repo}\\`;`,\n    `await fetch(\\`https://api.github.com/orgs/\\${org}/members\\`);`,\n    `const link = \\`https://github.com/\\${user}/\\${repo}/commits\\`;`,",
+      "matchedPattern": "Git provider URL with interpolation"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.557Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "e714eddc4c3fd6058675d87a38bafa66be0246683c0989963d42bf4d6feb8468",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:56.044Z",
+      "durationMs": 44252,
+      "durationApiMs": 41662,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "41de6492-d93b-43db-9e1d-4a2babea4197",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.52210075,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 2782,
+        "cacheReadInputTokens": 230479,
+        "cacheCreationInputTokens": 53961
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-5fb7cdb49fe0bbda",
+      "investigatedAt": "2026-05-06T21:53:44.177Z",
+      "durationMs": 9180.2,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8bc9-7e13-a44f-2c7a5a34e197",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0469084,
+      "usage": {
+        "inputTokens": 5191.2,
+        "outputTokens": 413.4,
+        "cacheReadInputTokens": 17100.8,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:44.179Z"
+  },
+  "status": "analyzed"
+}

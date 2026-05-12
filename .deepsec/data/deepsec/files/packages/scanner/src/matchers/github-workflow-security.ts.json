@@ -1,0 +1,59 @@
+{
+  "filePath": "packages/scanner/src/matchers/github-workflow-security.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"github-workflow-security\",\n  description: \"GitHub Actions workflow / composite-action with supply-chain or injection risk\",\n  filePatterns: [\n    \".github/workflows/**/*.yml\",",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.489Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "417bbe89cc9010dab340612bb88a9fefc3c1eb4d59996f750ad4324fae7ca579",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:59.841Z",
+      "durationMs": 56997,
+      "durationApiMs": 56109,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "3cd5ffb5-8a81-4f32-8437-ee1362282417",
+      "findingCount": 0,
+      "numTurns": 8,
+      "costUsd": 0.405597,
+      "usage": {
+        "inputTokens": 13,
+        "outputTokens": 3814,
+        "cacheReadInputTokens": 361539,
+        "cacheCreationInputTokens": 20706
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [
+      {
+        "name": "Malte Ubl",
+        "email": "malte@vercel.com",
+        "date": "2026-04-30T10:49:41-07:00"
+      }
+    ],
+    "enrichedAt": "2026-05-02T16:09:59.902Z"
+  },
+  "status": "analyzed",
+  "lockedByRunId": "20260506215246-7f870d2495961b4e",
+  "lockedAt": "2026-05-06T21:52:46.606Z"
+}

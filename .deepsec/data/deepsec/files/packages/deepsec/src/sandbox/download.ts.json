@@ -1,0 +1,266 @@
+{
+  "filePath": "packages/deepsec/src/sandbox/download.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        121
+      ],
+      "snippet": "  // Use `tar -xzvf` and count emitted lines for \"files extracted\" feedback.\n  return await new Promise<number>((resolve, reject) => {\n    const child = spawn(\"tar\", [\"-xzvf\", tarPath, \"-C\", destDir], {\n      stdio: [\"ignore\", \"pipe\", \"pipe\"],\n    });",
+      "matchedPattern": "spawn"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        73,
+        118,
+        121
+      ],
+      "snippet": "\n  const tarStdout = await tarResult.stdout();\n  if (tarStdout.includes(\"__NO_CHANGES__\")) {\n    log(`[sandbox-${sandboxIndex}] No changes to download.`);\n    if (opts.advanceMarker) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "archive-extraction-untrusted",
+      "lineNumbers": [
+        121
+      ],
+      "snippet": "  // Use `tar -xzvf` and count emitted lines for \"files extracted\" feedback.\n  return await new Promise<number>((resolve, reject) => {\n    const child = spawn(\"tar\", [\"-xzvf\", tarPath, \"-C\", destDir], {\n      stdio: [\"ignore\", \"pipe\", \"pipe\"],\n    });\n    let extracted = 0;",
+      "matchedPattern": "shell tar with -x flag (extract)"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        80,
+        125,
+        129,
+        133,
+        170,
+        171,
+        172
+      ],
+      "snippet": "\n  const tarStdout = await tarResult.stdout();\n  if (tarStdout.includes(\"__NO_CHANGES__\")) {\n    log(`[sandbox-${sandboxIndex}] No changes to download.`);\n    if (opts.advanceMarker) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "archive-extraction-untrusted",
+      "lineNumbers": [
+        171
+      ],
+      "snippet": "  // view of the same file. We re-merge after extract.\n  const hostSnapshot = snapshotFileRecords(destDir);\n  await tar.extract({ file: tarPath, cwd: destDir });\n  mergeAfterExtract(destDir, hostSnapshot);\n  return fileCount;\n}",
+      "matchedPattern": "node-tar extract (tar.x / tar.extract)"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.886Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "287539711284ad0bd495f3d58cd0e97d3c4bf73f8fb53929cc3e72441a55d197",
+  "findings": [
+    {
+      "severity": "MEDIUM",
+      "vulnSlug": "path-traversal",
+      "title": "Tar extraction of sandbox-produced archive on host has no path-traversal protection",
+      "description": "`extractTarballLocally` (lines 118–146) runs `spawn('tar', ['-xzvf', tarPath, '-C', destDir])` on the host to extract a tarball that was packaged inside the (untrusted) Vercel Sandbox by `find . -newer <marker> | tar -czf` (lines 52–58). Per the project's own threat model (CLAUDE.md, 'Sandbox round-trip tampering'), a compromised sandbox or attacker-in-the-middle can include archive entries whose names contain `..` segments, absolute paths, or symlinks that escape the destination. No flags such as `--no-overwrite-dir`, `--anchored`, `--no-same-owner`, `-P` removal, or post-extract path validation are applied. On macOS (the documented dev environment), the system `tar` is BSD/libarchive `bsdtar`, which historically permits `..`-laden member paths more permissively than modern GNU tar; on Linux GNU tar 1.32+ rejects most `..` traversal, but symlink-then-write tricks (creating a symlink entry followed by a write through it) are still effective. Combined with `localProjectDir = dataDir(projectId)` (line 100) and a CLI-controlled `projectId` that flows through `path.join(getDataRoot(), projectId)` without validation (`packages/core/src/paths.ts:7-9`), an adversary controlling the sandbox can write arbitrary files anywhere the CLI user has write access — including `~/.ssh/authorized_keys`, shell rc files, or replacing the user's `deepsec.config.ts` for code-execution next CLI run. The sandbox is the explicit trust boundary in the threat model, so this is the named #1 attack surface with no mitigation in place.",
+      "lineNumbers": [
+        100,
+        101,
+        103,
+        118,
+        119,
+        120,
+        121,
+        122,
+        123
+      ],
+      "recommendation": "Either (1) replace `spawn('tar', …)` with a userland tar reader (e.g. the `tar` npm package's `t`/`x` API) and reject any entry whose normalized path leaves `destDir`, contains absolute paths, or is a symlink/hardlink pointing outside `destDir`; or (2) keep the system tar but pass `--no-overwrite-dir --no-same-permissions --no-same-owner -P --anchored` and additionally pre-list entries with `tar -tzf` and reject the archive if any entry's `path.resolve(destDir, entry).startsWith(path.resolve(destDir) + path.sep)` check fails. Also normalize/validate `projectId` (e.g. `^[A-Za-z0-9._-]+$`) at CLI parse time to prevent `../`-laced project ids from steering `destDir` itself outside the workspace.",
+      "confidence": "high",
+      "revalidation": {
+        "verdict": "fixed",
+        "reasoning": "The vulnerable implementation described in the finding is no longer present in the current file. `extractTarballLocally` now uses the npm `tar` package rather than `spawn('tar', ['-xzvf', ...])`, and it performs a validation pass with `tar.list({ strict: true })` before extraction. Each non-directory entry must be a regular file, must have an allowed extension, and must match one of the strict `files/`, `runs/`, or `reports/` namespace regexes. Symlinks, hardlinks, device entries, and other archive entry types are rejected before any extraction occurs, which blocks the symlink-then-write class described in the finding. The allowed path regexes do not permit `..` path components or arbitrary nested names outside the expected result namespaces, and `strict: true` adds tar parser rejection for dangerous archive paths. `dataDir(projectId)` also now calls `assertSafeSegment`, so `../`-laced project ids cannot steer the host extraction directory. Git history was unavailable in this checkout because `/vercel/sandbox/target` is not a git repository, but the current source shows the issue has been patched.",
+        "revalidatedAt": "2026-05-06T22:53:59.627Z",
+        "runId": "20260506225212-1b58634a7e10da93",
+        "model": "gpt-5.5"
+      }
+    },
+    {
+      "severity": "MEDIUM",
+      "vulnSlug": "other-shell-injection-via-cli-arg",
+      "title": "projectId interpolated unquoted into `sh -c` command sent to sandbox",
+      "description": "Line 55–58 builds a sandbox shell command: `sh -c \"cd ${remoteProjectDir} && first=$(find . -newer ${SETUP_MARKER} -type f -print -quit); if [ -z \\\"$first\\\" ]; then echo \\\"__NO_CHANGES__\\\"; exit 0; fi; find . -newer ${SETUP_MARKER} -type f -print0 | tar -czf ${remoteTarPath} --null -T -\"`. `remoteProjectDir = ${DATA_DIR}/${projectId}`, and `projectId` arrives unvalidated from `--project-id` (resolveProjectId in `packages/deepsec/src/resolve-project-id.ts` returns the value verbatim; the schema is plain `z.string()`). A `--project-id 'foo; evil'` value would inject arbitrary commands into the sandbox shell. Severity is MEDIUM rather than HIGH because in deepsec the CLI invoker IS the trust principal — running attacker-controlled CLI flags is already game over. However, the same unvalidated `projectId` flows into host-side path construction (`dataDir(projectId)`, `runPath(projectId, runId)` in `state.ts:15`), where `..` segments can escape the workspace on the host filesystem. Defense-in-depth says validate the value once at the CLI boundary.",
+      "lineNumbers": [
+        41,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58
+      ],
+      "recommendation": "Validate `projectId` at CLI parse time with a strict pattern such as `^[A-Za-z0-9._-]{1,64}$`, rejecting `..`, `/`, and shell metacharacters. Apply the same validation in `resolveProjectId` so config-supplied ids are also checked. Use single-quoted shell arguments or a separate `cwd:` option on `runCommand` instead of string-interpolating the path into `sh -c`.",
+      "confidence": "high",
+      "revalidation": {
+        "verdict": "fixed",
+        "reasoning": "The shell interpolation in `downloadResults` still exists, but the attacker-controlled form described in the finding is no longer reachable through the normal CLI sandbox path. `sandboxCommand`, `sandbox collect`, and `sandbox status` resolve `--project-id` through `resolveProjectId`, which now validates ids with `PROJECT_ID_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/`. That rejects spaces, semicolons, shell metacharacters, slashes, leading separators, and `..` traversal strings before the value reaches `remoteProjectDir`. Config-derived project ids also flow through the same validation path in `resolveProjectId`, and direct project id resolution uses `validateProjectId` as well. Host path construction is additionally protected by `dataDir(projectId)`, which rejects empty, absolute, separator-containing, `.` and `..` segments. The remaining interpolation is still not ideal from a defense-in-depth perspective, but with current validation a concrete CLI-argument shell-injection payload like `foo; evil` is rejected before sandbox dispatch. Git history was unavailable, so this verdict is based on the current patched source.",
+        "revalidatedAt": "2026-05-06T22:53:59.627Z",
+        "runId": "20260506225212-1b58634a7e10da93",
+        "model": "gpt-5.5"
+      }
+    },
+    {
+      "severity": "HIGH",
+      "vulnSlug": "archive-extraction-untrusted",
+      "title": "Sandbox result archive can overwrite project metadata",
+      "description": "The sandbox output tarball is treated as adversarial, but extractTarballLocally only validates archive entry type and extension. Any regular .json, .md, or .csv entry is accepted and extracted into data/<projectId>. A compromised sandbox can include top-level project.json or other non-result JSON files, and tar.extract will blindly overwrite them. Overwriting project.json is especially dangerous because readProjectConfig later trusts rootPath from that file; a poisoned rootPath can cause future sandbox uploads/scans to operate on attacker-chosen host paths instead of the intended repository.",
+      "lineNumbers": [
+        13,
+        149,
+        150,
+        171
+      ],
+      "recommendation": "Validate archive member paths against a strict namespace allowlist before extraction, for example files/**/*.json, runs/*.json, reports/report*.json, reports/report*.md, and reports/report*.csv. Reject top-level project.json/config.json and any unexpected directory. Also validate parsed JSON schemas for each accepted path class before committing it to disk.",
+      "confidence": "high",
+      "producedByRunId": "20260506215246-221dec17f8912bb2",
+      "revalidation": {
+        "verdict": "fixed",
+        "reasoning": "The current extraction logic has a namespace allowlist that directly addresses this finding. `ALLOWED_ENTRY_PATTERNS` permits only `files/**/*.json`, `runs/*.json`, and `reports/report*.{json,md,csv}` entries. A top-level `project.json` no longer matches any allowed pattern, so it is added to `violations` during the list pass and extraction is aborted before any file is written. The test suite includes the canonical attack case where a tarball containing top-level `project.json` with a poisoned `rootPath` is rejected and the destination directory remains empty. Since `extractTarballLocally` performs the validation pass before `tar.extract`, the attacker cannot rely on partial extraction to overwrite trusted metadata. This removes the specific path where sandbox output could poison `readProjectConfig` for a later run. Git history could not be inspected in this environment, but the current code is patched against the described overwrite.",
+        "revalidatedAt": "2026-05-06T22:53:59.627Z",
+        "runId": "20260506225212-1b58634a7e10da93",
+        "model": "gpt-5.5"
+      }
+    },
+    {
+      "severity": "MEDIUM",
+      "vulnSlug": "archive-extraction-untrusted",
+      "title": "No size or entry-count limits on adversarial sandbox results",
+      "description": "downloadResults downloads the VM-produced tarball, records its size only for logging, then tar.list and tar.extract process the archive without any maximum compressed size, uncompressed size, per-file size, or entry-count limit. Since sandbox output is an attacker-controlled boundary, a malicious or compromised sandbox can return an oversized tarball or decompression bomb that consumes host disk, CPU, or memory during the two-pass list/extract flow.",
+      "lineNumbers": [
+        92,
+        100,
+        140,
+        171
+      ],
+      "recommendation": "Enforce a maximum downloaded tarball size immediately after download, and during tar.list accumulate entry count and total uncompressed size from entry headers. Reject archives that exceed conservative limits before extraction, and consider streaming extraction with per-entry size checks.",
+      "confidence": "high",
+      "producedByRunId": "20260506215246-221dec17f8912bb2",
+      "revalidation": {
+        "verdict": "fixed",
+        "reasoning": "The current `downloadResults` and `extractTarballLocally` implementations now enforce explicit caps on sandbox-produced archives. After download, the compressed tarball size is checked against `MAX_TARBALL_BYTES` and rejected before listing or extracting if it is too large. During `tar.list`, the code tracks `fileCount`, total uncompressed size, and each entry's declared size. It rejects archives exceeding `MAX_ENTRIES`, `MAX_UNCOMPRESSED_BYTES`, or `MAX_PER_FILE_BYTES`. These checks occur in the pre-extraction validation pass, so an oversized or overpopulated archive is refused before it can populate the host data directory. The limits do not prove every possible resource exhaustion scenario impossible, but they directly remediate the missing compressed size, uncompressed size, per-file size, and entry-count controls named in the finding. The issue is therefore fixed in the current source.",
+        "revalidatedAt": "2026-05-06T22:53:59.627Z",
+        "runId": "20260506225212-1b58634a7e10da93",
+        "model": "gpt-5.5"
+      }
+    }
+  ],
+  "analysisHistory": [
+    {
+      "runId": "20260502162558-8060",
+      "investigatedAt": "2026-05-02T16:32:33.120Z",
+      "durationMs": 387976,
+      "durationApiMs": 385675,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "059cbbb1-9116-45a3-8bac-62f003332c03",
+      "findingCount": 2,
+      "numTurns": 11,
+      "costUsd": 2.7404805000000003,
+      "usage": {
+        "inputTokens": 21,
+        "outputTokens": 13776,
+        "cacheReadInputTokens": 671446,
+        "cacheCreationInputTokens": 47980
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-221dec17f8912bb2",
+      "investigatedAt": "2026-05-06T21:55:04.227Z",
+      "durationMs": 25095.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8ae8-7ba0-9eb4-7132564b7e9c",
+      "findingCount": 2,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1313282,
+      "usage": {
+        "inputTokens": 14444.6,
+        "outputTokens": 1132.2,
+        "cacheReadInputTokens": 50278.4,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    },
+    {
+      "runId": "20260506223949-bd2cf1d45b776494",
+      "investigatedAt": "2026-05-06T22:42:31.375Z",
+      "durationMs": 31730,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff72-8994-7cb0-87ce-5db24fe83e1b",
+      "findingCount": 2,
+      "numTurns": 0.2,
+      "phase": "revalidate",
+      "costUsd": 0.1468248,
+      "usage": {
+        "inputTokens": 11902,
+        "outputTokens": 1811.4,
+        "cacheReadInputTokens": 65945.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506225212-1b58634a7e10da93",
+      "investigatedAt": "2026-05-06T22:53:59.627Z",
+      "durationMs": 31576.333333333332,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff7d-f3ac-7ee3-8aef-ff8bb719021a",
+      "findingCount": 4,
+      "numTurns": 0.3333333333333333,
+      "phase": "revalidate",
+      "costUsd": 0.19728400000000001,
+      "usage": {
+        "inputTokens": 18829.333333333332,
+        "outputTokens": 1924.6666666666667,
+        "cacheReadInputTokens": 90794.66666666667,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T22:53:59.630Z"
+  },
+  "status": "analyzed"
+}

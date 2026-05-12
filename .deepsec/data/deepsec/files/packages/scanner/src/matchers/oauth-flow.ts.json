@@ -1,0 +1,68 @@
+{
+  "filePath": "packages/scanner/src/matchers/oauth-flow.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"oauth-flow\",\n  description: \"OAuth authorize/callback endpoints and token-bearing redirects\",\n  filePatterns: [\n    \"**/oauth/**/*.{ts,tsx}\",",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7,
+        25
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"oauth-flow\",\n  description: \"OAuth authorize/callback endpoints and token-bearing redirects\",\n  filePatterns: [\n    \"**/oauth/**/*.{ts,tsx}\",",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.482Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "a498e4e54e372e2e2cef94523c782d3041d6514fc92ca0eeda5df125b7c09471",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:41.637Z",
+      "durationMs": 31559,
+      "durationApiMs": 30882,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "2d2b9aec-6d9c-4fcc-8a55-45e23407d214",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.2008875,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 2366,
+        "cacheReadInputTokens": 74530,
+        "cacheCreationInputTokens": 16710
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [
+      {
+        "name": "Malte Ubl",
+        "email": "malte@vercel.com",
+        "date": "2026-04-30T10:49:41-07:00"
+      }
+    ],
+    "enrichedAt": "2026-05-02T16:09:41.680Z"
+  },
+  "status": "analyzed",
+  "lockedByRunId": "20260506215246-3d7d4ec5e83fddc1",
+  "lockedAt": "2026-05-06T21:52:46.998Z"
+}

@@ -1,0 +1,53 @@
+{
+  "filePath": "packages/scanner/src/matchers/go-buffalo-route.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7,
+        16
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"go-buffalo-route\",\n  description: \"Buffalo app routes and resources (gated on buffalo)\",\n  filePatterns: [\"**/*.go\"],\n  requires: { tech: [\"buffalo\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.489Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "eec6aae82485edeb28c9f3a923c77e2fffdd7bf39f90d1c9f983f694d86d1b33",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506215246-7f870d2495961b4e",
+      "investigatedAt": "2026-05-06T21:53:42.635Z",
+      "durationMs": 10999.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8ad5-7ee1-9b43-1149b3c03f98",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05119975,
+      "usage": {
+        "inputTokens": 5519.75,
+        "outputTokens": 447.5,
+        "cacheReadInputTokens": 20352,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:42.638Z"
+  },
+  "status": "analyzed"
+}

@@ -1,0 +1,90 @@
+{
+  "filePath": "packages/scanner/src/matchers/php-laravel-route.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        30,
+        33,
+        35,
+        56
+      ],
+      "snippet": "  examples: [\n    `Route::get('/users', [UsersController::class, 'index']);`,\n    `Route::post(\"/login\", [AuthController::class, \"login\"])->middleware('guest');`,\n    `Route::match(['get', 'post'], '/x', $handler);`,\n    `Route::resource('posts', PostsController::class);`,",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        12,
+        38
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"php-laravel-route\",\n  description: \"Laravel route registrations and controller actions (gated on Laravel)\",\n  filePatterns: [\"**/routes/**/*.php\", \"**/app/Http/Controllers/**/*.php\"],\n  requires: {",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.482Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "cbd2fbf0c85de642e57118fe036fbb6f631027d52870b23d15de84630cd47810",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-3da0e5a463b2e8bc",
+      "investigatedAt": "2026-05-06T21:50:03.550Z",
+      "durationMs": 11197,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3095-7231-94fd-7a711923958d",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.071321,
+      "usage": {
+        "inputTokens": 9183,
+        "outputTokens": 529,
+        "cacheReadInputTokens": 19072,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-6c96b5768e32f822",
+      "investigatedAt": "2026-05-06T21:53:54.021Z",
+      "durationMs": 13906.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c2d-7df0-b577-c64e83ece222",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0626195,
+      "usage": {
+        "inputTokens": 6995,
+        "outputTokens": 637.75,
+        "cacheReadInputTokens": 17024,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:54.022Z"
+  },
+  "status": "analyzed"
+}

@@ -1,0 +1,12 @@
+{
+  "_comment": "Optional per-project config. Goes to data/webapp/config.json at runtime. Equivalent fields can be set on the ProjectDeclaration in deepsec.config.ts (priorityPaths, promptAppend); if both are present, this file wins.",
+  "priorityPaths": [
+    "src/api/admin/",
+    "src/api/billing/",
+    "src/api/auth/",
+    "src/lib/auth/",
+    "src/lib/vault/"
+  ],
+  "promptAppend": "Cross-tenant access via missing companyId scoping is the highest-impact bug shape in this codebase. Always check that DB queries filter by req.session.user.companyId.",
+  "ignorePaths": ["**/legacy/**", "**/migrations/**", "**/seed/**"]
+}

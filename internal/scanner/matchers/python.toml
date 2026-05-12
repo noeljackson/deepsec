@@ -1,0 +1,62 @@
+[[matcher]]
+slug = "django-view"
+description = "Django view function — authorization decorator should accompany"
+noise_tier = "noisy"
+file_patterns = ["**/*.py"]
+patterns = [
+  "(?i)^def\\s+\\w+\\s*\\(\\s*request\\s*[,\\)]",
+]
+snippet_after = 12
+requires = { tech = ["django"] }
+label = "Django view"
+
+[[matcher]]
+slug = "fastapi-route"
+description = "FastAPI path operation"
+noise_tier = "noisy"
+file_patterns = ["**/*.py"]
+patterns = [
+  "(?i)@(?:app|router)\\.(?:get|post|put|patch|delete)\\s*\\(",
+]
+snippet_after = 12
+requires = { tech = ["fastapi"] }
+label = "FastAPI path operation"
+
+[[matcher]]
+slug = "flask-route"
+description = "Flask route handler"
+noise_tier = "noisy"
+file_patterns = ["**/*.py"]
+patterns = [
+  "(?i)@(?:app|bp|blueprint)\\.route\\s*\\(",
+  "(?i)@(?:app|bp)\\.(?:get|post|put|patch|delete)\\s*\\(",
+]
+snippet_after = 12
+requires = { tech = ["flask"] }
+label = "Flask route"
+
+[[matcher]]
+slug = "python-pickle-load"
+description = "Untrusted deserialization via pickle"
+noise_tier = "precise"
+file_patterns = ["**/*.py"]
+patterns = [
+  "(?i)pickle\\.loads?\\s*\\(",
+  "(?i)cPickle\\.loads?\\s*\\(",
+  "(?i)yaml\\.load\\s*\\(",
+]
+# RE2 has no lookahead; suppress the yaml.load hit when SafeLoader is in
+# the snippet window, which is what the original lookahead was checking.
+suppress_patterns = ["(?i)SafeLoader\\b"]
+label = "untrusted deserialization (pickle/yaml.load)"
+
+[[matcher]]
+slug = "python-eval-exec"
+description = "Dynamic code evaluation"
+noise_tier = "precise"
+file_patterns = ["**/*.py"]
+patterns = [
+  "(?i)\\b(?:eval|exec)\\s*\\(",
+]
+exclude_path_patterns = ["tests?/", "_test\\.py$"]
+label = "eval/exec on potentially untrusted input"

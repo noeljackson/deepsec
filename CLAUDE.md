@@ -6,36 +6,50 @@ in [README.md](./README.md); contributor docs in
 
 ## Repo shape
 
+This is a Go module.
+
 ```
-packages/
-  core/        Types, schemas, plugin contracts, config loader (defineConfig)
-  scanner/     Regex matchers + scanning engine
-  processor/   AI agent integration (Claude Agent SDK, Codex SDK), enrich, triage, revalidate
-  deepsec/      Publishable package: bundled CLI + the `deepsec/config` sub-export + the @vercel/sandbox executor
-e2e/           End-to-end tests
+cmd/deepsec/                 The CLI binary
+internal/
+  core/                      Types, paths, schemas, JSON persistence
+  scanner/                   File walker, tech detection, TOML matcher engine
+    matchers/                Embedded bundled matcher pack (*.toml)
+  processor/                 AI pipeline (AgentBackend + Anthropic/OpenAI backends)
+    providers/               Provider registry; profiles.toml is embedded
+  cli/                       Cobra context, file_sources, preflight
+    commands/                Each subcommand in its own file
+fixtures/vulnerable-app/     Planted-vulnerability fixture for tests
+docs/                        User-facing docs
 ```
 
 ## Commands
 
 ```bash
-pnpm install
-pnpm test          # all packages, including e2e
-pnpm test:unit     # excludes e2e
-pnpm -r build      # tsc across all workspaces (typecheck)
-pnpm bundle        # esbuild bundle for distribution
-pnpm deepsec ...    # the CLI (runs via tsx)
+go build ./cmd/deepsec               # build the binary
+go test ./...                        # unit + integration tests
+go test ./... -race -count=1         # full suite with race detector
+go vet ./...                         # static analysis
+gofmt -l .                           # format check
 ```
 
 ## Patterns to keep in mind
 
-- Plugin contracts live in `packages/core/src/plugin.ts`. Internals route
-  through `getRegistry()` from `deepsec/config` rather than calling
-  organization-specific code directly.
-- The CLI auto-loads `deepsec.config.{ts,mjs,js,cjs}` from cwd upward
-  (via `packages/deepsec/src/load-config.ts`, jiti).
-- New matchers go in `packages/scanner/src/matchers/` and register in
-  `matchers/index.ts`. Org-specific matchers belong in a separate
-  plugin package, not in this tree.
-- The AI prompt template lives in `packages/processor/src/index.ts`. It
-  is intentionally generic. Don't add organization-specific context
-  there; use `data/<projectId>/INFO.md` or `config.json:promptAppend`.
+- Matchers are declarative TOML, embedded via `go:embed
+  matchers/*.toml` in `internal/scanner/registry.go`. User-defined
+  matchers go in TOML files referenced from `[matchers].extra_paths`.
+- The wire format on disk (`data/<projectId>/files/*.json`,
+  `runs/*.json`) matches the original TypeScript implementation. Don't
+  break JSON tags in `internal/core/types.go` without thought.
+- AI backends live in `internal/processor/`. There are exactly two
+  implementations (`AnthropicBackend`, `OpenAICompatibleBackend`); new
+  providers are added as TOML profile entries, not new Go types.
+- Provider profile caps (`tool_use`, `prompt_cache`,
+  `structured_output`) drive per-provider adaptation in the
+  OpenAI-compatible backend — see `applySchemaFor` in
+  `openai_backend.go`.
+- Path-safety: every disk write goes through `AssertSafeSegment` /
+  `AssertSafeFilePath` in `internal/core/paths.go`. Do not bypass.
+- Concurrency: `Process` uses `errgroup` + `semaphore.Weighted`.
+  Quota or budget exhaustion calls `cancel()` so in-flight batches
+  abort with `context.Canceled`; releases their locks back to
+  `pending` so the user can retry.

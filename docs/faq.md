@@ -19,12 +19,12 @@ The on-disk `data/<projectId>/` format is wire-compatible (identical
 camelCase JSON shapes). A directory written by either tool reads from
 the other.
 
-## How do I use a Chinese provider (GLM / Kimi / DeepSeek)?
+## How do I use Z.ai (GLM), Kimi, or DeepSeek?
 
 They ship enabled by default, you just need their API key:
 
 ```bash
-export GLM_API_KEY=...
+export ZAI_API_KEY=...
 deepsec process --project-id myproj --agent glm
 ```
 

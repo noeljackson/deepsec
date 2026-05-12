@@ -69,7 +69,7 @@ implementations cover all of them:
 |--------------|--------------|----------------------|----------------------------|
 | Anthropic    | `anthropic`  | `ANTHROPIC_API_KEY`  | `claude-sonnet-4-6`        |
 | OpenAI       | `openai`     | `OPENAI_API_KEY`     | `gpt-4.1-mini`             |
-| GLM (Zhipu)  | `glm`        | `GLM_API_KEY`        | `glm-4.6`                  |
+| GLM (Z.ai)   | `glm`        | `ZAI_API_KEY`        | `glm-5.1`                  |
 | Kimi K2      | `kimi`       | `MOONSHOT_API_KEY`   | `kimi-k2-instruct`         |
 | DeepSeek     | `deepseek`   | `DEEPSEEK_API_KEY`   | `deepseek-chat`            |
 | OpenRouter   | `openrouter` | `OPENROUTER_API_KEY` | `anthropic/claude-sonnet-4.6` |

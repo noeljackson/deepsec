@@ -8,13 +8,14 @@ import (
 
 // TriageOptions configures a triage run.
 type TriageOptions struct {
-	ProjectID    string
-	ProjectRoot  string
-	DataRoot     core.DataRoot
-	Backend      AgentBackend
-	ProviderName string
-	FilterPrefix string
-	Force        bool
+	ProjectID     string
+	ProjectRoot   string
+	DataRoot      core.DataRoot
+	Backend       AgentBackend
+	ProviderName  string
+	FilterPrefix  string
+	Force         bool
+	ModelSettings ModelSettings
 }
 
 // TriageOutcome summarizes a triage run.
@@ -31,7 +32,7 @@ func Triage(ctx context.Context, opts TriageOptions) (*TriageOutcome, error) {
 	meta.ProcessorConfig = &core.ProcessorConfig{
 		AgentType:      opts.ProviderName,
 		Model:          opts.Backend.Model(),
-		ModelConfig:    map[string]any{},
+		ModelConfig:    opts.ModelSettings.AsMap(),
 		InvocationMode: core.InvocationModeScan,
 	}
 	if err := opts.DataRoot.WriteRunMeta(meta); err != nil {

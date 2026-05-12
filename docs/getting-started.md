@@ -52,7 +52,7 @@ Or use any of the other built-in providers:
 
 ```bash
 export OPENAI_API_KEY=sk-... && deepsec process --project-id myproj --agent openai
-export GLM_API_KEY=... && deepsec process --project-id myproj --agent glm
+export ZAI_API_KEY=... && deepsec process --project-id myproj --agent glm
 export MOONSHOT_API_KEY=... && deepsec process --project-id myproj --agent kimi
 export DEEPSEEK_API_KEY=... && deepsec process --project-id myproj --agent deepseek
 ```

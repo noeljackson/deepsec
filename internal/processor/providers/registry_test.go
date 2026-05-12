@@ -44,7 +44,7 @@ func TestGLMProfileShape(t *testing.T) {
 	p := r.Get("glm")
 	require.NotNil(t, p)
 	require.Equal(t, KindOpenAIish, p.Kind)
-	require.Equal(t, "GLM_API_KEY", p.APIKeyEnv)
+	require.Equal(t, "ZAI_API_KEY", p.APIKeyEnv)
 	require.Equal(t, CacheNone, p.Caps.PromptCache)
 	require.Equal(t, OutputJSONObject, p.Caps.StructuredOutput)
 }

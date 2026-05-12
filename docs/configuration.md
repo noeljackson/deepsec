@@ -80,7 +80,7 @@ User-defined providers replace built-ins of the same name.
 | `ANTHROPIC_BASE_URL`  | `--agent anthropic`      | Override (default: SDK default)      |
 | `OPENAI_API_KEY`      | `--agent openai`         | OpenAI API key                       |
 | `OPENAI_BASE_URL`     | `--agent openai`         | Override (Azure / proxy / local)     |
-| `GLM_API_KEY`         | `--agent glm`            | Zhipu GLM key                        |
+| `ZAI_API_KEY`         | `--agent glm`            | Z.ai (GLM) key                       |
 | `MOONSHOT_API_KEY`    | `--agent kimi`           | Moonshot key                         |
 | `DEEPSEEK_API_KEY`    | `--agent deepseek`       | DeepSeek key                         |
 | `OPENROUTER_API_KEY`  | `--agent openrouter`     | OpenRouter key                       |

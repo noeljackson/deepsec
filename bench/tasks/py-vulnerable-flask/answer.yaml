@@ -1,0 +1,15 @@
+issues:
+  - { id: py-ssrf-001, file: app.py, severity: HIGH, cwe: CWE-918, vulnSlugs: [ssrf, server-side-request-forgery], location: { startLine: 10, endLine: 10, tolerance: 2 }, scanner: { mustEmitCandidate: true } }
+  - { id: py-eval-001, file: app.py, severity: CRITICAL, cwe: CWE-95, vulnSlugs: [python-eval-exec], location: { startLine: 16, endLine: 16, tolerance: 2 }, scanner: { mustEmitCandidate: true } }
+  - { id: py-sqli-001, file: app.py, severity: HIGH, cwe: CWE-89, vulnSlugs: [sql-injection-string-concat, sql-injection], location: { startLine: 22, endLine: 22, tolerance: 2 }, scanner: { mustEmitCandidate: true } }
+  - id: py-safe-loader-001
+    file: app.py
+    severity: LOW
+    cwe: CWE-502
+    vulnSlugs: [python-pickle-load]
+    location: { startLine: 1, endLine: 1, tolerance: 0 }
+    scanner: { mustEmitCandidate: false, reason: "No unsafe deserialization is present; tracked outside scanner recall." }
+decoys:
+  - { id: py-ssrf-decoy-static-url, file: app.py, line: 27, forbiddenSlugs: [ssrf] }
+  - { id: py-eval-decoy-literal-eval, file: app.py, line: 33, forbiddenSlugs: [python-eval-exec] }
+  - { id: py-sqli-decoy-parameterized-query, file: app.py, line: 39, forbiddenSlugs: [sql-injection-string-concat] }

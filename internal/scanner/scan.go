@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -17,7 +18,11 @@ type Options struct {
 	DataRoot       core.DataRoot
 	MatcherOnly    []string
 	MatcherExclude []string
-	GithubURL      string
+	// ExtraMatcherPaths is a list of TOML files (or directories of TOML files)
+	// to load on top of the bundled matcher pack. User matchers registered
+	// with a slug that already exists in the bundle override it.
+	ExtraMatcherPaths []string
+	GithubURL         string
 }
 
 // LanguageStat is one row of the per-language scan summary.
@@ -66,11 +71,10 @@ func Scan(opts Options) (*Outcome, error) {
 		return nil, err
 	}
 
-	reg, err := WithBuiltin()
+	reg, err := loadRegistry(opts)
 	if err != nil {
 		return nil, err
 	}
-	reg.ApplyFilter(opts.MatcherOnly, opts.MatcherExclude)
 	active, skipped := splitGated(reg, tech, opts.Root)
 
 	files, err := WalkProject(opts.Root)
@@ -153,11 +157,10 @@ func ScanFiles(opts Options, files []string, source string) (*FilesOutcome, erro
 		return nil, err
 	}
 
-	reg, err := WithBuiltin()
+	reg, err := loadRegistry(opts)
 	if err != nil {
 		return nil, err
 	}
-	reg.ApplyFilter(opts.MatcherOnly, opts.MatcherExclude)
 	active, skipped := splitGated(reg, tech, opts.Root)
 
 	candidateCount := 0
@@ -197,6 +200,34 @@ func ScanFiles(opts Options, files []string, source string) (*FilesOutcome, erro
 		ActiveMatchers:  active,
 		SkippedMatchers: skipped,
 	}, nil
+}
+
+// loadRegistry builds the registry used by Scan / ScanFiles: bundled
+// pack first, then any user-supplied paths from opts.ExtraMatcherPaths,
+// then the only/exclude filter. Entries from extras override bundled
+// entries that share a slug.
+func loadRegistry(opts Options) (*Registry, error) {
+	reg, err := WithBuiltin()
+	if err != nil {
+		return nil, err
+	}
+	for _, p := range opts.ExtraMatcherPaths {
+		info, err := os.Stat(p)
+		if err != nil {
+			return nil, fmt.Errorf("matchers.extra_paths %q: %w", p, err)
+		}
+		if info.IsDir() {
+			if err := reg.LoadTOMLDir(p); err != nil {
+				return nil, fmt.Errorf("matchers.extra_paths %q: %w", p, err)
+			}
+			continue
+		}
+		if err := reg.LoadTOMLFile(p); err != nil {
+			return nil, fmt.Errorf("matchers.extra_paths %q: %w", p, err)
+		}
+	}
+	reg.ApplyFilter(opts.MatcherOnly, opts.MatcherExclude)
+	return reg, nil
 }
 
 func splitGated(reg *Registry, tech DetectedTech, root string) (active, skipped []string) {

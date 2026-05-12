@@ -1,0 +1,22 @@
+Review these files for exploitable vulnerabilities.
+
+===== FILE: src/api/users.ts =====
+Candidate matches (regex-derived, may be noisy):
+  - slug=sql-injection-string-concat lines=[4] matched="query concat"
+Code:
+    1 import { db } from '../lib/db'
+    2 export async function GET(req: Request) {
+    3   const q = new URL(req.url).searchParams.get('q')
+    4   return db.query('select * from users where name = ' + q)
+    5 }
+
+===== FILE: src/lib/fetch-proxy.ts =====
+Candidate matches (regex-derived, may be noisy):
+  - slug=ssrf lines=[2] matched="fetch url"
+Code:
+    1 export async function proxy(url: string) {
+    2   return fetch(url)
+    3 }
+
+
+Report each genuine vulnerability via the structured output channel.

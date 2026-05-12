@@ -1,0 +1,18 @@
+{
+  "filePath": "src/fetch.ts",
+  "projectId": "ssrf-true-positive",
+  "candidates": [
+    {
+      "vulnSlug": "ssrf",
+      "lineNumbers": [6],
+      "snippet": "return fetch(target);",
+      "matchedPattern": "fetch\\("
+    }
+  ],
+  "lastScannedAt": "2026-01-01T00:00:00Z",
+  "lastScannedRunId": "fixture",
+  "fileHash": "fixture-ssrf-tp",
+  "findings": [],
+  "analysisHistory": [],
+  "status": "pending"
+}

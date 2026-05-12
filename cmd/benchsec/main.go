@@ -11,8 +11,9 @@ import (
 
 func main() {
 	var tasksDir, outDir string
+	var processTasksDir, processOutDir string
 	var explosion float64
-	root := &cobra.Command{Use: "benchsec", Short: "scanner-only benchmark harness"}
+	root := &cobra.Command{Use: "benchsec", Short: "deepsec benchmark harness"}
 	score := &cobra.Command{
 		Use:   "score [task-id...]",
 		Short: "score scanner candidates against benchmark answer keys",
@@ -32,6 +33,25 @@ func main() {
 	score.Flags().StringVar(&tasksDir, "tasks", "bench/tasks", "benchmark task directory")
 	score.Flags().StringVar(&outDir, "out", "bench/out", "report output root")
 	score.Flags().Float64Var(&explosion, "candidate-explosion", 100, "candidate density threshold per KLOC")
+
+	processScore := &cobra.Command{
+		Use:   "process-score [task-id...]",
+		Short: "score processor replay fixtures against answer keys",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			result, err := bench.ProcessScore(args, bench.ProcessScoreOptions{TasksDir: processTasksDir, OutDir: processOutDir})
+			if err != nil {
+				return err
+			}
+			body, err := json.MarshalIndent(result.Summary, "", "  ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(body))
+			return nil
+		},
+	}
+	processScore.Flags().StringVar(&processTasksDir, "tasks", "bench/processor-fixtures", "processor fixture directory")
+	processScore.Flags().StringVar(&processOutDir, "out", "bench/out-processor", "processor report output root")
 
 	var matcherDir, format string
 	lint := &cobra.Command{
@@ -66,7 +86,7 @@ func main() {
 	lint.Flags().StringVar(&matcherDir, "matchers", "internal/scanner/matchers", "matcher TOML directory")
 	lint.Flags().StringVar(&format, "format", "tsv", "output format: tsv or json")
 
-	root.AddCommand(score, lint)
+	root.AddCommand(score, processScore, lint)
 	if err := root.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

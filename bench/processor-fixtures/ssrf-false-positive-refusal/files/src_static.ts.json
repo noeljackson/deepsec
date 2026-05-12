@@ -1,0 +1,18 @@
+{
+  "filePath": "src/static.ts",
+  "projectId": "ssrf-false-positive-refusal",
+  "candidates": [
+    {
+      "vulnSlug": "ssrf",
+      "lineNumbers": [2],
+      "snippet": "return fetch(\"https://status.example.com/health\");",
+      "matchedPattern": "fetch\\("
+    }
+  ],
+  "lastScannedAt": "2026-01-01T00:00:00Z",
+  "lastScannedRunId": "fixture",
+  "fileHash": "fixture-ssrf-refusal",
+  "findings": [],
+  "analysisHistory": [],
+  "status": "pending"
+}

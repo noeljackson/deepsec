@@ -1,17 +1,25 @@
-node_modules/
-dist/
-# Root-level only; `.deepsec/data/` is intentionally tracked.
-/data/
-.next/
-next-env.d.ts
-*.tsbuildinfo
-.vercel
-.env*.local
-.DS_Store
-.claude
-linear-*
-plans/
+# Build output
+/deepsec
 /bin/
+dist/
+
+# Deepsec scan data (root-level only; `.deepsec/data/` in consumer repos is intentionally tracked)
+/data/
+
+# Local deepsec config from `deepsec init` (each contributor generates their own)
+/deepsec.config.toml
+
+# Test / coverage artifacts
 *.test
 *.out
-deepsec-scan.json
+
+# Secrets and local env
+.env*.local
+
+# Editor / tool state
+.DS_Store
+.claude
+
+# Local workflow files
+linear-*
+plans/

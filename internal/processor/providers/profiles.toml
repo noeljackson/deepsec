@@ -81,14 +81,31 @@ output_per_mtok_usd = 0.60
 
 [providers.glm]
 kind = "openai-compatible"
-base_url = "https://open.bigmodel.cn/api/paas/v4"
-api_key_env = "GLM_API_KEY"
-default_model = "glm-4.6"
+base_url = "https://api.z.ai/api/paas/v4"
+api_key_env = "ZAI_API_KEY"
+default_model = "glm-5.1"
 
 [providers.glm.caps]
 tool_use = true
 prompt_cache = "none"
 structured_output = "json_object"
+
+# Pricing from https://docs.z.ai/guides/overview/pricing (per 1M tokens, USD).
+
+[[providers.glm.pricing]]
+model = "glm-5.1"
+input_per_mtok_usd = 1.40
+output_per_mtok_usd = 4.40
+
+[[providers.glm.pricing]]
+model = "glm-5"
+input_per_mtok_usd = 1.00
+output_per_mtok_usd = 3.20
+
+[[providers.glm.pricing]]
+model = "glm-4.7"
+input_per_mtok_usd = 0.60
+output_per_mtok_usd = 2.20
 
 [[providers.glm.pricing]]
 model = "glm-4.6"
@@ -96,9 +113,30 @@ input_per_mtok_usd = 0.60
 output_per_mtok_usd = 2.20
 
 [[providers.glm.pricing]]
-model = "glm-4-flash"
-input_per_mtok_usd = 0.01
-output_per_mtok_usd = 0.01
+model = "glm-4.5"
+input_per_mtok_usd = 0.60
+output_per_mtok_usd = 2.20
+
+[[providers.glm.pricing]]
+model = "glm-4.5-air"
+input_per_mtok_usd = 0.20
+output_per_mtok_usd = 1.10
+
+
+# Z.ai "Coding Plan" subscription via the Anthropic-compatible endpoint.
+# Same ZAI_API_KEY as the `glm` profile, but billed against the flat-rate
+# Coding Plan instead of the pay-as-you-go API wallet. Pricing intentionally
+# omitted: usage is covered by the subscription, not metered per-token.
+[providers.zai-coding]
+kind = "anthropic"
+base_url = "https://api.z.ai/api/anthropic"
+api_key_env = "ZAI_API_KEY"
+default_model = "glm-5.1"
+
+[providers.zai-coding.caps]
+tool_use = true
+prompt_cache = "auto"
+structured_output = "tool_use"
 
 
 [providers.kimi]

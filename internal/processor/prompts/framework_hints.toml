@@ -1,0 +1,55 @@
+# Framework-specific context appended to the system prompt when scanner tech
+# detection emits the matching tag. Keep `tag` equal to a detector tag, and
+# keep `text` as one complete bullet sentence without a leading "-".
+
+[[highlight]]
+tag = "nextjs"
+text = """Next.js: server actions and route handlers run on the server. Calls into Server Components, server actions, and Route Handlers must check the caller's session — there is no automatic authorization."""
+
+[[highlight]]
+tag = "express"
+text = """Express: middlewares run in order. Auth middleware applied AFTER a route handler does nothing."""
+
+[[highlight]]
+tag = "fastify"
+text = """Fastify: preHandler / preValidation hooks must reject before the route body runs. Decorators set on a request object are not automatically authenticated."""
+
+[[highlight]]
+tag = "nestjs"
+text = """NestJS: AuthGuards must be applied at the controller or method level (UseGuards) AND verified to actually call canActivate."""
+
+[[highlight]]
+tag = "django"
+text = """Django: ORM queries via .raw() or .extra() can be SQL-injectable. `request.GET` / `request.POST` are untrusted. Decorators like @login_required must be present on sensitive views."""
+
+[[highlight]]
+tag = "fastapi"
+text = """FastAPI: Depends() that returns the current user must raise on failure, not return None. Path params bound to Pydantic models are not authorization checks."""
+
+[[highlight]]
+tag = "flask"
+text = """Flask: route functions have no implicit auth. `request.args` / `request.form` are untrusted."""
+
+[[highlight]]
+tag = "rails"
+text = """Rails: `params.permit!` and `params.require(...).permit(...)` patterns are critical. Strong Parameters bypassed = mass assignment."""
+
+[[highlight]]
+tag = "gin"
+text = """Gin: middleware must abort with c.Abort() to block the chain. Reading the request body more than once requires care."""
+
+[[highlight]]
+tag = "axum"
+text = """Axum: extractors run before handlers. Auth extractors must return Result<_, Rejection> and the rejection must be a non-200 response."""
+
+[[highlight]]
+tag = "actix"
+text = """Actix-web: middleware order matters. wrap_fn closures must call .call(req) only after auth succeeds."""
+
+[[highlight]]
+tag = "docker"
+text = """Dockerfile: mutable FROM tags break supply-chain integrity. RUN as root + non-pinned downloads is a remote code execution risk."""
+
+[[highlight]]
+tag = "github-actions"
+text = """GitHub Actions: pull_request_target + checkout of PR head = arbitrary code execution with secrets. Branch protection does not save you here."""

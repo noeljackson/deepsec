@@ -1,0 +1,10 @@
+findings:
+  - id: ssrf-tp-001
+    file: src/fetch.ts
+    vulnSlugs: [ssrf, server-side-request-forgery]
+    severity: HIGH
+    location: { startLine: 6, endLine: 6, tolerance: 1 }
+    processor:
+      mustReportFinding: true
+expected_refusals: 0
+expected_findings_min: 1

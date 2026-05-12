@@ -36,6 +36,21 @@ go run ./cmd/benchsec lint-matchers
 
 The linter exits non-zero for error-level findings.
 
+## Processor Replay Scoring
+
+Processor-level fixtures live under `bench/processor-fixtures/` and are
+scored with deterministic mock replay:
+
+```bash
+go run ./cmd/benchsec process-score
+```
+
+The scorer loads frozen `FileRecord` inputs, replays recorded
+`InvestigateOutput` batches through `processor.Process`, and writes
+reports to `bench/out-processor/<timestamp>/`. See
+[`PROCESSOR.md`](./PROCESSOR.md) for the fixture layout, response schema,
+manual authoring guide, and the deferred real-recording plan.
+
 ## Adding A Task
 
 Create:

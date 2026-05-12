@@ -1,136 +1,218 @@
 # deepsec
 
-`deepsec` an agent-powered vulnerability scanner that you can run in your own infrastructure, optimized to perform on-demand review of all code in existing 
-large-scale repos.
+`deepsec` is an agent-powered vulnerability scanner that you run in your
+own infrastructure to perform on-demand security review of large repos.
 
-`deepsec` is designed to surface hard-to-find issues that have been lurking in applications for a long time. It is configured to use the best models at maximum thinking levels, meaning scans can cost thousands or even tens-of-thousands of dollars for large codebases. Our customers have found the cost worth it for how quickly they were able to patch vulnerabilities that would have otherwise gone unfixed.
+A regex-driven scanner produces high-recall *candidate* matches; a
+configurable AI backend then investigates each candidate against the
+actual source code and emits real findings — severity, confidence,
+recommendation, and revalidatable verdicts on each one.
 
-For large codebases, work fans out across worker machines in parallel.
-If a run is interrupted or errors out partway through, just re-run the same
-command — deepsec picks up where it left off, skipping files it already
-analyzed and only investigating the rest.
+> **Note.** This is the Go implementation. The original TypeScript code
+> is preserved in git history (see `git log` before commit
+> `claude/rewrite-deepsec-go`).
 
-## Get started
+## Install
 
-Navigate to the root of the repository that you want to scan, then:
-
-```bash
-npx deepsec init       # creates .deepsec/ with this repo as the first project
-cd .deepsec
-pnpm install           # installs deepsec from npm
-
-# Proceed as instructed by `init` output
-```
-
-Now have your coding agent bootstrap your installation. Open the agent of choice
-and prompt:
-
-> Read `.deepsec/node_modules/deepsec/SKILL.md` to understand the
-> tool. Then read `.deepsec/data/<id>/SETUP.md` and follow it:
-> skim this repo's README, any AGENTS.md/CLAUDE.md, and a handful
-> of representative code files, then replace each section of
-> `.deepsec/data/<id>/INFO.md`.
->
-> Keep it SHORT — target 50–100 lines total. Pick 3–5 examples per
-> section, not exhaustive enumeration. Name primitives (auth helpers,
-> middleware) but no line numbers. Skip generic CWE categories —
-> built-in matchers cover those. Cover only what's project-specific.
-> INFO.md is injected into every scan batch; verbose context dilutes
-> signal.
-
-Then scan from inside `.deepsec/`:
+Pre-built binaries are published per-release for linux/darwin/windows
+across amd64/arm64. Or build from source:
 
 ```bash
-pnpm deepsec scan
-pnpm deepsec process    
-pnpm deepsec revalidate # optional, cuts FP rate
-pnpm deepsec export --format md-dir --out ./findings
+go install github.com/noeljackson/deepsec/cmd/deepsec@latest
 ```
 
-If you feel like the `deepsec` should look at more parts of the code, give it [the writing matchers](docs/writing-matchers.md) doc to find more valuable starting points in your code base.
-
-## Docs
-
-- [docs/getting-started.md](docs/getting-started.md) — first-scan walkthrough
-- [docs/reviewing-changes.md](docs/reviewing-changes.md) — `process --diff` for PR review and CI gating
-- [docs/supported-tech.md](docs/supported-tech.md) — frameworks and ecosystems deepsec recognizes out of the box
-- [docs/writing-matchers.md](docs/writing-matchers.md) — **prompt your coding agent to grow your matcher set**
-- [docs/configuration.md](docs/configuration.md) — `deepsec.config.ts` reference
-- [docs/plugins.md](docs/plugins.md) — plugin authoring
-- [docs/models.md](docs/models.md) — model selection, defaults, refusals, future models
-- [docs/vercel-setup.md](docs/vercel-setup.md) — AI Gateway + Vercel Sandbox keys / tokens
-- [docs/architecture.md](docs/architecture.md) — pipeline internals
-- [docs/data-layout.md](docs/data-layout.md) — `data/` schemas (FileRecord, RunMeta, …)
-- [docs/faq.md](docs/faq.md) — cost, model choice, sandbox mode, FP rate
-- [samples/](samples/) — copy-paste starting points (currently: `webapp/`)
-- [CONTRIBUTING.md](CONTRIBUTING.md) — repo layout, dev workflow
-
-## AI provider
-
-When running locally, `deepsec` falls back to your existing `claude` /
-`codex` subscription if you've logged in on this machine. Subscriptions
-(Claude Pro/Max, ChatGPT Plus) are useful for evaluating deepsec but
-generally don't have enough headroom for full repo scans.
-
-For real scans, use Vercel AI Gateway. One key covers both Claude and
-Codex, and the gateway's default quotas are sized for highly concurrent
-research.
-
-```
-AI_GATEWAY_API_KEY=vck_...
-```
-
-See [docs/vercel-setup.md](docs/vercel-setup.md) for getting a key and
-for the Vercel Sandbox setup. To bypass the gateway, set
-`ANTHROPIC_AUTH_TOKEN` + `ANTHROPIC_BASE_URL` (or the OpenAI pair)
-explicitly. Explicit values always win over the `AI_GATEWAY_API_KEY`
-expansion.
-
-If a `process` or `revalidate` run halts because the upstream credential
-ran out of quota or credits, deepsec stops gracefully and tells you
-where to top up. Re-run the same command afterward and it picks up
-where it left off.
-
-## Distributed execution (optional)
-
-Large monorepos can fan work across [Vercel Sandbox](https://vercel.com/docs/vercel-sandbox) microVMs:
+…or clone and build:
 
 ```bash
-pnpm deepsec sandbox process --project-id my-app --sandboxes 10 --concurrency 4
+git clone https://github.com/noeljackson/deepsec
+cd deepsec
+go build -o bin/deepsec ./cmd/deepsec
 ```
 
-Needs a Vercel account. The local working tree is tarballed and
-uploaded; `.git` is excluded. Both OIDC tokens (local) and access
-tokens (CI) are supported — see
-[docs/vercel-setup.md](docs/vercel-setup.md).
+A `Dockerfile` (distroless, ~20 MB) is also available:
 
-## Security model of deepsec itself
+```bash
+docker build -t deepsec .
+docker run --rm -v $PWD:/work -w /work -e ANTHROPIC_API_KEY deepsec scan --project-id myproj
+```
 
-Treat `deepsec` like a coding agent with full shell access on the enviroment that it is
-running on. It is designed to run on trusted inputs (your source code) but you may still
-be concerned about prompt injection due to external dependencies or vendored code.
+## Quick start
 
-Running on a sandbox (see above) does limit the potential exposure substantially:
+```bash
+# in the repo you want to scan
+deepsec init --project-id myproj --root .
 
-- The API keys for the coding agents are injected outside of the sandbox and hence cannot be exfiltrated
-- For the worker sandboxes, network egress from the sandbox is limited to coding agent hosts (Egress is allowed during the bootstrap process, but this does not run the coding agent)
+# run the regex scanner
+deepsec scan --project-id myproj
 
-## Workflow reference
+# investigate the candidates with an AI backend
+export ANTHROPIC_API_KEY=sk-ant-...
+deepsec process --project-id myproj --agent anthropic --concurrency 4
 
-| Command         | What it does                                             |
-|-----------------|----------------------------------------------------------|
-| `scan`          | Find candidate sites with regex matchers (fast, no AI)   |
-| `process`       | AI investigation; emits findings + recommendation        |
-| `process --diff`| PR-mode: scan + investigate only files changed in a diff |
-| `triage`        | Lightweight P0/P1/P2 classification (cheaper model)      |
-| `revalidate`    | Re-check existing findings; checks git history for fixes |
-| `enrich`        | Add git committer info + (with a plugin) ownership data  |
-| `report`        | Markdown + JSON summary for one project                  |
-| `export`        | Per-finding JSON or directory of markdown files          |
-| `metrics`       | Cross-project counts: severities, vulns by type, TPs     |
-| `status`        | Snapshot of the project mirror                           |
-| `sandbox <cmd>` | Run any of the above on Vercel Sandbox microVMs          |
+# render a human-readable report
+deepsec report --project-id myproj
+```
+
+## AI backends
+
+`deepsec` ships with six provider profiles out of the box. Two backend
+implementations cover all of them:
+
+- `anthropic` — uses `github.com/anthropics/anthropic-sdk-go`. Prompt
+  caching (`cache_control: ephemeral`) on the system prompt typically
+  cuts cost ~80% across a run.
+- `openai-compatible` — uses `github.com/openai/openai-go`. Drives any
+  OpenAI-compatible server via `base_url`: OpenAI, Azure, OpenRouter,
+  GLM, Kimi, DeepSeek, vLLM, Together, Groq, llama.cpp, …
+
+| Provider     | `--agent`    | Env var              | Default model              |
+|--------------|--------------|----------------------|----------------------------|
+| Anthropic    | `anthropic`  | `ANTHROPIC_API_KEY`  | `claude-sonnet-4-6`        |
+| OpenAI       | `openai`     | `OPENAI_API_KEY`     | `gpt-4.1-mini`             |
+| GLM (Zhipu)  | `glm`        | `GLM_API_KEY`        | `glm-4.6`                  |
+| Kimi K2      | `kimi`       | `MOONSHOT_API_KEY`   | `kimi-k2-instruct`         |
+| DeepSeek     | `deepseek`   | `DEEPSEEK_API_KEY`   | `deepseek-chat`            |
+| OpenRouter   | `openrouter` | `OPENROUTER_API_KEY` | `anthropic/claude-sonnet-4.6` |
+
+Run `deepsec list-providers` to see which are configured. Add a custom
+provider (Azure deployment, internal gateway, local vLLM) with a TOML
+block in `deepsec.config.toml`:
+
+```toml
+[providers.my-azure]
+kind = "openai-compatible"
+base_url = "https://my-resource.openai.azure.com/openai/deployments/gpt-4"
+api_key_env = "AZURE_OPENAI_KEY"
+default_model = "gpt-4"
+headers = { "api-version" = "2024-08-01-preview" }
+caps = { tool_use = true, prompt_cache = "auto", structured_output = "json_schema" }
+```
+
+## Workflow
+
+```text
+   scan          process        revalidate          enrich           export
+    │              │                │                │                  │
+    ▼              ▼                ▼                ▼                  ▼
+candidates  →   findings    TP/FP/Fixed verdict  →  +committers  →   JSON / md / SARIF
+                                                    +ownership
+```
+
+Every stage is a CLI subcommand operating on the same on-disk format
+under `data/<projectId>/`. Stages are idempotent: re-running merges new
+information rather than overwriting.
+
+| Stage         | What it does                                                      |
+|---------------|-------------------------------------------------------------------|
+| `scan`        | Walk files, run regex matchers gated on detected tech.            |
+| `process`     | Batch FileRecords by directory; ask the AI to confirm / reject.   |
+| `revalidate`  | Re-check existing findings against current source: TP/FP/fixed.   |
+| `triage`      | Assign priority/exploitability/impact.                            |
+| `enrich`      | Populate gitInfo.recentCommitters via `git log`.                  |
+| `report`      | Markdown + JSON + CSV per project.                                |
+| `export`      | Filtered JSON or SARIF (for GitHub Code Scanning) export.         |
+| `pr-comment`  | Markdown for net-new findings from a specific run.                |
+| `data-commit` | `git add data/ && git commit` to version your scan results.       |
+| `metrics`     | Aggregate cost, tokens, TP/FP rates across runs.                  |
+
+Run `deepsec --help` for the full command list, `deepsec <cmd> --help`
+for flags on a specific command.
+
+## CI / pull-request workflow
+
+```bash
+deepsec scan --project-id myproj --diff origin/main
+deepsec process --project-id myproj --diff origin/main --concurrency 8
+deepsec pr-comment --project-id myproj --output pr-comment.md --skip-empty
+```
+
+The `--diff <ref>` flag bounds the work to files changed against the
+given git ref. `pr-comment` filters to findings whose `producedByRunId`
+matches the most recent process run.
+
+For GitHub Code Scanning:
+
+```bash
+deepsec export --project-id myproj --format sarif --output deepsec.sarif
+```
+
+Upload `deepsec.sarif` via `github/codeql-action/upload-sarif`.
+
+## Configuration
+
+`deepsec.config.toml` (auto-discovered upward from cwd):
+
+```toml
+default_agent = "anthropic"
+
+[matchers]
+# only   = []    # whitelist of matcher slugs
+# exclude = []   # blacklist
+extra_paths = ["./my-matchers/internal.toml"]
+
+[[projects]]
+id = "webapp"
+root = "./apps/webapp"
+github_url = "https://github.com/acme/webapp/blob/main"
+info_markdown = """
+This service handles payments. Pay extra attention to /api/payments.
+"""
+prompt_append = "When in doubt about authentication boundaries, flag it."
+priority_paths = ["src/api/admin/", "src/lib/auth/"]
+```
+
+## Custom matchers
+
+Matchers are declarative TOML files. The bundled pack lives at
+`internal/scanner/matchers/*.toml` (embedded at compile time). Add your
+own and reference from `[matchers].extra_paths`:
+
+```toml
+# my-matchers/internal.toml
+[[matcher]]
+slug = "internal-magic-cookie"
+description = "Internal magic-cookie auth bypass header"
+noise_tier = "precise"
+file_patterns = ["**/*.ts", "**/*.go"]
+patterns = ["X-Internal-Bypass\\s*:\\s*"]
+label = "internal bypass header check"
+
+[matcher.requires]
+tech = ["nextjs", "express"]
+```
+
+Run `deepsec list-matchers` to see the embedded set (~80 matchers
+across core security, secrets, crypto, framework entry points, infra,
+and AI/agentic patterns). Regex uses Go's `regexp` (RE2) — fast,
+linear-time, no backreferences or lookahead. See
+[docs/writing-matchers.md](docs/writing-matchers.md).
+
+## On-disk layout
+
+```
+data/<projectId>/
+├── project.json
+├── tech.json
+├── files/<rel>.json       # FileRecord per scanned source file
+├── runs/<runId>.json      # RunMeta per invocation
+└── reports/
+```
+
+Same camelCase JSON shape as the original TypeScript implementation —
+existing `data/` directories carry over unchanged.
+
+## Crates
+
+| Package                         | Role                                        |
+|---------------------------------|---------------------------------------------|
+| `internal/core`                 | Types, paths, JSON persistence              |
+| `internal/scanner`              | Walker, tech detection, TOML matcher engine |
+| `internal/processor`            | AI pipeline; AgentBackend                   |
+| `internal/processor/providers`  | Provider registry + profiles                |
+| `internal/cli`                  | Shared context + helpers                    |
+| `internal/cli/commands`         | Cobra subcommands                           |
+| `cmd/deepsec`                   | The CLI binary                              |
 
 ## License
 
-Apache 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+Apache-2.0

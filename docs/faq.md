@@ -1,184 +1,110 @@
 # FAQ
 
-## How should I install deepsec?
+## Why Go?
 
-deepsec lives in a `.deepsec/` directory at the root of the repo you
-want to scan, checked into git so teammates inherit project context.
-From the codebase's repo root:
+The original implementation was TypeScript. The Go rewrite is driven
+by two things:
 
-```bash
-npx deepsec init       # creates .deepsec/ + registers this repo
-cd .deepsec
-pnpm install
-```
+1. **Anthropic + OpenAI ship official Go SDKs.** Prompt caching, tool
+   use, structured outputs, retry semantics, error taxonomy — all
+   maintained by the vendor instead of hand-rolled.
+2. **Single static binary** for distribution, no Node runtime drift in
+   CI, trivial cross-compilation.
 
-`.deepsec/` has its own `package.json` and `node_modules/` — separate
-from the parent repo's lockfile and tooling. The parent repo only
-needs to know `.deepsec/` exists.
+The TS code remains in git history if you need to reference it.
 
-To scan another codebase from the same `.deepsec/`, run
-`pnpm deepsec init-project <path>`. Each project gets its own
-`data/<id>/` subdirectory.
+## Can I switch between Go and TS versions?
 
-### What about non-JS codebases?
+The on-disk `data/<projectId>/` format is wire-compatible (identical
+camelCase JSON shapes). A directory written by either tool reads from
+the other.
 
-deepsec is polyglot (TS, Go, Python, Lua, Terraform, …). The parent
-repo doesn't need to be a Node project — `.deepsec/` is self-contained
-and only needs `pnpm` (or `npm` / `yarn`) inside that one directory.
+## How do I use a Chinese provider (GLM / Kimi / DeepSeek)?
 
-### `.gitignore` policy
-
-The scaffold's `.deepsec/.gitignore` keeps `INFO.md`, `SETUP.md`, and
-`deepsec.config.ts` tracked so teammates inherit project context, but
-ignores generated state (`data/*/files/`, `data/*/runs/`, etc.).
-
-## How much does it cost?
-
-The expensive stage is `process`. With Claude Opus and default settings
-(`--concurrency 5 --batch-size 5`):
-
-| Files | Approx cost | Approx wall time |
-|---|---|---|
-| 100 | $25–60 | 5–15 min |
-| 500 | $130–300 | 25–60 min |
-| 2,000 | $500–1200 | 1.5–4 hr |
-
-Costs swing 2–3x based on file complexity. Run `--limit 50` first to
-calibrate before committing to a full pass.
-
-`triage` is ~1¢/finding. `revalidate` is comparable to `process`.
-
-## Should I use Claude or Codex?
-
-Both work. Different strengths:
-
-- **Claude (Opus):** strong at reasoning about authorization shapes and
-  cross-file flows. The default. Most expensive.
-- **Codex (gpt-5.5):** runs in a strict sandbox (read-only, no network).
-  Fast at grep-heavy investigations. Cheaper.
-
-Mix them. Run Claude first, then re-process unconvincing findings with
-`--agent codex --reinvestigate` for a second opinion. Findings dedupe
-across agents.
-
-## Should I use Vercel AI Gateway or Anthropic directly?
-
-Either works. The gateway gives you provider failover, observability,
-and zero data retention. One token covers Claude and Codex. For a quick
-evaluation, use Anthropic directly. For ongoing production scanning, use
-the gateway.
+They ship enabled by default, you just need their API key:
 
 ```bash
-# Direct Anthropic
-ANTHROPIC_AUTH_TOKEN=sk-ant-...
-ANTHROPIC_BASE_URL=https://api.anthropic.com
-
-# AI Gateway (recommended)
-ANTHROPIC_AUTH_TOKEN=vck_...
-ANTHROPIC_BASE_URL=https://ai-gateway.vercel.sh
+export GLM_API_KEY=...
+deepsec process --project-id myproj --agent glm
 ```
 
-If `claude` or `codex` is already logged in on this machine, non-sandbox
-runs reuse that subscription — no API key needed.
+`list-providers` shows which env vars are set. All three implement
+OpenAI-compatible APIs and route through the same backend code.
 
-See [vercel-setup.md](vercel-setup.md) for how to get a gateway key
-and how to wire up Vercel Sandbox auth (OIDC or access token).
+## Can I use a local model?
 
-## How accurate is it? What's the FP rate?
+Yes. Add a custom provider in `deepsec.config.toml` pointing at any
+OpenAI-compatible server:
 
-After revalidation: ~10–29% on `HIGH+.
+```toml
+[providers.local]
+kind = "openai-compatible"
+base_url = "http://localhost:8080/v1"
+api_key_env = "LOCAL_KEY"     # set to any non-empty string
+default_model = "qwen-2.5-coder"
 
-Two things help most:
+[providers.local.caps]
+tool_use = false              # most local servers don't support reliable tool use
+structured_output = "json_object"
+prompt_cache = "none"
+```
 
-1. **Revalidate `HIGH+` before acting on findings.** Worth the cost.
-2. **Write a good `INFO.md` per project.** Even a paragraph describing
-   the auth shape and threat model improves precision a lot. See
-   [getting-started.md](getting-started.md).
+Works with `llama.cpp --server`, vLLM, Ollama (set `LOCAL_KEY=ollama`),
+and similar.
 
-## When should I use sandbox mode?
+## How do I add a new AI backend?
 
-`deepsec sandbox process` fans work across [Vercel Sandbox][sb] microVMs
-in parallel. Worth it when:
+For a new *provider* with an existing API style, just add a
+`[providers.<name>]` block. No Go code.
 
-- The repo is large enough that local concurrency saturates your laptop.
-- You want results in under an hour on a 5k+ file repo.
-- You're running this as a scheduled job in CI/CD.
+For a fundamentally new backend type (e.g. a Cohere or Mistral
+proprietary protocol), implement the `AgentBackend` interface in
+`internal/processor/`, add a constant in `internal/processor/providers/registry.go`,
+and add a branch in `NewBackend`.
 
-Otherwise local execution is simpler. The sandbox path needs the
-`@vercel/sandbox` SDK (already a dep) and a Vercel account.
+## How much does a scan cost?
 
-[sb]: https://vercel.com/docs/sandbox
+Whatever the provider charges. `deepsec metrics --project-id <id>`
+aggregates `totalCostUsd` from per-run pricing-table lookups; the
+numbers are accurate (multiplied by the per-model `$/Mtok` table in the
+provider profile).
 
-## What happens to my code? Is it sent anywhere?
+For Anthropic, prompt caching cuts the system prompt's cost ~80% after
+the first batch. The savings are automatic and shown in `metrics`.
 
-The AI agents read source code from your local repo and send relevant
-snippets to the configured LLM provider as part of investigation
-prompts. With Vercel AI Gateway, the gateway has zero data retention;
-prompts aren't stored. With direct Anthropic, see Anthropic's data
-retention policy.
+Use `process --max-cost-usd <N>` to abort a run mid-flight when cost
+crosses a threshold.
 
-deepsec itself doesn't phone home or report telemetry. The `data/<id>/`
-directory stays on your machine unless you explicitly export it.
+## What's the difference between `revalidate` and `triage`?
 
-## Can I run this in CI?
+- `revalidate` re-checks an existing finding against the *current* file
+  and assigns a verdict: `true-positive` / `false-positive` / `fixed`
+  / `uncertain` / `accepted-risk`. Use after a fix lands.
+- `triage` assigns priority (P0/P1/P2/skip), exploitability, and
+  impact. Pure-policy call; doesn't re-read the file.
 
-Yes. The natural shape:
+## How does the SARIF export work?
 
 ```bash
-# Cron — full scan every Sunday
-pnpm deepsec scan --project-id main --root .
-pnpm deepsec process --project-id main --concurrency 5
-pnpm deepsec revalidate --project-id main --min-severity HIGH
-pnpm deepsec export --project-id main --format json --out findings.json
-
-# Per-PR — incremental scan on changed files only
-pnpm deepsec scan --project-id main --root .
-pnpm deepsec process --project-id main --filter $CHANGED_PATH_PREFIX
+deepsec export --project-id myproj --format sarif --output deepsec.sarif
 ```
 
-The `data/` directory is your state — persist it between CI runs (cache
-it as a build artifact) or just re-scan from scratch each time.
+The output is a minimal SARIF 2.1.0 document with one rule per
+`vulnSlug` and one result per finding. Upload via
+`github/codeql-action/upload-sarif` to get inline findings on PRs.
 
-## Is it incremental?
+## Is there a daemon mode?
 
-Yes:
+No. `deepsec` is a one-shot CLI. State lives entirely on disk in
+`data/`. Run from cron, CI, or `pre-push` git hooks.
 
-- `scan` merges new candidates into existing FileRecords; doesn't
-  re-investigate already-analyzed files.
-- `process` only touches files with `status: "pending"`, unless you
-  pass `--reinvestigate` (re-investigate everything) or
-  `--reinvestigate <N>` (re-investigate, tagged with wave marker N — a
-  later run with the same N skips files already processed in this wave).
-- `revalidate` only touches findings without a `revalidation` field
-  unless `--force` is set.
+## How is concurrency bounded?
 
-## What if a run errors out partway through?
+`process --concurrency N` (default 4) uses a `semaphore.Weighted` to
+cap in-flight batches. Within a batch, all files go in one request.
+With `--batch-size 1 --concurrency 8`, each file is a separate
+request, eight in flight.
 
-Just re-run the same command. `process` and `revalidate` are safe to
-re-run — files that already finished are kept (no double billing), and
-only files that didn't finish get picked up. Same is true after a
-Ctrl-C, a network blip, a transient model error, or a quota stop. No
-state to clean up; no flag to set.
-
-If you specifically want to redo work that already succeeded, that's
-what `--reinvestigate` (process) and `--force` (revalidate) are for.
-
-## How do I add a matcher for my codebase?
-
-See [docs/writing-matchers.md](writing-matchers.md). Short version: hand
-your `.deepsec/data/` and the target repo to your coding agent with the
-prompt in that doc — it'll spot entry-point coverage gaps the default
-matchers miss and write matchers tailored to your codebase.
-
-## What if my codebase is in a language deepsec doesn't have matchers for?
-
-The AI processor is language-agnostic and will investigate any
-text-readable source file. The thinner the regex layer, the more the
-process stage carries. A few starter matchers for the new language are
-worth writing; they front-load file selection so the AI gets the most
-promising sites first.
-
-## What if I find a vulnerability in deepsec itself?
-
-See [SECURITY.md](../SECURITY.md). Don't open a public issue — use
-GitHub Security Advisories instead.
+Quota errors and budget caps both flip a shared cancel flag so
+in-flight batches drain cleanly. Files released this way go back to
+`status=pending` (retryable), not `status=error`.

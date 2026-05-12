@@ -2,191 +2,82 @@
 
 ## Install
 
-Requires **Node.js 22+**. The recipe below uses pnpm; npm and yarn
-work the same way.
-
-deepsec lives in a `.deepsec/` directory at the root of your codebase
-— checked into the same git repo, so config, project context, and
-custom matchers travel with the code. Generated scan output (findings,
-runs, reports) stays gitignored.
-
-From the root of the codebase you want to scan:
+Requires **Go 1.23+** to build from source:
 
 ```bash
-npx deepsec init                                   # creates .deepsec/ + registers this repo
-cd .deepsec
-pnpm install                                       # installs deepsec
+go install github.com/noeljackson/deepsec/cmd/deepsec@latest
 ```
 
-`init` lays down a minimal scaffold inside `.deepsec/`: `package.json`,
-`deepsec.config.ts` (one `projects[]` entry pointing at `..`, id
-derived from your repo dir's basename), `data/<id>/INFO.md` (template
-with section placeholders), `data/<id>/SETUP.md` (per-project agent
-prompt), workspace-level `AGENTS.md`, `.env.local`, `.gitignore`. No
-custom matchers in the scaffold — add those later, only when a real
-finding shapes one for you.
-
-Open `.env.local` and pick one of:
-
-- **AI Gateway API key** — set `AI_GATEWAY_API_KEY=vck_…`. Get a key
-  from [Vercel AI Gateway](https://vercel.com/ai-gateway). One key
-  covers both Claude and Codex.
-- **Vercel OIDC token** — run `npx vercel link && npx vercel env pull`
-  in this workspace. That writes `VERCEL_OIDC_TOKEN` to `.env.local`,
-  which deepsec uses as the gateway credential automatically. The token
-  expires after 12 hours; re-pull when you hit auth errors. Convenient
-  if you're already using Vercel Sandbox (same token unlocks both).
-
-Prefer Anthropic directly? Set `ANTHROPIC_AUTH_TOKEN=sk-ant-…` and
-`ANTHROPIC_BASE_URL=https://api.anthropic.com` instead. If `claude` or
-`codex` is already logged in on this machine, non-sandbox runs
-(`process` / `revalidate` / `triage`) skip the token and reuse the
-subscription. See [vercel-setup.md](vercel-setup.md).
-
-To scan a *different* codebase from the same `.deepsec/`, run
-`pnpm deepsec init-project <path>` — relative paths resolve against
-`.deepsec/`'s parent.
-
-## Fill in INFO.md
-
-`INFO.md` is what makes deepsec project-aware. It's injected into the
-AI prompt for every batch — vague content here means vague findings.
-
-### Option A: let your coding agent do it (recommended)
-
-Open the *parent repo* (the codebase you scanned, not `.deepsec/`) in
-your coding agent (Claude Code, Codex, Cursor, …) and paste the prompt
-that `deepsec init` printed. It walks the agent through:
-
-1. Read `.deepsec/node_modules/deepsec/SKILL.md` to understand the tool.
-2. Open `.deepsec/data/<id>/SETUP.md` for project-specific instructions.
-3. Skim the codebase, then replace each section of
-   `.deepsec/data/<id>/INFO.md`.
-
-The same prompt is shown in the project root README and is what `init`
-prints to stdout after scaffold.
-
-### Option B: by hand
-
-The processor auto-loads `data/<id>/INFO.md` from the workspace's data
-dir. Edit it directly — no extra wiring needed in
-`deepsec.config.ts`. INFO.md is optional but worth keeping; even a
-paragraph noticeably improves the AI's output.
-
-## Run a scan
-
-Before the first command: deepsec writes per-project state to
-`./data/<project-id>/` next to your config — `files/` (one JSON per
-scanned source file), `runs/`, plus `project.json` and the optional
-`INFO.md` / `config.json`. The directory is gitignored by default; see
-[data-layout.md](data-layout.md) for the full schema.
+Or build locally:
 
 ```bash
-pnpm deepsec scan
+git clone https://github.com/noeljackson/deepsec
+cd deepsec
+go build -o bin/deepsec ./cmd/deepsec
 ```
 
-`--project-id` is auto-resolved when the config has a single project
-(the common case). Pass `--project-id <id>` once you've registered
-more than one project. Pass `--root <path>` to override the resolved
-path — useful for one-off scans against a different checkout.
+Pre-built binaries for linux/darwin/windows × amd64/arm64 ship per
+release. There's also a `Dockerfile` (distroless, ~20 MB).
 
-`scan` runs ~110 regex matchers across the codebase. There are no AI calls at this stage. 
-On a 2,000-file project it takes ~15s. Output goes to
-`data/<id>/files/` as one JSON file per scanned source file (called a
-`FileRecord`).
+## Initialize a project
+
+From inside the repo you want to scan:
 
 ```bash
-pnpm deepsec status
+deepsec init --project-id myproj --root .
 ```
 
-shows the current state: how many files were scanned, how many are
-pending AI investigation, etc.
+That writes `deepsec.config.toml` in the current directory.
 
-## Run the AI investigation
+## Scan
 
 ```bash
-pnpm deepsec process --concurrency 5
+deepsec scan --project-id myproj
 ```
 
-Defaults: Claude Opus, 5 files per batch,
-5 batches in parallel = 25 files in flight at once. You can lower the
-parallelism (`--concurrency 1`) or set `--limit 50` to budget-cap.
+The scanner walks the project root, runs the bundled regex matchers
+gated on detected tech, and writes a `FileRecord` JSON per file under
+`data/myproj/files/...`.
 
-A rough cost guide (Opus, default settings):
+## Investigate
 
-| Files | Approx cost | Approx wall time |
-|---|---|---|
-| 100 | $25–60 | 5–15 min |
-| 500 | $130–300 | 25–60 min |
-| 2,000 | $500–1200 | 1.5–4 hr |
-
-Costs swing 2–3x based on file complexity. Run `--limit 50` first to
-calibrate before committing to the full pass.
-
-### If a run errors out
-
-`process` is safe to re-run. If a batch fails (network blip, transient
-model error, quota exhausted, you hit Ctrl-C), just run the same command
-again — deepsec resumes, skipping files that already finished and
-re-investigating only the ones that didn't. Nothing to clean up. Same
-applies to `revalidate`.
-
-For a cheaper backend:
+Set the appropriate env var and run `process`:
 
 ```bash
-pnpm deepsec process --agent codex --model gpt-5.5
+export ANTHROPIC_API_KEY=sk-ant-...
+deepsec process --project-id myproj --agent anthropic --concurrency 4
 ```
 
-Codex is the OpenAI-flavored backend. Same prompt, same JSON output,
-different agent loop. Try both on a small sample to see which catches
-shapes you care about. See [models.md](models.md) for the full
-backend / model matrix, refusal handling, and how to swap in newer
-models.
-
-## Triage and revalidate
+Or use any of the other built-in providers:
 
 ```bash
-pnpm deepsec triage --severity HIGH
-pnpm deepsec revalidate --min-severity HIGH
+export OPENAI_API_KEY=sk-... && deepsec process --project-id myproj --agent openai
+export GLM_API_KEY=... && deepsec process --project-id myproj --agent glm
+export MOONSHOT_API_KEY=... && deepsec process --project-id myproj --agent kimi
+export DEEPSEEK_API_KEY=... && deepsec process --project-id myproj --agent deepseek
 ```
 
-- **triage**: classifies findings P0/P1/P2 without re-reading the code.
-  ~1¢/finding.
-- **revalidate**: re-reads the code and the git history, then emits a
-  TP/FP/Fixed/Uncertain verdict. Comparable cost to `process`. Cuts FP
-  rate by 50%+ on most repos.
+Run `deepsec list-providers` to see what's wired up.
 
-Both optional, but worth running on the HIGH/CRITICAL set.
+## Budget control
 
-## Get the findings out
+Pass `--max-cost-usd 5.00` to abort the run mid-flight when cumulative
+spend exceeds the cap. Real cost is computed from a per-model pricing
+table built into the provider profile, so the number is accurate (not a
+token estimate).
+
+## Report
 
 ```bash
-pnpm deepsec export --format md-dir --out ./findings
-pnpm deepsec export --format json   --out findings.json
+deepsec report --project-id myproj      # markdown + JSON + CSV
+deepsec metrics --project-id myproj     # cost / TP-FP rates
+deepsec export --project-id myproj --format sarif --output deepsec.sarif
 ```
 
-`md-dir` writes one markdown file per finding under
-`./findings/{CRITICAL,HIGH,MEDIUM,…}/`. `json` writes a single array
-suitable for piping to a downstream issue tracker.
-
-For a quick aggregate look:
+## PR workflow
 
 ```bash
-pnpm deepsec metrics
+deepsec scan --project-id myproj --diff origin/main
+deepsec process --project-id myproj --diff origin/main
+deepsec pr-comment --project-id myproj --output pr-comment.md --skip-empty
 ```
-
-(Each of these commands accepts `--project-id <id>` if your config has
-multiple projects; the auto-resolution only kicks in when there's
-exactly one.)
-
-## Next
-
-- [docs/writing-matchers.md](writing-matchers.md) — prompt your coding
-  agent to compare `data/` matches against the target repo and write
-  matchers that close the entry-point coverage gaps.
-- [docs/configuration.md](configuration.md) — every field on
-  `deepsec.config.ts` and `data/<id>/config.json`.
-- [docs/models.md](models.md) — defaults, `--agent` / `--model`,
-  refusal handling, future models.
-- [docs/plugins.md](plugins.md) — for org-specific patterns that don't
-  belong in the public matcher set.

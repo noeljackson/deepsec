@@ -1,0 +1,45 @@
+[[matcher]]
+slug = "nextjs-route-no-auth"
+description = "Next.js App Router route handler without obvious auth guard"
+noise_tier = "noisy"
+file_patterns = ["**/app/**/route.{ts,tsx,js,jsx,mjs}"]
+patterns = [
+  "(?i)export\\s+(?:async\\s+)?function\\s+(?:GET|POST|PUT|PATCH|DELETE)\\s*\\(",
+]
+suppress_patterns = ["(?i)\\b(?:auth|session|getUser|getServerSession|requireAuth|currentUser)\\b"]
+snippet_after = 12
+requires = { tech = ["nextjs"] }
+label = "Next.js route handler without visible auth"
+
+[[matcher]]
+slug = "nextjs-server-action"
+description = "Next.js server action — needs explicit caller-identity check"
+noise_tier = "noisy"
+file_patterns = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs"]
+patterns = [
+  "['\"]use server['\"]",
+]
+snippet_after = 20
+requires = { tech = ["nextjs"] }
+label = "Next.js \"use server\" directive"
+
+[[matcher]]
+slug = "nextjs-catch-all-route"
+description = "Catch-all dynamic route — input must be trusted"
+noise_tier = "normal"
+file_patterns = ["**/app/**/[[]\\.\\.\\..*[]]/**/route.{ts,tsx,js,mjs}", "**/pages/**/[[]\\.\\.\\..*[]]*.{ts,tsx,js,mjs}"]
+patterns = [".*"]
+requires = { tech = ["nextjs"] }
+label = "Next.js catch-all dynamic route"
+
+[[matcher]]
+slug = "nextjs-middleware-bypass"
+description = "Next.js middleware that exits early on a request property without verification"
+noise_tier = "normal"
+file_patterns = ["**/middleware.{ts,js,mjs}"]
+patterns = [
+  "(?i)\\bif\\s*\\([^)]*\\.headers\\.get\\([^)]*\\)[^)]*\\)\\s*\\{\\s*return\\s+NextResponse\\.next",
+  "(?i)\\bif\\s*\\([^)]*pathname[^)]*\\.startsWith\\(\\s*['\"]/api/internal",
+]
+requires = { tech = ["nextjs"] }
+label = "Next.js middleware short-circuit on untrusted property"

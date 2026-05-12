@@ -1,0 +1,68 @@
+# goreleaser config — cross-compiled binaries for each release tag.
+# Triggered by `release.yml`; run manually with `goreleaser release --snapshot --clean`.
+
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: deepsec
+    main: ./cmd/deepsec
+    binary: deepsec
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - id: deepsec
+    formats: [tar.gz]
+    name_template: 'deepsec_{{.Version}}_{{.Os}}_{{.Arch}}'
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+snapshot:
+  version_template: '{{.Tag}}-next'
+
+changelog:
+  use: github
+  sort: asc
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([^)]*\))?:.*$'
+      order: 0
+    - title: Fixes
+      regexp: '^.*?fix(\([^)]*\))?:.*$'
+      order: 1
+    - title: Other
+      order: 999
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'

@@ -1,0 +1,158 @@
+# Embedded built-in provider profiles. Users override or extend these
+# from their own deepsec.config.toml `[providers.<name>]` blocks.
+#
+# `kind` selects the backend implementation:
+#   - "anthropic"         → uses anthropic-sdk-go's Messages API
+#   - "openai-compatible" → uses openai-go with WithBaseURL; works for
+#                           OpenAI, Azure, OpenRouter, GLM, Kimi, DeepSeek,
+#                           vLLM, Together, Groq, and any compat server.
+#
+# Capability flags drive per-provider adaptation in the OpenAI-compatible
+# backend (which output mode to use, whether to attempt prompt caching,
+# whether tool use is reliable).
+
+# -- Default-enabled. Available out of the box.
+
+[providers.anthropic]
+kind = "anthropic"
+api_key_env = "ANTHROPIC_API_KEY"
+default_model = "claude-sonnet-4-6"
+
+[providers.anthropic.caps]
+tool_use = true
+prompt_cache = "explicit"
+structured_output = "json_schema"
+
+[[providers.anthropic.pricing]]
+model = "claude-opus-4-7"
+input_per_mtok_usd = 15.00
+output_per_mtok_usd = 75.00
+cache_read_per_mtok_usd = 1.50
+cache_write_per_mtok_usd = 18.75
+
+[[providers.anthropic.pricing]]
+model = "claude-sonnet-4-6"
+input_per_mtok_usd = 3.00
+output_per_mtok_usd = 15.00
+cache_read_per_mtok_usd = 0.30
+cache_write_per_mtok_usd = 3.75
+
+[[providers.anthropic.pricing]]
+model = "claude-haiku-4-5"
+input_per_mtok_usd = 1.00
+output_per_mtok_usd = 5.00
+cache_read_per_mtok_usd = 0.10
+cache_write_per_mtok_usd = 1.25
+
+
+[providers.openai]
+kind = "openai-compatible"
+base_url = "https://api.openai.com/v1"
+api_key_env = "OPENAI_API_KEY"
+default_model = "gpt-4.1-mini"
+
+[providers.openai.caps]
+tool_use = true
+prompt_cache = "auto"
+structured_output = "json_schema"
+
+[[providers.openai.pricing]]
+model = "gpt-4.1"
+input_per_mtok_usd = 2.00
+output_per_mtok_usd = 8.00
+
+[[providers.openai.pricing]]
+model = "gpt-4.1-mini"
+input_per_mtok_usd = 0.40
+output_per_mtok_usd = 1.60
+
+[[providers.openai.pricing]]
+model = "gpt-4o"
+input_per_mtok_usd = 2.50
+output_per_mtok_usd = 10.00
+
+[[providers.openai.pricing]]
+model = "gpt-4o-mini"
+input_per_mtok_usd = 0.15
+output_per_mtok_usd = 0.60
+
+
+# -- Opt-in. Documented in docs/configuration.md.
+
+[providers.glm]
+kind = "openai-compatible"
+base_url = "https://open.bigmodel.cn/api/paas/v4"
+api_key_env = "GLM_API_KEY"
+default_model = "glm-4.6"
+
+[providers.glm.caps]
+tool_use = true
+prompt_cache = "none"
+structured_output = "json_object"
+
+[[providers.glm.pricing]]
+model = "glm-4.6"
+input_per_mtok_usd = 0.60
+output_per_mtok_usd = 2.20
+
+[[providers.glm.pricing]]
+model = "glm-4-flash"
+input_per_mtok_usd = 0.01
+output_per_mtok_usd = 0.01
+
+
+[providers.kimi]
+kind = "openai-compatible"
+base_url = "https://api.moonshot.ai/v1"
+api_key_env = "MOONSHOT_API_KEY"
+default_model = "kimi-k2-instruct"
+
+[providers.kimi.caps]
+tool_use = true
+prompt_cache = "moonshot-context"
+structured_output = "json_object"
+
+[[providers.kimi.pricing]]
+model = "kimi-k2-instruct"
+input_per_mtok_usd = 0.60
+output_per_mtok_usd = 2.50
+
+[[providers.kimi.pricing]]
+model = "moonshot-v1-128k"
+input_per_mtok_usd = 2.00
+output_per_mtok_usd = 5.00
+
+
+[providers.deepseek]
+kind = "openai-compatible"
+base_url = "https://api.deepseek.com/v1"
+api_key_env = "DEEPSEEK_API_KEY"
+default_model = "deepseek-chat"
+
+[providers.deepseek.caps]
+tool_use = true
+prompt_cache = "auto"
+structured_output = "json_object"
+
+[[providers.deepseek.pricing]]
+model = "deepseek-chat"
+input_per_mtok_usd = 0.27
+output_per_mtok_usd = 1.10
+cache_read_per_mtok_usd = 0.07
+
+[[providers.deepseek.pricing]]
+model = "deepseek-reasoner"
+input_per_mtok_usd = 0.55
+output_per_mtok_usd = 2.19
+
+
+[providers.openrouter]
+kind = "openai-compatible"
+base_url = "https://openrouter.ai/api/v1"
+api_key_env = "OPENROUTER_API_KEY"
+default_model = "anthropic/claude-sonnet-4.6"
+
+[providers.openrouter.caps]
+tool_use = true
+prompt_cache = "auto"
+structured_output = "json_object"

@@ -11,3 +11,7 @@ next-env.d.ts
 .claude
 linear-*
 plans/
+/bin/
+*.test
+*.out
+deepsec-scan.json

@@ -1,158 +1,122 @@
 # Architecture
 
+## Packages
+
+```
+internal/core           types, paths, persistence
+       ▲
+       │
+internal/scanner        walker, tech-detect, TOML matcher engine
+       ▲
+       │
+internal/processor      AI pipeline; AgentBackend interface
+internal/processor/providers
+       ▲
+       │
+internal/cli            cobra command tree
+       ▲
+       │
+cmd/deepsec             the binary
+```
+
+Strictly downward dependencies. `core` knows nothing about agents,
+scanning, or the CLI.
+
 ## Pipeline
 
 ```
-       scan          process        revalidate          enrich           export
-        │              │                │                │                  │    
-        ▼              ▼                ▼                ▼                  ▼
-  candidates  →   findings    TP/FP/Fixed verdict  →  +committers  →  JSON / md-dir
-                                                      +ownership
+                 ┌──────────┐
+                 │   scan   │   regex-driven; writes FileRecords with candidates
+                 └────┬─────┘
+                      │
+                      ▼
+                 ┌──────────┐
+                 │ process  │   batches by directory, calls AgentBackend
+                 └────┬─────┘
+                      │   findings persisted
+                      ▼
+        ┌─────────────┼─────────────┐
+        │             │             │
+        ▼             ▼             ▼
+ ┌──────────┐  ┌────────────┐  ┌────────┐
+ │  enrich  │  │ revalidate │  │ triage │  per-finding actions
+ └────┬─────┘  └─────┬──────┘  └────┬───┘
+      │              │              │
+      └──────────────┴──────────────┘
+                     │
+                     ▼
+              ┌────────────┐
+              │ report /   │   markdown, JSON, CSV, SARIF
+              │ pr-comment │
+              └────────────┘
 ```
 
-Each stage is a separate CLI subcommand and reads/writes a consistent
-on-disk representation. Stages are idempotent: re-running merges new
-information rather than overwriting.
+## Concurrency model
 
-## On-disk layout
+`Process` runs in `errgroup` with a `golang.org/x/sync/semaphore` cap on
+in-flight batches (default 4). Each batch goroutine acquires a permit,
+calls `AgentBackend.Investigate`, and releases on return.
 
-```
-data/<projectId>/
-├── project.json              # rootPath, githubUrl (auto-managed)
-├── INFO.md                   # repo context injected into AI prompts (manual or agent-written)
-├── config.json               # priorityPaths, promptAppend, ignorePaths (optional)
-├── files/                    # one JSON per scanned file (FileRecord)
-│   └── path/to/file.ts.json
-├── runs/                     # one JSON per run (RunMeta)
-│   └── 20260429-abcd.json
-└── reports/                  # generated reports (markdown + JSON)
-```
+Two cancellation sources both flip a shared `context.CancelFunc`:
 
-`data/` is gitignored by default. Each `FileRecord` is the source of truth
-for everything deepsec knows about a single source file: candidate
-matches, AI findings, analysis history, git committer info, ownership.
-Full schemas for every file under `data/` are documented in
-[data-layout.md](data-layout.md).
+- **Quota errors** (`QuotaExhaustedError` from a backend). The run
+  records the failure on the affected batch, cancels, and lets the
+  remaining batches drain. All cancelled batches' file locks release
+  back to `pending` (recoverable on retry), not `error`.
+- **Budget cap** (`--max-cost-usd <N>`). When cumulative cost crosses
+  the threshold, the run cancels just like a quota failure.
 
-The merge model is additive: every stage adds to the FileRecord. A
-re-scan merges new candidates into the existing set; a re-process appends
-to `analysisHistory` and merges new findings; revalidation tags existing
-findings with verdicts. Nothing is overwritten or deleted.
+Results are applied to FileRecords sequentially after all goroutines
+return, so concurrent batches never fight over the same record.
 
-## Stage details
+## Provider registry
 
-### scan
+`internal/processor/providers` parses an embedded `profiles.toml` (six
+built-in providers) plus any user-defined `[providers.<name>]` blocks
+from `deepsec.config.toml`. Each profile resolves to one of two backend
+implementations:
 
-- **What it does:** Glob the project root, run regex matchers on every
-  matched file, write `candidates` to each FileRecord.
-- **Cost:** Free (no AI). ~15s for 2k files.
-- **Inputs:** Project root, matcher set (built-ins + plugin contributions).
-- **Outputs:** `data/<id>/files/**/*.json` with `candidates` populated and
-  `status: "pending"`.
+- `AnthropicBackend` — uses `github.com/anthropics/anthropic-sdk-go`.
+  Prompt caching via `cache_control: ephemeral`. Tool use via a
+  registered `report_findings` tool.
+- `OpenAICompatibleBackend` — uses `github.com/openai/openai-go`.
+  Capability flags (`tool_use`, `prompt_cache`, `structured_output`)
+  drive per-provider adaptation. The same code path serves OpenAI,
+  Azure, OpenRouter, GLM, Kimi, DeepSeek, vLLM, Together, Groq, and
+  llama.cpp.
 
-The matcher set is built per-run from the default registry plus any
-matchers contributed by active plugins. Plugin matchers can override
-built-ins by reusing the same slug.
+Adding a backend = one `AgentBackend` Go type + a `Kind` constant +
+one branch in `NewBackend`. Adding a *provider* = one TOML block.
 
-### process
+## Persistence semantics
 
-- **What it does:** Pick batches of pending files, send each batch to the
-  configured AI agent backend with the system prompt + INFO.md, parse the
-  agent's JSON response into `Finding`s, write them back to each FileRecord.
-- **Cost:** $$. The expensive stage.
-- **Inputs:** FileRecords with `status: "pending"`, `INFO.md`, the prompt
-  template (`packages/processor/src/index.ts:DEFAULT_PROMPT_TEMPLATE`).
-- **Outputs:** FileRecord `findings[]` populated, `status: "analyzed"`,
-  `analysisHistory[]` appended.
+- Every disk write goes through `AssertSafeSegment` /
+  `AssertSafeFilePath` in `internal/core/paths.go`. `..`, null bytes,
+  backslashes, and absolute paths are rejected at the API boundary.
+- `FileRecord` is append-only for `candidates`, `findings`, and
+  `analysisHistory`. Re-scans dedup candidates by
+  `(vulnSlug, matchedPattern, lineNumbers)`. Re-processes dedup
+  findings by `(vulnSlug, title)`.
+- `RunMeta` is written twice: once at `phase=running` so a crashed run
+  is recoverable, then again at `phase=done|error` on completion.
+- Locking: `Process` writes `status=processing`, `lockedByRunId`,
+  `lockedAt` for every record in the work set before dispatching
+  batches. Quota / cancelled batches release back to `pending`.
 
-Two agent backends are supported, both routed through Vercel AI Gateway
-by default:
+## Prompt assembly
 
-| `--agent` | SDK | Default model |
-|---|---|---|
-| `codex` (default) | `@openai/codex-sdk` | `gpt-5.5` |
-| `claude` | `@anthropic-ai/claude-agent-sdk` | `claude-opus-4-7` |
+`AssemblePrompt(batch) → (system, user)` composes:
 
-Same prompt, same JSON output schema. You can mix backends within a
-project — re-process a file with a different agent and the second run's
-findings get merged with the first.
+- `CorePrompt` (constant, in `prompt.go`).
+- Framework-specific highlights keyed by detected-tech tag
+  (`HighlightForTag`).
+- Per-matcher reasoning hints keyed by `vulnSlug` (`NoteForSlug`).
+- `info_markdown` and `prompt_append` from the project config.
 
-Concurrency: `--concurrency 5 --batch-size 5` means 5 batches in flight,
-5 files per batch = 25 files in the air at peak. The processor claims
-files atomically via `lockedByRunId` so multiple workers can run in
-parallel without stepping on each other.
+The system prompt is stable across a run, which makes prompt caching
+(Anthropic `cache_control: ephemeral`) hit on every batch after the
+first.
 
-### revalidate
-
-- **What it does:** Re-check existing findings for false positives. The
-  agent re-reads the code, consults git history (was this fixed?), and
-  emits a verdict: `true-positive`, `false-positive`, `fixed`, or
-  `uncertain`.
-- **Cost:** $$. Comparable to `process`. Worth running on HIGH+.
-- **Inputs:** Findings with no `revalidation` field, or with `--force`.
-- **Outputs:** `revalidation: { verdict, reasoning, … }` on each finding.
-
-Empirically reduces FP rate by 50%+ on most repos.
-
-### enrich
-
-- **What it does:** Attach git committer info and (with a plugin)
-  ownership data to FileRecords with findings.
-- **Cost:** Free if no ownership plugin; otherwise one HTTP round-trip
-  per file to the ownership provider.
-- **Inputs:** FileRecords with findings, the project's git history.
-- **Outputs:** `gitInfo: { recentCommitters, ownership }` on each record.
-
-### export / report / metrics
-
-Read-only stages. Don't modify FileRecords; just shape the data for human
-or downstream consumption.
-
-- **export** — flat list of findings as JSON or directory of markdown.
-- **report** — per-project markdown summary + JSON.
-- **metrics** — cross-project counts and TP rates.
-
-## Plugin architecture
-
-Five extension points, all defined in
-[`packages/core/src/plugin.ts`](../packages/core/src/plugin.ts):
-
-- `matchers` — additive
-- `notifiers` — additive
-- `agents` — additive
-- `ownership` — single-slot (last plugin wins)
-- `people` — single-slot
-- `executor` — single-slot
-
-A plugin registers via `deepsec.config.ts`:
-
-```ts
-export default defineConfig({
-  plugins: [vercel(), myPlugin()],
-});
-```
-
-The CLI calls `loadConfig()` before parsing args, builds a `PluginRegistry`
-from the active plugins, and stashes it on a module-level singleton
-(`getRegistry()`). All internal code consults the registry rather than
-hard-coding integrations.
-
-See [docs/plugins.md](plugins.md) for the full plugin authoring guide.
-
-## Design decisions
-
-1. **One file = one FileRecord.** The unit of work is a source file, not
-   a finding. Scanner, processor, and revalidator all operate on files,
-   so atomic per-file locking and idempotent merges fall out naturally.
-
-2. **Append-only analysis history.** Re-running the processor doesn't
-   overwrite past findings. It appends a new entry to `analysisHistory`
-   and merges new findings (deduped by slug + title) into `findings`. You
-   can re-run with a different agent, prompt, or model and get a strict
-   improvement instead of a destructive replacement.
-
-3. **Plugin-mediated integrations.** Matchers, notifiers, ownership
-   sources, and the remote executor all sit behind plugin contracts. The
-   open-source release ships with a generic core; organization-specific
-   matchers, notifiers, ownership oracles, and people directories slot
-   in as external plugins.
+The user message lists files in the batch with their candidate matches
+followed by line-numbered source. The model returns structured output
+via tool use (or JSON-mode fallback).

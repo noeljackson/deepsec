@@ -1,0 +1,155 @@
+{
+  "filePath": "packages/scanner/src/matchers/cors-wildcard.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"cors-wildcard\",\n  description: \"CORS wildcard or dynamic origin reflection without validation\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx,lua,go,conf}\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "cors-wildcard",
+      "lineNumbers": [
+        15,
+        18
+      ],
+      "snippet": "      \"cors-wildcard\",\n      [\n        { regex: /Access-Control-Allow-Origin.*\\*/, label: \"CORS wildcard origin\" },\n        {\n          regex:",
+      "matchedPattern": "CORS wildcard origin"
+    },
+    {
+      "vulnSlug": "cors-wildcard",
+      "lineNumbers": [
+        15,
+        18,
+        31
+      ],
+      "snippet": "      \"cors-wildcard\",\n      [\n        { regex: /Access-Control-Allow-Origin.*\\*/, label: \"CORS wildcard origin\" },\n        {\n          regex:",
+      "matchedPattern": "CORS origin reflection (verify validation)"
+    },
+    {
+      "vulnSlug": "cors-wildcard",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "        {\n          regex:\n            /Access-Control-Allow-Credentials.*true.*Allow-Origin|Allow-Origin.*Allow-Credentials.*true/i,\n          label: \"CORS credentials + origin (dangerous combo)\",\n        },",
+      "matchedPattern": "CORS credentials + origin (dangerous combo)"
+    },
+    {
+      "vulnSlug": "cors-wildcard",
+      "lineNumbers": [
+        10,
+        11,
+        24,
+        27
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx,lua,go,conf}\"],\n  examples: [\n    `res.setHeader(\"Access-Control-Allow-Origin\", \"*\");`,\n    `headers: { \"Access-Control-Allow-Origin\": \"*\" }`,\n    `res.setHeader(\"Access-Control-Allow-Origin\", req.headers.origin);`,",
+      "matchedPattern": "CORS wildcard origin"
+    },
+    {
+      "vulnSlug": "cors-wildcard",
+      "lineNumbers": [
+        12,
+        13,
+        14,
+        16,
+        24,
+        27,
+        40
+      ],
+      "snippet": "    `res.setHeader(\"Access-Control-Allow-Origin\", \"*\");`,\n    `headers: { \"Access-Control-Allow-Origin\": \"*\" }`,\n    `res.setHeader(\"Access-Control-Allow-Origin\", req.headers.origin);`,\n    `headers[\"Access-Control-Allow-Origin\"] = origin;`,\n    `headers[\"Access-Control-Allow-Credentials\"] = \"true\"; headers[\"Access-Control-Allow-Origin\"] = origin;`,",
+      "matchedPattern": "CORS origin reflection (verify validation)"
+    },
+    {
+      "vulnSlug": "cors-wildcard",
+      "lineNumbers": [
+        14,
+        32
+      ],
+      "snippet": "    `res.setHeader(\"Access-Control-Allow-Origin\", req.headers.origin);`,\n    `headers[\"Access-Control-Allow-Origin\"] = origin;`,\n    `headers[\"Access-Control-Allow-Credentials\"] = \"true\"; headers[\"Access-Control-Allow-Origin\"] = origin;`,\n    `app.use(cors({ origin: true, credentials: true }));`,\n    `add_header Access-Control-Allow-Origin $http_origin;`,",
+      "matchedPattern": "CORS credentials + origin (dangerous combo)"
+    },
+    {
+      "vulnSlug": "cors-wildcard",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "    `headers[\"Access-Control-Allow-Origin\"] = origin;`,\n    `headers[\"Access-Control-Allow-Credentials\"] = \"true\"; headers[\"Access-Control-Allow-Origin\"] = origin;`,\n    `app.use(cors({ origin: true, credentials: true }));`,\n    `add_header Access-Control-Allow-Origin $http_origin;`,\n  ],",
+      "matchedPattern": "CORS middleware with origin: true (reflects all)"
+    },
+    {
+      "vulnSlug": "cors-wildcard",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "    `headers[\"Access-Control-Allow-Credentials\"] = \"true\"; headers[\"Access-Control-Allow-Origin\"] = origin;`,\n    `app.use(cors({ origin: true, credentials: true }));`,\n    `add_header Access-Control-Allow-Origin $http_origin;`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "Nginx CORS origin reflection"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.646Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "cc060c4b5c021f95490ce1a83aa3f6ee4cbdf465c4fd7262873056cb05bd7641",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:59.939Z",
+      "durationMs": 47743,
+      "durationApiMs": 45238,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "ff7f6164-5dbf-4b41-a0ba-89648fbae13a",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.81450425,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 3047,
+        "cacheReadInputTokens": 184486,
+        "cacheCreationInputTokens": 103365
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-1595aabe27b888ba",
+      "investigatedAt": "2026-05-06T21:53:35.390Z",
+      "durationMs": 9169.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b5a-7f10-a112-112258c4569b",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05889275,
+      "usage": {
+        "inputTokens": 7612.25,
+        "outputTokens": 404.25,
+        "cacheReadInputTokens": 17408,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:35.392Z"
+  },
+  "status": "analyzed"
+}

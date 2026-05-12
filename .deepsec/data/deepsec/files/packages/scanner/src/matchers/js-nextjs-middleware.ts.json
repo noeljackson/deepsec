@@ -1,0 +1,144 @@
+{
+  "filePath": "packages/scanner/src/matchers/js-nextjs-middleware.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": " * Next.js middleware files are security-critical — they handle auth redirects,\n * CSRF, bot detection, header rewriting, and path-based access control.\n * A broken middleware = bypassed auth for entire route groups.\n */\nexport const nextjsMiddlewareMatcher: MatcherPlugin = {",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        7,
+        12
+      ],
+      "snippet": " * Next.js middleware files are security-critical — they handle auth redirects,\n * CSRF, bot detection, header rewriting, and path-based access control.\n * A broken middleware = bypassed auth for entire route groups.\n */\nexport const nextjsMiddlewareMatcher: MatcherPlugin = {",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "    `export const middleware = (req) => NextResponse.next()`,\n    `export let middleware = async (req) => NextResponse.rewrite(new URL('/foo', req.url))`,\n    `export default function middleware(request) { return NextResponse.next() }`,\n    `export default async function (req) { return NextResponse.next() }`,\n    `export function middleware(req) { return NextResponse.next() }\\nexport const config = { matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'] }`,",
+      "matchedPattern": "HTTP entry point: default export handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "    `export let middleware = async (req) => NextResponse.rewrite(new URL('/foo', req.url))`,\n    `export default function middleware(request) { return NextResponse.next() }`,\n    `export default async function (req) { return NextResponse.next() }`,\n    `export function middleware(req) { return NextResponse.next() }\\nexport const config = { matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'] }`,\n    `export default function middleware(req) { return NextResponse.next() }\\nexport const config = { matcher: '/dashboard/:path*' }`,",
+      "matchedPattern": "HTTP entry point: default export handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "    `export default async function (req) { return NextResponse.next() }`,\n    `export function middleware(req) { return NextResponse.next() }\\nexport const config = { matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'] }`,\n    `export default function middleware(req) { return NextResponse.next() }\\nexport const config = { matcher: '/dashboard/:path*' }`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "HTTP entry point: default export handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"nextjs-middleware\",\n  description: \"Next.js middleware.ts files — auth, redirects, header rewriting, access control\",\n  filePatterns: [\"**/middleware.{ts,tsx,js,jsx}\"],\n  requires: { tech: [\"nextjs\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "open-redirect",
+      "lineNumbers": [
+        17,
+        19
+      ],
+      "snippet": "  examples: [\n    `export function middleware(request) { return NextResponse.next() }`,\n    `export async function middleware(request: NextRequest) { return NextResponse.redirect(new URL('/login', request.url)) }`,\n    `export const middleware = (req) => NextResponse.next()`,\n    `export let middleware = async (req) => NextResponse.rewrite(new URL('/foo', req.url))`,",
+      "matchedPattern": "redirect URL parameter"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "  examples: [\n    `export function middleware(request) { return NextResponse.next() }`,\n    `export async function middleware(request: NextRequest) { return NextResponse.redirect(new URL('/login', request.url)) }`,\n    `export const middleware = (req) => NextResponse.next()`,\n    `export let middleware = async (req) => NextResponse.rewrite(new URL('/foo', req.url))`,",
+      "matchedPattern": "NextResponse.redirect with dynamic URL (NO validNextRedirect — investigate)"
+    },
+    {
+      "vulnSlug": "url-regex-validation",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `export const middleware = (req) => NextResponse.next()`,\n    `export let middleware = async (req) => NextResponse.rewrite(new URL('/foo', req.url))`,\n    `export default function middleware(request) { return NextResponse.next() }`,\n    `export default async function (req) { return NextResponse.next() }`,",
+      "matchedPattern": "new URL() from request input without hostname validation"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.549Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "9b2ad37a9bc01db76b9b6dc6f081a8a45c617b7ef6a778746717aabc1adce626",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-ab77ad581398dd81",
+      "investigatedAt": "2026-05-06T21:49:46.969Z",
+      "durationMs": 7095.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3009-7b10-96bf-3827eb699d84",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.047835,
+      "usage": {
+        "inputTokens": 6867.5,
+        "outputTokens": 311.25,
+        "cacheReadInputTokens": 8320,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-cbb34644b25b760b",
+      "investigatedAt": "2026-05-06T21:53:51.657Z",
+      "durationMs": 9782,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c2a-7f31-aa6f-a3fa7439972c",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.059522399999999996,
+      "usage": {
+        "inputTokens": 6942.4,
+        "outputTokens": 465.2,
+        "cacheReadInputTokens": 21708.8,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:51.659Z"
+  },
+  "status": "analyzed"
+}

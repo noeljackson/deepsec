@@ -1,0 +1,115 @@
+{
+  "filePath": "packages/scanner/src/matchers/agent-loop-no-cap.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"agent-loop-no-cap\",\n  description: \"Agent / LLM call without maxSteps / maxTurns / stopWhen — DoS + cost-burn risk\",\n  filePatterns: [\"**/*.ts\", \"**/*.tsx\", \"**/*.js\", \"**/*.mjs\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "agent-loop-no-cap",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "  examples: [\n    `import { streamText } from \"ai\";\\nconst result = streamText({\\n  model: openai(\"gpt-4\"),\\n  prompt: \"hi\",\\n});`,\n    `import { generateText } from \"ai\";\\nawait generateText({ model, prompt: \"hi\" });`,\n    `import { generateObject } from \"ai\";\\nawait generateObject({ model, schema, prompt });`,\n    `import { streamObject } from \"ai\";\\nawait streamObject({ model, schema, prompt });`,\n    `import { query } from \"@anthropic-ai/claude-agent-sdk\";\\nawait query({ prompt: \"hi\" });`,\n    `import { Codex } from \"@openai/codex-sdk\";\\nawait claude.query({ prompt: \"hi\" });`,",
+      "matchedPattern": "agent/LLM call without maxSteps/maxTurns/stopWhen/signal"
+    },
+    {
+      "vulnSlug": "agent-loop-no-cap",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "    `import { streamText } from \"ai\";\\nconst result = streamText({\\n  model: openai(\"gpt-4\"),\\n  prompt: \"hi\",\\n});`,\n    `import { generateText } from \"ai\";\\nawait generateText({ model, prompt: \"hi\" });`,\n    `import { generateObject } from \"ai\";\\nawait generateObject({ model, schema, prompt });`,\n    `import { streamObject } from \"ai\";\\nawait streamObject({ model, schema, prompt });`,\n    `import { query } from \"@anthropic-ai/claude-agent-sdk\";\\nawait query({ prompt: \"hi\" });`,\n    `import { Codex } from \"@openai/codex-sdk\";\\nawait claude.query({ prompt: \"hi\" });`,\n    `import { openai } from \"@ai-sdk/openai\";\\nawait generateText({ model: openai(\"gpt-4\"), prompt: \"hi\" });`,",
+      "matchedPattern": "agent/LLM call without maxSteps/maxTurns/stopWhen/signal"
+    },
+    {
+      "vulnSlug": "agent-loop-no-cap",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "    `import { generateText } from \"ai\";\\nawait generateText({ model, prompt: \"hi\" });`,\n    `import { generateObject } from \"ai\";\\nawait generateObject({ model, schema, prompt });`,\n    `import { streamObject } from \"ai\";\\nawait streamObject({ model, schema, prompt });`,\n    `import { query } from \"@anthropic-ai/claude-agent-sdk\";\\nawait query({ prompt: \"hi\" });`,\n    `import { Codex } from \"@openai/codex-sdk\";\\nawait claude.query({ prompt: \"hi\" });`,\n    `import { openai } from \"@ai-sdk/openai\";\\nawait generateText({ model: openai(\"gpt-4\"), prompt: \"hi\" });`,\n  ],",
+      "matchedPattern": "agent/LLM call without maxSteps/maxTurns/stopWhen/signal"
+    },
+    {
+      "vulnSlug": "agent-loop-no-cap",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "    `import { generateObject } from \"ai\";\\nawait generateObject({ model, schema, prompt });`,\n    `import { streamObject } from \"ai\";\\nawait streamObject({ model, schema, prompt });`,\n    `import { query } from \"@anthropic-ai/claude-agent-sdk\";\\nawait query({ prompt: \"hi\" });`,\n    `import { Codex } from \"@openai/codex-sdk\";\\nawait claude.query({ prompt: \"hi\" });`,\n    `import { openai } from \"@ai-sdk/openai\";\\nawait generateText({ model: openai(\"gpt-4\"), prompt: \"hi\" });`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "agent/LLM call without maxSteps/maxTurns/stopWhen/signal"
+    },
+    {
+      "vulnSlug": "agent-loop-no-cap",
+      "lineNumbers": [
+        26
+      ],
+      "snippet": "    `import { query } from \"@anthropic-ai/claude-agent-sdk\";\\nawait query({ prompt: \"hi\" });`,\n    `import { Codex } from \"@openai/codex-sdk\";\\nawait claude.query({ prompt: \"hi\" });`,\n    `import { openai } from \"@ai-sdk/openai\";\\nawait generateText({ model: openai(\"gpt-4\"), prompt: \"hi\" });`,\n  ],\n  match(content, filePath) {\n    if (/\\.(test|spec)\\.(ts|tsx|js|jsx|mjs|cjs)$/.test(filePath)) return [];\n    if (/\\.d\\.ts$/.test(filePath)) return [];",
+      "matchedPattern": "agent/LLM call without maxSteps/maxTurns/stopWhen/signal"
+    },
+    {
+      "vulnSlug": "agent-loop-no-cap",
+      "lineNumbers": [
+        27
+      ],
+      "snippet": "    `import { Codex } from \"@openai/codex-sdk\";\\nawait claude.query({ prompt: \"hi\" });`,\n    `import { openai } from \"@ai-sdk/openai\";\\nawait generateText({ model: openai(\"gpt-4\"), prompt: \"hi\" });`,\n  ],\n  match(content, filePath) {\n    if (/\\.(test|spec)\\.(ts|tsx|js|jsx|mjs|cjs)$/.test(filePath)) return [];\n    if (/\\.d\\.ts$/.test(filePath)) return [];\n    if (/node_modules/.test(filePath)) return [];",
+      "matchedPattern": "agent/LLM call without maxSteps/maxTurns/stopWhen/signal"
+    },
+    {
+      "vulnSlug": "agent-loop-no-cap",
+      "lineNumbers": [
+        41
+      ],
+      "snippet": "\n    // Find calls like streamText({...}) / generateText({...}) / query({...})\n    for (let i = 0; i < lines.length; i++) {\n      const line = lines[i];\n      const isAgentCall =\n        /\\b(?:streamText|generateText|generateObject|streamObject)\\s*\\(/.test(line) ||\n        /\\bawait\\s+query\\s*\\(/.test(line) ||",
+      "matchedPattern": "agent/LLM call without maxSteps/maxTurns/stopWhen/signal"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.830Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "8a9e08753c478f3495d1a39f650bfc7daf2901ab3accdbc383578fab493d2e63",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:42.127Z",
+      "durationMs": 48368,
+      "durationApiMs": 47673,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "d517afb6-ca17-4bda-83aa-911304bf5d54",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.248668,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 3584,
+        "cacheReadInputTokens": 74641,
+        "cacheCreationInputTokens": 19474
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [
+      {
+        "name": "Malte Ubl",
+        "email": "malte@vercel.com",
+        "date": "2026-04-30T10:49:41-07:00"
+      }
+    ],
+    "enrichedAt": "2026-05-02T16:09:42.157Z"
+  },
+  "status": "analyzed",
+  "lockedByRunId": "20260506215246-c6bc3f0a3586feaf",
+  "lockedAt": "2026-05-06T21:52:46.499Z"
+}

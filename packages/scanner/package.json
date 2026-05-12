@@ -1,0 +1,16 @@
+{
+  "name": "@deepsec/scanner",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@deepsec/core": "workspace:*",
+    "glob": "^11.0.0",
+    "minimatch": "^10.0.0"
+  }
+}

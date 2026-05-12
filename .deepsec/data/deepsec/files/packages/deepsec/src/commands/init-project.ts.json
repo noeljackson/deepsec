@@ -1,0 +1,175 @@
+{
+  "filePath": "packages/deepsec/src/commands/init-project.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        211
+      ],
+      "snippet": "   - Skip generic CWE categories — built-in matchers already cover\n     \"SSRF\", \"SQL injection\", \"XSS\". Cover what's *project-specific*:\n     internal auth helpers, custom middleware names, fork-specific\n     stubs, intended-public endpoints.\n   - One short paragraph or 3–5 short bullets per section. Not both.",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        70,
+        117,
+        129
+      ],
+      "snippet": "  const projectDataDir = path.join(workspaceDir, dataDir(id));\n  const dataExists = fs.existsSync(projectDataDir) && fs.readdirSync(projectDataDir).length > 0;\n  const inConfig = configIncludesProjectId(configPath, id);\n  if ((dataExists || inConfig) && !opts.force) {\n    throw new Error(",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        212
+      ],
+      "snippet": "   - Skip generic CWE categories — built-in matchers already cover\n     \"SSRF\", \"SQL injection\", \"XSS\". Cover what's *project-specific*:\n     internal auth helpers, custom middleware names, fork-specific\n     stubs, intended-public endpoints.\n   - One short paragraph or 3–5 short bullets per section. Not both.",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        71,
+        118,
+        130
+      ],
+      "snippet": "  const projectDataDir = path.join(workspaceDir, dataDir(id));\n  const dataExists = fs.existsSync(projectDataDir) && fs.readdirSync(projectDataDir).length > 0;\n  const inConfig = configIncludesProjectId(configPath, id);\n  if ((dataExists || inConfig) && !opts.force) {\n    throw new Error(",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        217
+      ],
+      "snippet": "   - Skip generic CWE categories — built-in matchers already cover\n     \"SSRF\", \"SQL injection\", \"XSS\". Cover what's *project-specific*:\n     internal auth helpers, custom middleware names, fork-specific\n     stubs, intended-public endpoints.\n   - One short paragraph or 3–5 short bullets per section. Not both.",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        76,
+        123,
+        135
+      ],
+      "snippet": "  const projectDataDir = path.join(workspaceDir, dataDir(id));\n  const dataExists = fs.existsSync(projectDataDir) && fs.readdirSync(projectDataDir).length > 0;\n  const inConfig = configIncludesProjectId(configPath, id);\n  if ((dataExists || inConfig) && !opts.force) {\n    throw new Error(",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.501Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "ce95ef88d5135641e4af6e805e7524cd5b6fdb91d603a68a021d704f8a79e77b",
+  "findings": [
+    {
+      "severity": "MEDIUM",
+      "vulnSlug": "path-traversal",
+      "title": "Path traversal via unvalidated --id flag enables writes outside workspace",
+      "description": "The `--id` flag value is passed unvalidated through `dataDir(id)` (which does `path.join(\"data\", id)`) on line 68 and 85. With `id = \"../../escape\"`, `path.join` normalizes to `\"../escape\"` (it strips `data/..` but leaves the remaining `..`). Then `path.join(workspaceDir, \"../escape\")` yields a path OUTSIDE workspaceDir. The function proceeds to write `INFO.md` (line 89), `SETUP.md` (line 92, unconditionally — no existence check), and `project.json` (via `ensureProject` on line 84) at this attacker-controlled location. Files have mostly-fixed template content with `id` and `targetRel` interpolated, so attacker control over file content is limited, but this primitive can: (a) overwrite existing `SETUP.md` files at arbitrary paths (no existsSync guard), (b) create `INFO.md`/`project.json` at arbitrary paths, (c) with `--force`, overwrite `INFO.md` too. The CLAUDE.md threat model explicitly calls this out as a project-specific pattern to flag: `JSON/file writes under dataDir(...) with caller-supplied path segments — any segment containing .. or absolute paths could escape the per-project mirror`. This is exploitable when deepsec is wired into CI/CD with `--id` derived from PR titles, branch names, or other untrusted input.",
+      "lineNumbers": [
+        57,
+        68,
+        84,
+        85,
+        86,
+        89,
+        92
+      ],
+      "recommendation": "Validate `id` early in `registerProject` to reject any value containing path separators or `..` segments. A simple regex check works: `if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(id)) throw new Error(...)`. Also consider centralizing this validation in `dataDir()` itself (in `packages/core/src/paths.ts`) so every entry point is protected (the same concern applies to `--project-id` flags reaching `dataDir()` from `scan`, `metrics`, `export`, etc.).",
+      "confidence": "high",
+      "revalidation": {
+        "verdict": "fixed",
+        "reasoning": "The current code no longer passes opts.id directly into dataDir(id). registerProject derives id with validateProjectId(opts.id ?? path.basename(targetAbs)) before the first path construction, and validateProjectId only allows /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/. That rejects ../escape, absolute paths, slashes, backslashes, whitespace, and shell/path metacharacters before projectDataDir, ensureProject, INFO.md, or SETUP.md writes occur. In addition, @deepsec/core dataDir(projectId) now calls assertSafeSegment, which independently rejects empty values, '.', '..', absolute paths, null bytes, and both Unix and Windows path separators. The tests in packages/core/src/__tests__/paths.test.ts explicitly cover dataDir('..'), dataDir('../escape'), absolute project ids, and null bytes. I could not inspect commit history because this sandbox has no .git metadata, but the vulnerable flow described in the finding is patched in the current source.",
+        "revalidatedAt": "2026-05-06T22:53:17.537Z",
+        "runId": "20260506225212-fb12ca99e8519e3d",
+        "model": "gpt-5.5"
+      }
+    }
+  ],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:16:38.608Z",
+      "durationMs": 404873,
+      "durationApiMs": 403181,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "88ed0b7c-a3fd-4046-8aac-ec8125710cdf",
+      "findingCount": 1,
+      "numTurns": 19,
+      "costUsd": 1.8812119999999997,
+      "usage": {
+        "inputTokens": 24,
+        "outputTokens": 28083,
+        "cacheReadInputTokens": 1375409,
+        "cacheCreationInputTokens": 78610
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-f808d3de8281a89b",
+      "investigatedAt": "2026-05-06T21:54:41.489Z",
+      "durationMs": 20551,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b7e-7593-9578-497e60738dbd",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1004848,
+      "usage": {
+        "inputTokens": 10084.8,
+        "outputTokens": 851.2,
+        "cacheReadInputTokens": 49049.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    },
+    {
+      "runId": "20260506225212-fb12ca99e8519e3d",
+      "investigatedAt": "2026-05-06T22:53:17.537Z",
+      "durationMs": 17832.333333333332,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff7d-f430-7ea0-ac2d-55265033d6c6",
+      "findingCount": 1,
+      "numTurns": 0.3333333333333333,
+      "phase": "revalidate",
+      "costUsd": 0.10596100000000001,
+      "usage": {
+        "inputTokens": 10927,
+        "outputTokens": 1105,
+        "cacheReadInputTokens": 36352,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T22:53:17.539Z"
+  },
+  "status": "analyzed"
+}

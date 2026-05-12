@@ -1,0 +1,103 @@
+{
+  "filePath": "packages/scanner/src/matchers/lua-crypto-weakness.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"lua-crypto-weakness\",\n  description: \"Weak crypto patterns in Lua — hardcoded IVs, ECB mode, timing-unsafe comparisons\",\n  filePatterns: [\"**/*.lua\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "        { regex: /aes.*ecb|ecb.*aes/i, label: \"AES ECB mode (no IV, deterministic)\" },\n        {\n          regex: /==\\s*.*hmac|hmac.*==/,\n          label: \"Timing-unsafe HMAC comparison (use constant-time)\",\n        },",
+      "matchedPattern": "Timing-unsafe HMAC comparison (use timingSafeEqual)"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        14,
+        17
+      ],
+      "snippet": "    `if hmac_value == header_token then return true end`,\n    `if hash_value == expected_hash then end`,\n    `local digest = md5(payload)`,\n    `local h = ngx.sha1(data)`,\n    `local iv = \"0123456789abcdef\"`,",
+      "matchedPattern": "MD5 function call"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        27
+      ],
+      "snippet": "        { regex: /aes.{0,40}ecb|ecb.{0,40}aes/i, label: \"AES ECB mode (no IV, deterministic)\" },\n        {\n          regex: /==\\s*.{0,40}hmac|hmac.{0,40}==/,\n          label: \"Timing-unsafe HMAC comparison (use constant-time)\",\n        },",
+      "matchedPattern": "Timing-unsafe HMAC comparison (use timingSafeEqual)"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.484Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "4b1fec5fcf810c72816149943faffb58325c9c1c3575a7b835f87baa459d75b6",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:42.092Z",
+      "durationMs": 48368,
+      "durationApiMs": 47673,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "d517afb6-ca17-4bda-83aa-911304bf5d54",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.248668,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 3584,
+        "cacheReadInputTokens": 74641,
+        "cacheCreationInputTokens": 19474
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-b5432b498c77e52f",
+      "investigatedAt": "2026-05-06T21:53:41.360Z",
+      "durationMs": 10730.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b8b-7982-9789-c528bf7d360a",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05994175,
+      "usage": {
+        "inputTokens": 7908.75,
+        "outputTokens": 409,
+        "cacheReadInputTokens": 16256,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:41.362Z"
+  },
+  "status": "analyzed"
+}

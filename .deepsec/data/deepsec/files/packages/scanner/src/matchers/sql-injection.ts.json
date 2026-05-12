@@ -1,0 +1,315 @@
+{
+  "filePath": "packages/scanner/src/matchers/sql-injection.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "        { regex: /\\.raw\\s*\\(\\s*`[^`]*\\$\\{/, label: \".raw() with interpolation\" },\n        { regex: /LIKE\\s+['\"]?%?\\$\\{/, label: \"LIKE with interpolation\" },\n        { regex: /LIKE\\s+['\"]%\\$\\{/, label: \"LIKE '%${...}%' pattern\" },\n        { regex: /RLIKE\\s+['\"]?\\$\\{/, label: \"RLIKE with interpolation\" },\n        {",
+      "matchedPattern": "LIKE with interpolation"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "        { regex: /\\.raw\\s*\\(\\s*`[^`]*\\$\\{/, label: \".raw() with interpolation\" },\n        { regex: /LIKE\\s+['\"]?%?\\$\\{/, label: \"LIKE with interpolation\" },\n        { regex: /LIKE\\s+['\"]%\\$\\{/, label: \"LIKE '%${...}%' pattern\" },\n        { regex: /RLIKE\\s+['\"]?\\$\\{/, label: \"RLIKE with interpolation\" },\n        {",
+      "matchedPattern": "LIKE '%${...}%' pattern"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        30
+      ],
+      "snippet": "          label: \"executeQuery with template interpolation\",\n        },\n        { regex: /sql\\.raw\\s*\\(/, label: \"sql.raw() — raw SQL (verify parameterized)\" },\n        { regex: /sql`[^`]*\\$\\{.*\\}/, label: \"sql tagged template with interpolation\" },\n      ],",
+      "matchedPattern": "sql.raw() — raw SQL (verify parameterized)"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"sql-injection\",\n  description: \"Raw SQL string concatenation or interpolation\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  match(content, _filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "      [\n        { regex: /`\\s*SELECT\\s+.*\\$\\{/, label: \"template literal SELECT with interpolation\" },\n        { regex: /`\\s*INSERT\\s+.*\\$\\{/, label: \"template literal INSERT with interpolation\" },\n        { regex: /`\\s*UPDATE\\s+.*\\$\\{/, label: \"template literal UPDATE with interpolation\" },\n        { regex: /`\\s*DELETE\\s+.*\\$\\{/, label: \"template literal DELETE with interpolation\" },\n        { regex: /['\"]SELECT\\s+.*['\"]\\s*\\+/, label: \"string concat SELECT\" },",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "        { regex: /`\\s*DELETE\\s+.*\\$\\{/, label: \"template literal DELETE with interpolation\" },\n        { regex: /['\"]SELECT\\s+.*['\"]\\s*\\+/, label: \"string concat SELECT\" },\n        { regex: /['\"]INSERT\\s+.*['\"]\\s*\\+/, label: \"string concat INSERT\" },\n        { regex: /['\"]UPDATE\\s+.*['\"]\\s*\\+/, label: \"string concat UPDATE\" },\n        { regex: /['\"]DELETE\\s+.*['\"]\\s*\\+/, label: \"string concat DELETE\" },\n        { regex: /query\\s*\\(\\s*`[^`]*\\$\\{/, label: \"query() with interpolation\" },",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        10,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        25
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    \"const q = `SELECT * FROM users WHERE id = ${id}`;\",\n    \"const q = `INSERT INTO logs (msg) VALUES (${msg})`;\",\n    \"const q = `UPDATE users SET name = ${name} WHERE id = 1`;\",",
+      "matchedPattern": "template literal SELECT with interpolation"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  examples: [\n    \"const q = `SELECT * FROM users WHERE id = ${id}`;\",\n    \"const q = `INSERT INTO logs (msg) VALUES (${msg})`;\",\n    \"const q = `UPDATE users SET name = ${name} WHERE id = 1`;\",\n    \"const q = `DELETE FROM items WHERE id = ${id}`;\",",
+      "matchedPattern": "template literal INSERT with interpolation"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "    \"const q = `SELECT * FROM users WHERE id = ${id}`;\",\n    \"const q = `INSERT INTO logs (msg) VALUES (${msg})`;\",\n    \"const q = `UPDATE users SET name = ${name} WHERE id = 1`;\",\n    \"const q = `DELETE FROM items WHERE id = ${id}`;\",\n    `const q = \"SELECT * FROM t WHERE id =\" + id;`,",
+      "matchedPattern": "template literal UPDATE with interpolation"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    \"const q = `INSERT INTO logs (msg) VALUES (${msg})`;\",\n    \"const q = `UPDATE users SET name = ${name} WHERE id = 1`;\",\n    \"const q = `DELETE FROM items WHERE id = ${id}`;\",\n    `const q = \"SELECT * FROM t WHERE id =\" + id;`,\n    `const q = \"INSERT INTO t VALUES (\" + v + \")\";`,",
+      "matchedPattern": "template literal DELETE with interpolation"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    \"const q = `UPDATE users SET name = ${name} WHERE id = 1`;\",\n    \"const q = `DELETE FROM items WHERE id = ${id}`;\",\n    `const q = \"SELECT * FROM t WHERE id =\" + id;`,\n    `const q = \"INSERT INTO t VALUES (\" + v + \")\";`,\n    `const q = \"UPDATE t SET x = \" + v;`,",
+      "matchedPattern": "string concat SELECT"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "    \"const q = `DELETE FROM items WHERE id = ${id}`;\",\n    `const q = \"SELECT * FROM t WHERE id =\" + id;`,\n    `const q = \"INSERT INTO t VALUES (\" + v + \")\";`,\n    `const q = \"UPDATE t SET x = \" + v;`,\n    `const q = \"DELETE FROM t WHERE id =\" + id;`,",
+      "matchedPattern": "string concat INSERT"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "    `const q = \"SELECT * FROM t WHERE id =\" + id;`,\n    `const q = \"INSERT INTO t VALUES (\" + v + \")\";`,\n    `const q = \"UPDATE t SET x = \" + v;`,\n    `const q = \"DELETE FROM t WHERE id =\" + id;`,\n    \"db.query(`SELECT ${col} FROM t`);\",",
+      "matchedPattern": "string concat UPDATE"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "    `const q = \"INSERT INTO t VALUES (\" + v + \")\";`,\n    `const q = \"UPDATE t SET x = \" + v;`,\n    `const q = \"DELETE FROM t WHERE id =\" + id;`,\n    \"db.query(`SELECT ${col} FROM t`);\",\n    \"knex.raw(`SELECT ${col} FROM t`);\",",
+      "matchedPattern": "string concat DELETE"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "    `const q = \"UPDATE t SET x = \" + v;`,\n    `const q = \"DELETE FROM t WHERE id =\" + id;`,\n    \"db.query(`SELECT ${col} FROM t`);\",\n    \"knex.raw(`SELECT ${col} FROM t`);\",\n    \"const c = `SELECT * FROM t WHERE name LIKE ${pat}`;\",",
+      "matchedPattern": "query() with interpolation"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `const q = \"DELETE FROM t WHERE id =\" + id;`,\n    \"db.query(`SELECT ${col} FROM t`);\",\n    \"knex.raw(`SELECT ${col} FROM t`);\",\n    \"const c = `SELECT * FROM t WHERE name LIKE ${pat}`;\",\n    \"const c = `SELECT * FROM t WHERE name LIKE '%${pat}%'`;\",",
+      "matchedPattern": ".raw() with interpolation"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        20,
+        21,
+        22,
+        54
+      ],
+      "snippet": "    \"db.query(`SELECT ${col} FROM t`);\",\n    \"knex.raw(`SELECT ${col} FROM t`);\",\n    \"const c = `SELECT * FROM t WHERE name LIKE ${pat}`;\",\n    \"const c = `SELECT * FROM t WHERE name LIKE '%${pat}%'`;\",\n    \"const c = `SELECT * FROM t WHERE name RLIKE ${pat}`;\",",
+      "matchedPattern": "LIKE with interpolation"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        21,
+        54
+      ],
+      "snippet": "    \"knex.raw(`SELECT ${col} FROM t`);\",\n    \"const c = `SELECT * FROM t WHERE name LIKE ${pat}`;\",\n    \"const c = `SELECT * FROM t WHERE name LIKE '%${pat}%'`;\",\n    \"const c = `SELECT * FROM t WHERE name RLIKE ${pat}`;\",\n    \"executeQuery(`SELECT * FROM t WHERE id = ${id}`);\",",
+      "matchedPattern": "LIKE '%${...}%' pattern"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "    \"const c = `SELECT * FROM t WHERE name LIKE ${pat}`;\",\n    \"const c = `SELECT * FROM t WHERE name LIKE '%${pat}%'`;\",\n    \"const c = `SELECT * FROM t WHERE name RLIKE ${pat}`;\",\n    \"executeQuery(`SELECT * FROM t WHERE id = ${id}`);\",\n    `sql.raw(rawString)`,",
+      "matchedPattern": "RLIKE with interpolation"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "    \"const c = `SELECT * FROM t WHERE name LIKE '%${pat}%'`;\",\n    \"const c = `SELECT * FROM t WHERE name RLIKE ${pat}`;\",\n    \"executeQuery(`SELECT * FROM t WHERE id = ${id}`);\",\n    `sql.raw(rawString)`,\n    \"const r = sql`SELECT * FROM t WHERE id = ${id}`;\",",
+      "matchedPattern": "executeQuery with template interpolation"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        24,
+        60
+      ],
+      "snippet": "    \"const c = `SELECT * FROM t WHERE name RLIKE ${pat}`;\",\n    \"executeQuery(`SELECT * FROM t WHERE id = ${id}`);\",\n    `sql.raw(rawString)`,\n    \"const r = sql`SELECT * FROM t WHERE id = ${id}`;\",\n  ],",
+      "matchedPattern": "sql.raw() — raw SQL (verify parameterized)"
+    },
+    {
+      "vulnSlug": "sql-injection",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "    \"executeQuery(`SELECT * FROM t WHERE id = ${id}`);\",\n    `sql.raw(rawString)`,\n    \"const r = sql`SELECT * FROM t WHERE id = ${id}`;\",\n  ],\n  match(content, _filePath) {",
+      "matchedPattern": "sql tagged template with interpolation"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        10
+      ],
+      "snippet": "  examples: [\n    \"const q = `SELECT * FROM users WHERE id = ${id}`;\",\n    \"const q = `INSERT INTO logs (msg) VALUES (${msg})`;\",\n    \"const q = `UPDATE users SET name = ${name} WHERE id = 1`;\",\n    \"const q = `DELETE FROM items WHERE id = ${id}`;\",\n    `const q = \"SELECT * FROM t WHERE id =\" + id;`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    \"const q = `DELETE FROM items WHERE id = ${id}`;\",\n    `const q = \"SELECT * FROM t WHERE id =\" + id;`,\n    `const q = \"INSERT INTO t VALUES (\" + v + \")\";`,\n    `const q = \"UPDATE t SET x = \" + v;`,\n    `const q = \"DELETE FROM t WHERE id =\" + id;`,\n    \"db.query(`SELECT ${col} FROM t`);\",",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        32
+      ],
+      "snippet": "        {\n          regex: /`\\s*SELECT\\s+[^`]{0,400}\\$\\{/,\n          label: \"template literal SELECT with interpolation\",\n        },\n        {\n          regex: /`\\s*INSERT\\s+[^`]{0,400}\\$\\{/,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        33
+      ],
+      "snippet": "          regex: /`\\s*SELECT\\s+[^`]{0,400}\\$\\{/,\n          label: \"template literal SELECT with interpolation\",\n        },\n        {\n          regex: /`\\s*INSERT\\s+[^`]{0,400}\\$\\{/,\n          label: \"template literal INSERT with interpolation\",",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        47
+      ],
+      "snippet": "        },\n        { regex: /['\"]SELECT\\s+[^'\"]{0,400}['\"]\\s*\\+/, label: \"string concat SELECT\" },\n        { regex: /['\"]INSERT\\s+[^'\"]{0,400}['\"]\\s*\\+/, label: \"string concat INSERT\" },\n        { regex: /['\"]UPDATE\\s+[^'\"]{0,400}['\"]\\s*\\+/, label: \"string concat UPDATE\" },\n        { regex: /['\"]DELETE\\s+[^'\"]{0,400}['\"]\\s*\\+/, label: \"string concat DELETE\" },\n        { regex: /query\\s*\\(\\s*`[^`]*\\$\\{/, label: \"query() with interpolation\" },",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `const q = \"DELETE FROM t WHERE id =\" + id;`,\n    \"db.query(`SELECT ${col} FROM t`);\",\n    \"knex.raw(`SELECT ${col} FROM t`);\",\n    \"const c = `SELECT * FROM t WHERE name LIKE ${pat}`;\",\n    \"const c = `SELECT * FROM t WHERE name LIKE '%${pat}%'`;\",",
+      "matchedPattern": "Knex .raw with template-literal interpolation — SQL injection"
+    },
+    {
+      "vulnSlug": "js-sql-raw",
+      "lineNumbers": [
+        24,
+        60
+      ],
+      "snippet": "    \"const c = `SELECT * FROM t WHERE name RLIKE ${pat}`;\",\n    \"executeQuery(`SELECT * FROM t WHERE id = ${id}`);\",\n    `sql.raw(rawString)`,\n    \"const r = sql`SELECT * FROM t WHERE id = ${id}`;\",\n  ],",
+      "matchedPattern": "Kysely sql.raw — bypasses parameterization, must not include user input"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.852Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "8ed97830c6ab862a929daa438ea2f4487a63dc8aa99c605edde294520dc79bbf",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:59.811Z",
+      "durationMs": 47743,
+      "durationApiMs": 45238,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "ff7f6164-5dbf-4b41-a0ba-89648fbae13a",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.81450425,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 3047,
+        "cacheReadInputTokens": 184486,
+        "cacheCreationInputTokens": 103365
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215247-d54822996f49bf17",
+      "investigatedAt": "2026-05-06T21:53:44.012Z",
+      "durationMs": 9004,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8e73-7001-b338-b63d694b4240",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0524188,
+      "usage": {
+        "inputTokens": 6665.2,
+        "outputTokens": 373.6,
+        "cacheReadInputTokens": 15769.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:44.014Z"
+  },
+  "status": "analyzed"
+}

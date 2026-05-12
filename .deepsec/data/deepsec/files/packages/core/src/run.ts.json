@@ -1,0 +1,179 @@
+{
+  "filePath": "packages/core/src/run.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        31,
+        36
+      ],
+      "snippet": "function detectGithubUrl(rootPath: string): string | undefined {\n  try {\n    const remote = execSync(\"git remote get-url origin\", {\n      cwd: rootPath,\n      encoding: \"utf-8\",",
+      "matchedPattern": "execSync"
+    },
+    {
+      "vulnSlug": "path-traversal",
+      "lineNumbers": [
+        99
+      ],
+      "snippet": "    runId,\n    projectId: params.projectId,\n    rootPath: path.resolve(params.rootPath),\n    createdAt: new Date().toISOString(),\n    type: params.type,",
+      "matchedPattern": "path.resolve with request-derived input"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        43
+      ],
+      "snippet": "    // Convert SSH to HTTPS\n    const https = remote.replace(/^git@github\\.com:/, \"https://github.com/\").replace(/\\.git$/, \"\");\n    if (https.includes(\"github.com\")) {\n      return `${https}/blob/${branch}`;\n    }",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "crypto-usage",
+      "lineNumbers": [
+        2,
+        23
+      ],
+      "snippet": "import { execSync } from \"node:child_process\";\nimport crypto from \"node:crypto\";\nimport fs from \"node:fs\";\nimport os from \"node:os\";",
+      "matchedPattern": "Node crypto import, Node randomBytes"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.770Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "dbeca314ace93c85ea99c2dcd85869750f43876344e53c0af7b1bc0cf4a00d0d",
+  "findings": [
+    {
+      "severity": "MEDIUM",
+      "vulnSlug": "path-traversal",
+      "title": "writeFileRecord / writeRunMeta enable path traversal via unvalidated record fields",
+      "description": "writeFileRecord(record) computes its destination via fileRecordPath(record.projectId, record.filePath), and writeRunMeta(meta) via runMetaPath(meta.projectId, meta.runId). Neither call validates that the path segments are non-traversal, and the schemas (fileRecordSchema, runMetaSchema) declare these fields as bare z.string(). Per the project threat model (CLAUDE.md, attack surface #1), result FileRecord JSON returned from a compromised Vercel Sandbox round-trip can carry crafted values like filePath='../../../tmp/evil' or projectId='../other-project'. When the local processor parses such a record and calls writeFileRecord(record), path.join('data/<projectId>/files', '../../../tmp/evil.json') normalizes to 'tmp/evil.json' — escaping the per-project mirror. fs.mkdirSync(..., {recursive: true}) plus fs.writeFileSync then create directories and write JSON anywhere the deepsec process can write. The hard-coded '.json' suffix limits the impact (cannot overwrite shell rc files / SSH keys directly), but writing into another project's data dir, overwriting deepsec.config.json / package.json fragments, or planting JSON in attacker-chosen filesystem locations remains feasible. I confirmed the traversal: path.join('data/myproject/files', '../../../tmp/evil.json') === 'tmp/evil.json'.",
+      "lineNumbers": [
+        165,
+        166,
+        167,
+        168,
+        110,
+        111,
+        112,
+        113
+      ],
+      "recommendation": "Before using record.projectId / record.filePath / meta.runId in path construction, validate that each segment (a) does not contain '..' path components, (b) is not absolute (path.isAbsolute), and (c) when joined+resolved against the destination directory, still has the destination as a prefix (e.g., resolved.startsWith(path.resolve(filesDir(projectId)) + path.sep)). Add the same defensive check to readFileRecord. Also tighten the schemas to refine these fields with the same regex/predicate so malformed records are rejected at parse time.",
+      "confidence": "high",
+      "revalidation": {
+        "verdict": "fixed",
+        "reasoning": "The current writeFileRecord and writeRunMeta implementations still delegate path construction to fileRecordPath(record.projectId, record.filePath) and runMetaPath(meta.projectId, meta.runId), but those helpers are no longer simple path.join wrappers. In packages/core/src/paths.ts, dataDir(projectId) calls assertSafeSegment, which rejects empty values, '.', '..', absolute paths, null bytes, forward slashes, and backslashes before any project-scoped path is built. fileRecordPath also calls assertSafeFilePath, which rejects absolute file paths, null bytes, backslashes, empty path components, '.', and '..' components while still allowing normal forward-slash relative source paths. runMetaPath calls assertSafeSegment on runId before appending the .json suffix. That means the concrete attack described in the finding, such as filePath='../../../tmp/evil' or projectId='../other-project', now throws before fs.mkdirSync or fs.writeFileSync can create an escaped path. The zod schemas still declare these fields as z.string(), so malformed content is not rejected at schema parse time, but the vulnerable sink named in this finding is protected centrally at path construction. I also traced the sandbox download/merge path: tar extraction now has an entry allowlist for files/, runs/, and reports/, rejects non-regular files and oversized archives, and mergeAfterExtract checks that incoming FileRecord.projectId matches the expected project and that the declared filePath matches the extracted files/<filePath>.json path. Git history was unavailable in this workspace because .git is absent, so I could not cite the patch commit, but the current source contains the mitigation.",
+        "revalidatedAt": "2026-05-06T22:53:20.227Z",
+        "runId": "20260506225212-01b88665137ecc8e",
+        "model": "gpt-5.5"
+      }
+    },
+    {
+      "severity": "BUG",
+      "vulnSlug": "other-id-collision",
+      "title": "generateRunId uses only 16 bits of randomness",
+      "description": "generateRunId() concatenates a 1-second-resolution timestamp with crypto.randomBytes(2).toString('hex') (4 hex chars, 16 bits = 65,536 possible suffixes). When the user runs concurrent operations through the sandbox executor or kicks off many runs within the same wall-clock second, the birthday-bound collision probability becomes meaningful (~7.6% for ~100 concurrent runs in one second). A collision would cause two runs to share runMetaPath and stomp each other's metadata, and could similarly clobber per-run report files. This is a robustness/data-integrity issue rather than a security one.",
+      "lineNumbers": [
+        20,
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "recommendation": "Use 8+ bytes of randomness (crypto.randomBytes(8)) or a UUIDv4 / monotonic ULID-style suffix. The runId is purely an identifier; there's no reason to keep it short.",
+      "confidence": "high",
+      "revalidation": {
+        "verdict": "fixed",
+        "reasoning": "The current generateRunId implementation no longer uses crypto.randomBytes(2). It builds the same second-resolution timestamp prefix, but the suffix is now crypto.randomBytes(8).toString('hex'), giving 16 hex characters or 64 bits of randomness. That changes the birthday-collision profile from materially plausible under concurrent runs in the same second to negligible for this CLI use case. The runId remains a non-secret identifier, so the relevant property is collision resistance for metadata/report filenames rather than unpredictability. With 64 random bits, two concurrent sandbox or local runs are no longer realistically expected to stomp each other's run metadata due to ID collision. I could not inspect the commit that made this change because the checkout has no .git directory, but the current target file is patched relative to the finding description.",
+        "revalidatedAt": "2026-05-06T22:53:20.227Z",
+        "runId": "20260506225212-01b88665137ecc8e",
+        "model": "gpt-5.5"
+      }
+    }
+  ],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:13:47.759Z",
+      "durationMs": 242148,
+      "durationApiMs": 240425,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "76aacc55-a4fb-489b-a4da-41b9a25a5909",
+      "findingCount": 2,
+      "numTurns": 11,
+      "costUsd": 0.8037119999999999,
+      "usage": {
+        "inputTokens": 9,
+        "outputTokens": 17905,
+        "cacheReadInputTokens": 200559,
+        "cacheCreationInputTokens": 40922
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-d7ae5c7b1506afd5",
+      "investigatedAt": "2026-05-06T21:54:42.644Z",
+      "durationMs": 20765.8,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8bda-7060-aa31-96333341fed1",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1458454,
+      "usage": {
+        "inputTokens": 18553.8,
+        "outputTokens": 1049,
+        "cacheReadInputTokens": 43212.8,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    },
+    {
+      "runId": "20260506225212-01b88665137ecc8e",
+      "investigatedAt": "2026-05-06T22:53:20.227Z",
+      "durationMs": 28131.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff7d-f372-7542-a06a-8f4396a62dd6",
+      "findingCount": 2,
+      "numTurns": 0.5,
+      "phase": "revalidate",
+      "costUsd": 0.161412,
+      "usage": {
+        "inputTokens": 20946,
+        "outputTokens": 1403,
+        "cacheReadInputTokens": 29184,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T22:53:20.229Z"
+  },
+  "status": "analyzed"
+}

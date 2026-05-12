@@ -1,0 +1,95 @@
+{
+  "filePath": "packages/deepsec/src/resolve-project-id.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        32
+      ],
+      "snippet": "  const ids = projects.map((p) => p.id).join(\", \");\n  throw new Error(\n    `Multiple projects in deepsec.config.ts: ${ids}.\\n` + `  Pass --project-id <id> to pick one.`,\n  );\n}",
+      "matchedPattern": "template literal in HTML"
+    },
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        49
+      ],
+      "snippet": "  const ids = projects.map((p) => p.id).join(\", \");\n  throw new Error(\n    `Multiple projects in deepsec.config.ts: ${ids}.\\n` + `  Pass --project-id <id> to pick one.`,\n  );\n}",
+      "matchedPattern": "template literal in HTML"
+    },
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        50,
+        110
+      ],
+      "snippet": "  const ids = projects.map((p) => p.id).join(\", \");\n  throw new Error(\n    `Multiple projects in deepsec.config.ts: ${ids}.\\n` + `  Pass --project-id <id> to pick one.`,\n  );\n}",
+      "matchedPattern": "template literal in HTML"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.387Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "c39ed405a56598c446141f3661c831d41d063f9852771c85c902718adf4f4440",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:13:40.975Z",
+      "durationMs": 208322,
+      "durationApiMs": 207548,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "b5f12bc1-6638-4dbb-b6a9-fcf123d53d73",
+      "findingCount": 0,
+      "numTurns": 11,
+      "costUsd": 0.721455,
+      "usage": {
+        "inputTokens": 10,
+        "outputTokens": 15055,
+        "cacheReadInputTokens": 244285,
+        "cacheCreationInputTokens": 35662
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-bcac2325c8c87b25",
+      "investigatedAt": "2026-05-06T21:55:14.367Z",
+      "durationMs": 27046.6,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b6b-7761-82db-0547b8609d5b",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1292618,
+      "usage": {
+        "inputTokens": 13143.4,
+        "outputTokens": 1258,
+        "cacheReadInputTokens": 51609.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:55:14.368Z"
+  },
+  "status": "analyzed"
+}

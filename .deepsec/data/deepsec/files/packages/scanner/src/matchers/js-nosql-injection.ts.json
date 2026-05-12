@@ -1,0 +1,151 @@
+{
+  "filePath": "packages/scanner/src/matchers/js-nosql-injection.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": " *     interpolation (server-side JS execution; equivalent to eval).\n *   - `find(JSON.parse(req.<...>))` — passing raw user JSON as a query\n *     allows operator injection (e.g. `{ \"$ne\": null }` to bypass auth).\n *   - `aggregate([{ ..., $where: ... }])` — `$where` inside a pipeline.\n *   - `new RegExp(req.<...>)` — regex from user input is both ReDoS and a",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"js-nosql-injection\",\n  description:\n    \"NoSQL injection — Mongoose / MongoDB driver raw operators ($where, JSON.parse(input)) and unsafe aggregations\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx,mjs,cjs}\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "unsafe-deserialization",
+      "lineNumbers": [
+        10,
+        28,
+        50,
+        53
+      ],
+      "snippet": " *   - `$where` with concatenation, function bodies, or template-literal\n *     interpolation (server-side JS execution; equivalent to eval).\n *   - `find(JSON.parse(req.<...>))` — passing raw user JSON as a query\n *     allows operator injection (e.g. `{ \"$ne\": null }` to bypass auth).\n *   - `aggregate([{ ..., $where: ... }])` — `$where` inside a pipeline.",
+      "matchedPattern": "JSON.parse of request input (verify schema validation)"
+    },
+    {
+      "vulnSlug": "missing-await",
+      "lineNumbers": [
+        26
+      ],
+      "snippet": "  examples: [\n    `User.find({ $where: \"this.name == '\" + name + \"'\" })`,\n    `db.collection.find({ $where: \\`this.x == '\\${input}'\\` })`,\n    `Model.find({ $where: function() { return this.x == y; } })`,\n    `Model.find(JSON.parse(req.body.filter))`,",
+      "matchedPattern": "db call without await"
+    },
+    {
+      "vulnSlug": "js-nosql-injection",
+      "lineNumbers": [
+        25,
+        27,
+        29
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx,mjs,cjs}\"],\n  examples: [\n    `User.find({ $where: \"this.name == '\" + name + \"'\" })`,\n    `db.collection.find({ $where: \\`this.x == '\\${input}'\\` })`,\n    `Model.find({ $where: function() { return this.x == y; } })`,",
+      "matchedPattern": "MongoDB $where with concatenation/function/template — server-side JS execution, injection"
+    },
+    {
+      "vulnSlug": "js-nosql-injection",
+      "lineNumbers": [
+        28,
+        50
+      ],
+      "snippet": "    `db.collection.find({ $where: \\`this.x == '\\${input}'\\` })`,\n    `Model.find({ $where: function() { return this.x == y; } })`,\n    `Model.find(JSON.parse(req.body.filter))`,\n    `coll.aggregate([{ $match: { $where: \"this.score > \" + score } }])`,\n    `User.find({ name: new RegExp(req.query.q) })`,",
+      "matchedPattern": "find(JSON.parse(req.*)) — operator injection via raw user JSON"
+    },
+    {
+      "vulnSlug": "js-nosql-injection",
+      "lineNumbers": [
+        29
+      ],
+      "snippet": "    `Model.find({ $where: function() { return this.x == y; } })`,\n    `Model.find(JSON.parse(req.body.filter))`,\n    `coll.aggregate([{ $match: { $where: \"this.score > \" + score } }])`,\n    `User.find({ name: new RegExp(req.query.q) })`,\n    `Model.findOne({ email: req.body.email })`,",
+      "matchedPattern": "MongoDB aggregate() pipeline using $where — server-side JS execution"
+    },
+    {
+      "vulnSlug": "js-nosql-injection",
+      "lineNumbers": [
+        13,
+        30,
+        60
+      ],
+      "snippet": " *     allows operator injection (e.g. `{ \"$ne\": null }` to bypass auth).\n *   - `aggregate([{ ..., $where: ... }])` — `$where` inside a pipeline.\n *   - `new RegExp(req.<...>)` — regex from user input is both ReDoS and a\n *     query-shape injection vector.\n *   - `findOne({ field: req.body.email })` — passing the whole request",
+      "matchedPattern": "new RegExp from req.* — ReDoS and NoSQL query-shape injection"
+    },
+    {
+      "vulnSlug": "js-nosql-injection",
+      "lineNumbers": [
+        31,
+        32
+      ],
+      "snippet": "    `coll.aggregate([{ $match: { $where: \"this.score > \" + score } }])`,\n    `User.find({ name: new RegExp(req.query.q) })`,\n    `Model.findOne({ email: req.body.email })`,\n    `User.find({ username: req.query.username })`,\n  ],",
+      "matchedPattern": "find/findOne with untyped req.* value — coerce to string or operator injection (e.g. { $ne: null })"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.872Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "02f4d19dcaf542ff9e6cf01c86ef9cd9090b7ff82ac285d40f36bb3511ce4d20",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214907-70fbf7924106c870",
+      "investigatedAt": "2026-05-06T21:50:01.268Z",
+      "durationMs": 10135.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-344f-79d3-a7fc-1066aa444326",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0534315,
+      "usage": {
+        "inputTokens": 6426.5,
+        "outputTokens": 462.5,
+        "cacheReadInputTokens": 14848,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      }
+    },
+    {
+      "runId": "20260506215246-b34a23093a7f063f",
+      "investigatedAt": "2026-05-06T21:53:31.461Z",
+      "durationMs": 8262,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b3e-7931-b009-43059171fba6",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05549425,
+      "usage": {
+        "inputTokens": 7568.25,
+        "outputTokens": 349.5,
+        "cacheReadInputTokens": 14336,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:31.462Z"
+  },
+  "status": "analyzed"
+}

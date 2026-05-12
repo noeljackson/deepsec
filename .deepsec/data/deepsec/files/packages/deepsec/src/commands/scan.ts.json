@@ -1,0 +1,97 @@
+{
+  "filePath": "packages/deepsec/src/commands/scan.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        43
+      ],
+      "snippet": "    `No root path for project \"${opts.projectId}\".\\n` +\n      `  Pass --root <path>, or add the project to deepsec.config.ts:\\n` +\n      `    projects: [{ id: \"${opts.projectId}\", root: \"<path>\" }]`,\n  );\n}",
+      "matchedPattern": "template literal in HTML"
+    },
+    {
+      "vulnSlug": "xss",
+      "lineNumbers": [
+        43,
+        302
+      ],
+      "snippet": "    `No root path for project \"${opts.projectId}\".\\n` +\n      `  Pass --root <path>, or add the project to deepsec.config.ts:\\n` +\n      `    projects: [{ id: \"${opts.projectId}\", root: \"<path>\" }]`,\n  );\n}",
+      "matchedPattern": "template literal in HTML"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        47,
+        49,
+        100
+      ],
+      "snippet": "}\n\n/** Right-pad a string to a fixed width, accounting for ANSI escape codes. */\nfunction pad(s: string, width: number): string {\n  // Strip ANSI codes for length calc; pad based on visible width.",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.500Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "ffdd83bedf928377e8e57cbfaa2fac2db1664665d15cc8a177c439641d9c50ed",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:16:38.683Z",
+      "durationMs": 404873,
+      "durationApiMs": 403181,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "88ed0b7c-a3fd-4046-8aac-ec8125710cdf",
+      "findingCount": 0,
+      "numTurns": 19,
+      "costUsd": 1.8812119999999997,
+      "usage": {
+        "inputTokens": 24,
+        "outputTokens": 28083,
+        "cacheReadInputTokens": 1375409,
+        "cacheCreationInputTokens": 78610
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-f808d3de8281a89b",
+      "investigatedAt": "2026-05-06T21:54:41.492Z",
+      "durationMs": 20551,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b7e-7593-9578-497e60738dbd",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1004848,
+      "usage": {
+        "inputTokens": 10084.8,
+        "outputTokens": 851.2,
+        "cacheReadInputTokens": 49049.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:54:41.494Z"
+  },
+  "status": "analyzed"
+}

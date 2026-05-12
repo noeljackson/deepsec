@@ -1,0 +1,109 @@
+{
+  "filePath": "packages/scanner/src/matchers/js-nextjs-catchall-router.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        28
+      ],
+      "snippet": "    `import { Router } from 'itty-router';\\nconst router = Router();\\nexport const GET = (req) => router.handle(req);`,\n    `const router = createRouter();\\nexport const GET = (req) => handleRequest(req);`,\n    `export async function GET(request) { return Response.json({}) }`,\n    `export const POST = async (req) => Response.json({})`,\n  ],",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "  requires: { tech: [\"nextjs\"] },\n  examples: [\n    `import { Elysia } from 'elysia';\\nconst app = new Elysia();\\nexport const GET = app.handle;`,\n    `import { Hono } from 'hono';\\nconst app = new Hono();\\nexport const GET = (req) => app.fetch(req);`,\n    `import express from 'express';\\nconst app = express();\\nexport const POST = (req) => app(req);`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (arrow) (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "  examples: [\n    `import { Elysia } from 'elysia';\\nconst app = new Elysia();\\nexport const GET = app.handle;`,\n    `import { Hono } from 'hono';\\nconst app = new Hono();\\nexport const GET = (req) => app.fetch(req);`,\n    `import express from 'express';\\nconst app = express();\\nexport const POST = (req) => app(req);`,\n    `import { Router } from 'itty-router';\\nconst router = Router();\\nexport const GET = (req) => router.handle(req);`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (arrow) (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "    `import { Elysia } from 'elysia';\\nconst app = new Elysia();\\nexport const GET = app.handle;`,\n    `import { Hono } from 'hono';\\nconst app = new Hono();\\nexport const GET = (req) => app.fetch(req);`,\n    `import express from 'express';\\nconst app = express();\\nexport const POST = (req) => app(req);`,\n    `import { Router } from 'itty-router';\\nconst router = Router();\\nexport const GET = (req) => router.handle(req);`,\n    `const router = createRouter();\\nexport const GET = (req) => handleRequest(req);`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (arrow) (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        26
+      ],
+      "snippet": "    `import { Hono } from 'hono';\\nconst app = new Hono();\\nexport const GET = (req) => app.fetch(req);`,\n    `import express from 'express';\\nconst app = express();\\nexport const POST = (req) => app(req);`,\n    `import { Router } from 'itty-router';\\nconst router = Router();\\nexport const GET = (req) => router.handle(req);`,\n    `const router = createRouter();\\nexport const GET = (req) => handleRequest(req);`,\n    `export async function GET(request) { return Response.json({}) }`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (arrow) (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        27
+      ],
+      "snippet": "    `import express from 'express';\\nconst app = express();\\nexport const POST = (req) => app(req);`,\n    `import { Router } from 'itty-router';\\nconst router = Router();\\nexport const GET = (req) => router.handle(req);`,\n    `const router = createRouter();\\nexport const GET = (req) => handleRequest(req);`,\n    `export async function GET(request) { return Response.json({}) }`,\n    `export const POST = async (req) => Response.json({})`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (arrow) (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        29
+      ],
+      "snippet": "    `const router = createRouter();\\nexport const GET = (req) => handleRequest(req);`,\n    `export async function GET(request) { return Response.json({}) }`,\n    `export const POST = async (req) => Response.json({})`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (arrow) (weak candidate)"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"catchall-router\",\n  description:\n    \"Catch-all route with internal router (Elysia/Hono/Express) — single auth entry point\",\n  filePatterns: [",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.486Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "8fe97eade4276dfe1ccef943a2f1bb5232e1a77b164f6b08ec6ed2edf160cdd4",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214907-70fbf7924106c870",
+      "investigatedAt": "2026-05-06T21:50:01.272Z",
+      "durationMs": 10135.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-344f-79d3-a7fc-1066aa444326",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0534315,
+      "usage": {
+        "inputTokens": 6426.5,
+        "outputTokens": 462.5,
+        "cacheReadInputTokens": 14848,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:50:01.274Z"
+  },
+  "status": "analyzed",
+  "lockedByRunId": "20260506215246-c6bc3f0a3586feaf",
+  "lockedAt": "2026-05-06T21:52:46.499Z"
+}

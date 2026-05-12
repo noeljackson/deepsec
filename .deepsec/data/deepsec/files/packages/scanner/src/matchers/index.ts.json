@@ -1,0 +1,140 @@
+{
+  "filePath": "packages/scanner/src/matchers/index.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        11,
+        24
+      ],
+      "snippet": "import { allServerActionsMatcher } from \"./all-server-actions.js\";\n// --- Core security matchers ---\nimport { authBypassMatcher } from \"./auth-bypass.js\";\nimport { cacheKeyPoisoningMatcher } from \"./cache-key-poisoning.js\";\nimport { cacheKeyScopeMatcher } from \"./cache-key-scope.js\";",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        66,
+        168
+      ],
+      "snippet": "import { missingAwaitMatcher } from \"./missing-await.js\";\nimport { nextjsMiddlewareMatcher } from \"./nextjs-middleware.js\";\nimport { nextjsMiddlewareOnlyAuthMatcher } from \"./nextjs-middleware-only-auth.js\";\nimport { nonAtomicOperationMatcher } from \"./non-atomic-operation.js\";\nimport { nonAtomicReadDeleteMatcher } from \"./non-atomic-read-delete.js\";",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        117,
+        200
+      ],
+      "snippet": "import { trpcPublicProcedureMatcher } from \"./trpc-public-procedure.js\";\nimport { unixSocketListenerMatcher } from \"./unix-socket-listener.js\";\nimport { unsafeDeserializationMatcher } from \"./unsafe-deserialization.js\";\nimport { unsafeJsonInHtmlMatcher } from \"./unsafe-json-in-html.js\";\nimport { unsafeRedirectMatcher } from \"./unsafe-redirect.js\";",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        58
+      ],
+      "snippet": "import { luaCryptoWeaknessMatcher } from \"./lua-crypto-weakness.js\";\nimport { luaNgxExecMatcher } from \"./lua-ngx-exec.js\";\nimport { luaRegexBypassMatcher } from \"./lua-regex-bypass.js\";\nimport { luaSharedDictPoisoningMatcher } from \"./lua-shared-dict-poisoning.js\";\n// --- Lua / Go / proxy matchers ---",
+      "matchedPattern": "x-bypass header — may bypass security in production"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        10,
+        25
+      ],
+      "snippet": "import { apexRestResourceMatcher } from \"./apex-rest-resource.js\";\n// --- Core security matchers ---\nimport { authBypassMatcher } from \"./auth-bypass.js\";\nimport { azureFunctionHandlerMatcher } from \"./azure-function-handler.js\";\nimport { cacheKeyPoisoningMatcher } from \"./cache-key-poisoning.js\";",
+      "matchedPattern": "auth skip/bypass"
+    },
+    {
+      "vulnSlug": "auth-bypass",
+      "lineNumbers": [
+        83,
+        256
+      ],
+      "snippet": "import { frameworkInternalHeaderMatcher } from \"./js-nextjs-internal-header.js\";\nimport { nextjsMiddlewareMatcher } from \"./js-nextjs-middleware.js\";\nimport { nextjsMiddlewareOnlyAuthMatcher } from \"./js-nextjs-middleware-only-auth.js\";\n// --- v3 brainstormed matchers ---\nimport { pageDataFetchMatcher } from \"./js-nextjs-page-data-fetch.js\";",
+      "matchedPattern": "auth middleware"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        207,
+        288
+      ],
+      "snippet": "import { trpcPublicProcedureMatcher } from \"./trpc-public-procedure.js\";\nimport { unixSocketListenerMatcher } from \"./unix-socket-listener.js\";\nimport { unsafeDeserializationMatcher } from \"./unsafe-deserialization.js\";\nimport { unsafeRedirectMatcher } from \"./unsafe-redirect.js\";\nimport { untrustedRedirectFollowingMatcher } from \"./untrusted-redirect-following.js\";",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "test-header-bypass",
+      "lineNumbers": [
+        116
+      ],
+      "snippet": "import { luaCryptoWeaknessMatcher } from \"./lua-crypto-weakness.js\";\nimport { luaNgxExecMatcher } from \"./lua-ngx-exec.js\";\nimport { luaRegexBypassMatcher } from \"./lua-regex-bypass.js\";\nimport { luaSharedDictPoisoningMatcher } from \"./lua-shared-dict-poisoning.js\";\n// --- Lua / Go / proxy matchers ---",
+      "matchedPattern": "x-bypass header — may bypass security in production"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.749Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "576bc89fbb8a44800b18ab6d9846b490a4862878aa1dd5c08cde7483a7429d50",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:09:03.679Z",
+      "durationMs": 51567,
+      "durationApiMs": 49033,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "854302a2-95f8-4240-939f-0123848e5eb2",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.464015,
+      "usage": {
+        "inputTokens": 7,
+        "outputTokens": 3754,
+        "cacheReadInputTokens": 43885,
+        "cacheCreationInputTokens": 55710
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-cbb34644b25b760b",
+      "investigatedAt": "2026-05-06T21:53:41.957Z",
+      "durationMs": 10812.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c2a-79d2-bed1-7fab0db59914",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.073648,
+      "usage": {
+        "inputTokens": 8926,
+        "outputTokens": 547,
+        "cacheReadInputTokens": 25216,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:41.959Z"
+  },
+  "status": "analyzed"
+}

@@ -1,0 +1,22 @@
+{
+  "filePath": "packages/scanner/src/matchers/gcp-cloud-function.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"gcp-cloud-function\",\n  description: \"GCP Cloud Functions handlers (gated on gcp-cloud-functions)\",\n  filePatterns: [\"**/*.{ts,js,mjs,cjs,py,go}\"],\n  requires: { tech: [\"gcp-cloud-functions\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.489Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "6977ad4fa1c43d351ed44a230fe3a43dcfb3dc4dd698e9964c8b794fd215006c",
+  "findings": [],
+  "analysisHistory": [],
+  "status": "processing",
+  "lockedByRunId": "20260506215246-7f870d2495961b4e",
+  "lockedAt": "2026-05-06T21:52:46.606Z"
+}

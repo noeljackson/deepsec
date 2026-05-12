@@ -1,0 +1,118 @@
+{
+  "filePath": "packages/scanner/src/matchers/php-sql-raw.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "rce",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "  examples: [\n    `<?php\\n$result = $pdo->query(\"SELECT * FROM users WHERE id = \" . $id);`,\n    `$pdo->exec(\"DELETE FROM users WHERE name = '\" . $name . \"'\");`,\n    `$stmt = $pdo->prepare(\"SELECT * FROM t WHERE col = '\" . $col . \"'\");`,\n    `mysqli_query($conn, \"SELECT * FROM users WHERE id = \" . $userId);`,",
+      "matchedPattern": "exec with string"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"php-sql-raw\",\n  description:\n    \"Raw SQL across PHP DB drivers (PDO, mysqli, Doctrine ORM/DBAL) — string concatenation is SQL injection\",\n  filePatterns: [\"**/*.php\"],",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "  examples: [\n    `<?php\\n$result = $pdo->query(\"SELECT * FROM users WHERE id = \" . $id);`,\n    `$pdo->exec(\"DELETE FROM users WHERE name = '\" . $name . \"'\");`,\n    `$stmt = $pdo->prepare(\"SELECT * FROM t WHERE col = '\" . $col . \"'\");`,\n    `mysqli_query($conn, \"SELECT * FROM users WHERE id = \" . $userId);`,\n    `$conn->executeQuery(\"UPDATE users SET role = '\" . $role . \"' WHERE id = \" . $id);`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `$pdo->exec(\"DELETE FROM users WHERE name = '\" . $name . \"'\");`,\n    `$stmt = $pdo->prepare(\"SELECT * FROM t WHERE col = '\" . $col . \"'\");`,\n    `mysqli_query($conn, \"SELECT * FROM users WHERE id = \" . $userId);`,\n    `$conn->executeQuery(\"UPDATE users SET role = '\" . $role . \"' WHERE id = \" . $id);`,\n    `$conn->executeStatement(\"DELETE FROM users WHERE id = \" . $id);`,\n    `$em->createQuery(\"SELECT u FROM App\\\\User u WHERE u.name = '\" . $name . \"'\");`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "    `$stmt = $pdo->prepare(\"SELECT * FROM t WHERE col = '\" . $col . \"'\");`,\n    `mysqli_query($conn, \"SELECT * FROM users WHERE id = \" . $userId);`,\n    `$conn->executeQuery(\"UPDATE users SET role = '\" . $role . \"' WHERE id = \" . $id);`,\n    `$conn->executeStatement(\"DELETE FROM users WHERE id = \" . $id);`,\n    `$em->createQuery(\"SELECT u FROM App\\\\User u WHERE u.name = '\" . $name . \"'\");`,\n    `$em->createNativeQuery(\"SELECT * FROM users WHERE id = \" . $id, $rsm);`,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    },
+    {
+      "vulnSlug": "non-atomic-read-delete",
+      "lineNumbers": [
+        83
+      ],
+      "snippet": "          regex:\n            /(?:\"\\s*(?:SELECT|INSERT|UPDATE|DELETE)\\s+[^\"]{0,400}\"|'\\s*(?:SELECT|INSERT|UPDATE|DELETE)\\s+[^']{0,400}')\\s*\\.\\s*\\$\\w+/,\n          label: \"Raw SQL string with concat (SQL injection)\",\n        },\n      ],\n      content,",
+      "matchedPattern": "Read-then-modify without transaction — potential TOCTOU race"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.732Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "9842fb017e5c8543fd23347aa72e2e49f015f0f517a668aeea9c21cb6f8c46bc",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-65dc94bca8cbf80e",
+      "investigatedAt": "2026-05-06T21:49:55.682Z",
+      "durationMs": 9301.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-3045-7302-8227-b4ee5e620897",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0613255,
+      "usage": {
+        "inputTokens": 8093.5,
+        "outputTokens": 467,
+        "cacheReadInputTokens": 13696,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-5fb7cdb49fe0bbda",
+      "investigatedAt": "2026-05-06T21:53:45.378Z",
+      "durationMs": 11650,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8bc9-7e61-aaad-fadc27e0addc",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.05861325,
+      "usage": {
+        "inputTokens": 6561.75,
+        "outputTokens": 501.75,
+        "cacheReadInputTokens": 21504,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:45.379Z"
+  },
+  "status": "analyzed"
+}

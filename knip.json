@@ -1,0 +1,26 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": [
+        "e2e/scan.test.ts",
+        "e2e/bundle.test.ts",
+        "e2e/pipeline.test.ts",
+        "e2e/pipeline-sandbox.test.ts",
+        "e2e/vitest.config.ts"
+      ]
+    },
+    "packages/core": {},
+    "packages/scanner": {
+      "entry": ["src/__tests__/**/*.test.ts"]
+    },
+    "packages/processor": {
+      "entry": ["src/__tests__/**/*.test.ts"]
+    },
+    "packages/deepsec": {
+      "entry": ["src/config.ts", "src/sandbox/request-proxy.mjs!", "src/__tests__/**/*.test.ts"]
+    }
+  },
+  "ignore": ["fixtures/vulnerable-app/**", "samples/**", ".deepsec/**"],
+  "ignoreDependencies": ["@anthropic-ai/claude-agent-sdk", "@openai/codex", "@openai/codex-sdk"]
+}

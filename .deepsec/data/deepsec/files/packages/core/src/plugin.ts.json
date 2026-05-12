@@ -1,0 +1,88 @@
+{
+  "filePath": "packages/core/src/plugin.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        10,
+        57
+      ],
+      "snippet": "export interface MatcherPlugin {\n  slug: string;\n  description: string;\n  noiseTier: NoiseTier;\n  filePatterns: string[];",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        45,
+        117
+      ],
+      "snippet": "export interface MatcherPlugin {\n  slug: string;\n  description: string;\n  noiseTier: NoiseTier;\n  filePatterns: string[];",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.474Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "7345ebcf7c5f3aabde9a677ac5dcca17fe6c8579bd5ae8d56aba32df82d401a8",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:13:47.878Z",
+      "durationMs": 242148,
+      "durationApiMs": 240425,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "76aacc55-a4fb-489b-a4da-41b9a25a5909",
+      "findingCount": 0,
+      "numTurns": 11,
+      "costUsd": 0.8037119999999999,
+      "usage": {
+        "inputTokens": 9,
+        "outputTokens": 17905,
+        "cacheReadInputTokens": 200559,
+        "cacheCreationInputTokens": 40922
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-3a3061e5bb87dbb9",
+      "investigatedAt": "2026-05-06T21:53:54.632Z",
+      "durationMs": 27981,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8c3c-7ca2-a916-66662bdafd6d",
+      "findingCount": 0,
+      "numTurns": 0.5,
+      "phase": "process",
+      "costUsd": 0.183435,
+      "usage": {
+        "inputTokens": 21261,
+        "outputTokens": 1291,
+        "cacheReadInputTokens": 76800,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:54.635Z"
+  },
+  "status": "analyzed"
+}

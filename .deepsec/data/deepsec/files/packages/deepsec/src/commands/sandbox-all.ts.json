@@ -1,0 +1,169 @@
+{
+  "filePath": "packages/deepsec/src/commands/sandbox-all.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "\nfunction hasFlag(args: string[], flag: string): boolean {\n  return args.includes(flag);\n}\n",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        33
+      ],
+      "snippet": "\nfunction hasFlag(args: string[], flag: string): boolean {\n  return args.includes(flag);\n}\n",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        35
+      ],
+      "snippet": "\nfunction hasFlag(args: string[], flag: string): boolean {\n  return args.includes(flag);\n}\n",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.500Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "55a587589b7c7dfcc87a9ad3d2eef45b4f67f8e3d651abec3426b70d1838666b",
+  "findings": [
+    {
+      "severity": "HIGH_BUG",
+      "vulnSlug": "other-resource-allocation-bug",
+      "title": "sandbox-all can exceed the requested sandbox limit",
+      "description": "sandboxAllCommand accepts a total sandbox budget in opts.sandboxes, but the allocator unconditionally gives every eligible project one sandbox before checking whether the project count exceeds that budget. If there are more eligible projects than totalSandboxes, remaining becomes negative and the command still launches one sandbox per project via orchestrate(). For example, --sandboxes 1 with 20 eligible projects launches 20 sandbox runs. This can cause unexpectedly high paid sandbox usage and excessive concurrent work.",
+      "lineNumbers": [
+        131,
+        134,
+        135,
+        136
+      ],
+      "recommendation": "Validate that totalSandboxes is at least the number of eligible projects, or cap/select projects explicitly when the budget is smaller. Alternatively change the allocation strategy so it never creates more total sandbox instances than requested.",
+      "confidence": "high",
+      "producedByRunId": "20260506215246-f808d3de8281a89b",
+      "revalidation": {
+        "verdict": "fixed",
+        "reasoning": "The current allocator includes an explicit guard before the minimum-one-sandbox pass. If projectFiles.length is greater than totalSandboxes, it sorts eligible projects by file count, keeps only the top totalSandboxes entries, logs the dropped projects, and mutates projectFiles to the capped list. After that cap, the first allocation pass can decrement remaining at most totalSandboxes times, so remaining cannot become negative through the reported path. The second pass only runs when remaining > 0, and orchestrate is called once per allocation with sandboxCount equal to the capped allocation. Therefore --sandboxes 1 with 20 eligible projects no longer launches 20 sandbox runs; it selects one project and skips the rest. I could not confirm the exact patch commit because .git metadata is absent, but the current implementation directly addresses the reported resource allocation bug.",
+        "revalidatedAt": "2026-05-06T22:53:17.537Z",
+        "runId": "20260506225212-fb12ca99e8519e3d",
+        "model": "gpt-5.5"
+      }
+    }
+  ],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:11:10.761Z",
+      "durationMs": 67613,
+      "durationApiMs": 65072,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "50efa223-2a5b-4ef5-bab8-46a68bc2a8f1",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.39383175000000004,
+      "usage": {
+        "inputTokens": 10,
+        "outputTokens": 4434,
+        "cacheReadInputTokens": 227926,
+        "cacheCreationInputTokens": 27035
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-f808d3de8281a89b",
+      "investigatedAt": "2026-05-06T21:54:41.494Z",
+      "durationMs": 20551,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b7e-7593-9578-497e60738dbd",
+      "findingCount": 1,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.1004848,
+      "usage": {
+        "inputTokens": 10084.8,
+        "outputTokens": 851.2,
+        "cacheReadInputTokens": 49049.6,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    },
+    {
+      "runId": "20260506223949-bd2cf1d45b776494",
+      "investigatedAt": "2026-05-06T22:40:48.234Z",
+      "durationMs": 14013.5,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff72-8994-71d3-9be2-dbac69e4c2f1",
+      "findingCount": 1,
+      "numTurns": 0.25,
+      "phase": "revalidate",
+      "costUsd": 0.13210575,
+      "usage": {
+        "inputTokens": 13765.25,
+        "outputTokens": 1228.25,
+        "cacheReadInputTokens": 52864,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506225212-fb12ca99e8519e3d",
+      "investigatedAt": "2026-05-06T22:53:17.537Z",
+      "durationMs": 17832.333333333332,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff7d-f430-7ea0-ac2d-55265033d6c6",
+      "findingCount": 1,
+      "numTurns": 0.3333333333333333,
+      "phase": "revalidate",
+      "costUsd": 0.10596100000000001,
+      "usage": {
+        "inputTokens": 10927,
+        "outputTokens": 1105,
+        "cacheReadInputTokens": 36352,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"reason\":null,\"skipped\":[]}"
+      }
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T22:53:17.541Z"
+  },
+  "status": "analyzed"
+}

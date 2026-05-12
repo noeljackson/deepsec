@@ -1,0 +1,78 @@
+{
+  "filePath": "packages/scanner/src/matchers/js-bullmq-processor.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"js-bullmq-processor\",\n  description:\n    \"BullMQ workers and queue processors — background-job auth-gap surface (gated on bullmq)\",\n  filePatterns: [\"**/*.{ts,js,mjs,cjs}\"],",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.486Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "a2d8581024df39176d8a06fcf41c68d9518d1884dad9ab3da4075fcf52767c53",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214907-e8792fbb01849281",
+      "investigatedAt": "2026-05-06T21:49:51.806Z",
+      "durationMs": 7834.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-315e-7e01-8f97-ffa758801519",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0501815,
+      "usage": {
+        "inputTokens": 5599,
+        "outputTokens": 406.75,
+        "cacheReadInputTokens": 19968,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215247-31d278227f55711b",
+      "investigatedAt": "2026-05-06T21:53:54.205Z",
+      "durationMs": 13648,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8f1d-70e1-bde6-e66e7f56b51d",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.07806825,
+      "usage": {
+        "inputTokens": 9041.75,
+        "outputTokens": 566.25,
+        "cacheReadInputTokens": 31744,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\": false, \"skipped\": []}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:54.207Z"
+  },
+  "status": "analyzed"
+}

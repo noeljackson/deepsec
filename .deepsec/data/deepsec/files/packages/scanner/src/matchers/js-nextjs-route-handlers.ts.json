@@ -1,0 +1,158 @@
+{
+  "filePath": "packages/scanner/src/matchers/js-nextjs-route-handlers.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "  requires: { tech: [\"nextjs\"] },\n  examples: [\n    `export async function GET(request) { return Response.json({}) }`,\n    `export async function POST(request: Request) { return Response.json({ ok: true }) }`,\n    `export const PUT = async (req) => Response.json({})`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "  examples: [\n    `export async function GET(request) { return Response.json({}) }`,\n    `export async function POST(request: Request) { return Response.json({ ok: true }) }`,\n    `export const PUT = async (req) => Response.json({})`,\n    `export const PATCH = async (req: Request) => Response.json({})`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `export const PUT = async (req) => Response.json({})`,\n    `export const PATCH = async (req: Request) => Response.json({})`,\n    `export function DELETE(request) { return new Response(null, { status: 204 }) }`,\n    `export async function HEAD(request) { return new Response() }`,\n    `export const OPTIONS = (req) => new Response()`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "    `export const PATCH = async (req: Request) => Response.json({})`,\n    `export function DELETE(request) { return new Response(null, { status: 204 }) }`,\n    `export async function HEAD(request) { return new Response() }`,\n    `export const OPTIONS = (req) => new Response()`,\n    `export default async function (req, res) { res.json({}) }`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        35
+      ],
+      "snippet": "      const line = lines[i];\n\n      // Named exports: export const GET, export async function POST, etc.\n      const methodMatch = line.match(\n        /export\\s+(?:const|async\\s+function|function)\\s+(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\\b/,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "    `export async function GET(request) { return Response.json({}) }`,\n    `export async function POST(request: Request) { return Response.json({ ok: true }) }`,\n    `export const PUT = async (req) => Response.json({})`,\n    `export const PATCH = async (req: Request) => Response.json({})`,\n    `export function DELETE(request) { return new Response(null, { status: 204 }) }`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (arrow) (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "    `export async function POST(request: Request) { return Response.json({ ok: true }) }`,\n    `export const PUT = async (req) => Response.json({})`,\n    `export const PATCH = async (req: Request) => Response.json({})`,\n    `export function DELETE(request) { return new Response(null, { status: 204 }) }`,\n    `export async function HEAD(request) { return new Response() }`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (arrow) (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "    `export function DELETE(request) { return new Response(null, { status: 204 }) }`,\n    `export async function HEAD(request) { return new Response() }`,\n    `export const OPTIONS = (req) => new Response()`,\n    `export default async function (req, res) { res.json({}) }`,\n    `export default function (req, res) { res.send('ok') }`,",
+      "matchedPattern": "HTTP entry point: Next.js App Router handler (arrow) (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "    `export async function HEAD(request) { return new Response() }`,\n    `export const OPTIONS = (req) => new Response()`,\n    `export default async function (req, res) { res.json({}) }`,\n    `export default function (req, res) { res.send('ok') }`,\n  ],",
+      "matchedPattern": "HTTP entry point: default export handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "missing-auth",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "    `export const OPTIONS = (req) => new Response()`,\n    `export default async function (req, res) { res.json({}) }`,\n    `export default function (req, res) { res.send('ok') }`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "HTTP entry point: default export handler (weak candidate)"
+    },
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "  noiseTier: \"noisy\" as const,\n  slug: \"all-route-handlers\",\n  description: \"All route.ts HTTP handlers — comprehensive entry point coverage (weak candidate)\",\n  filePatterns: [\"**/route.{ts,tsx,js,jsx}\", \"**/route.*.{ts,tsx,js,jsx}\"],\n  requires: { tech: [\"nextjs\"] },",
+      "matchedPattern": "weak cipher algorithm"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.485Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "5469a445c66fb8772c9e02cf989e817c89a5c2f12b4870e47fa428edd4c942ed",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260506214906-5b833cf1c8aa279e",
+      "investigatedAt": "2026-05-06T21:49:56.516Z",
+      "durationMs": 9501.75,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff44-311c-7640-879e-2d8e3b62d7ea",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0941865,
+      "usage": {
+        "inputTokens": 13401.5,
+        "outputTokens": 594.5,
+        "cacheReadInputTokens": 18688,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      }
+    },
+    {
+      "runId": "20260506215246-b34a23093a7f063f",
+      "investigatedAt": "2026-05-06T21:53:49.451Z",
+      "durationMs": 10005.2,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8b3e-7863-93e9-93441614ba27",
+      "findingCount": 0,
+      "numTurns": 0.2,
+      "phase": "process",
+      "costUsd": 0.0592852,
+      "usage": {
+        "inputTokens": 6833.2,
+        "outputTokens": 528.4,
+        "cacheReadInputTokens": 18534.4,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:49.453Z"
+  },
+  "status": "analyzed"
+}

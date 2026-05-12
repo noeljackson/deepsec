@@ -1,0 +1,224 @@
+{
+  "filePath": "packages/scanner/src/matchers/unsafe-redirect.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "  noiseTier: \"normal\" as const,\n  slug: \"unsafe-redirect\",\n  description: \"Redirects that may bypass validNextRedirect() — open redirect risk\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "open-redirect",
+      "lineNumbers": [
+        41,
+        42,
+        45
+      ],
+      "snippet": "      },\n      {\n        regex: /NextResponse\\.redirect\\s*\\(\\s*new\\s+URL\\s*\\(/,\n        label: \"NextResponse.redirect with dynamic URL\",\n      },",
+      "matchedPattern": "redirect URL parameter"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        45
+      ],
+      "snippet": "      },\n      {\n        regex: /x-app-redirect-uri|redirect.uri|redirectUrl|returnUrl|returnTo/i,\n        label: \"Redirect URL from header/param\",\n      },",
+      "matchedPattern": "Redirect URL from header/param (validNextRedirect in scope — verify usage)"
+    },
+    {
+      "vulnSlug": "open-redirect",
+      "lineNumbers": [
+        15,
+        16,
+        18
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `redirect(req.body.next);`,\n    `redirect(query.target);`,\n    `redirect(searchParams.get(\"u\"));`,",
+      "matchedPattern": "redirect with request-derived URL"
+    },
+    {
+      "vulnSlug": "open-redirect",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `redirect(searchParams.get(\"u\"));`,\n    `redirect(params.next);`,\n    \"redirect(`/${req.body.path}`);\",\n    `NextResponse.redirect(new URL(target, base));`,\n    `// x-app-redirect-uri header\\nredirect(target);`,",
+      "matchedPattern": "redirect with interpolated URL"
+    },
+    {
+      "vulnSlug": "open-redirect",
+      "lineNumbers": [
+        20,
+        22,
+        23,
+        24,
+        54,
+        55,
+        58
+      ],
+      "snippet": "    `redirect(params.next);`,\n    \"redirect(`/${req.body.path}`);\",\n    `NextResponse.redirect(new URL(target, base));`,\n    `// x-app-redirect-uri header\\nredirect(target);`,\n    `// returnUrl from query\\nredirect(target);`,",
+      "matchedPattern": "redirect URL parameter"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx}\"],\n  examples: [\n    `redirect(req.body.next);`,\n    `redirect(query.target);`,\n    `redirect(searchParams.get(\"u\"));`,",
+      "matchedPattern": "redirect() with request-derived URL (validNextRedirect in scope — verify usage)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        16
+      ],
+      "snippet": "  examples: [\n    `redirect(req.body.next);`,\n    `redirect(query.target);`,\n    `redirect(searchParams.get(\"u\"));`,\n    `redirect(params.next);`,",
+      "matchedPattern": "redirect() with request-derived URL (validNextRedirect in scope — verify usage)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        17
+      ],
+      "snippet": "    `redirect(req.body.next);`,\n    `redirect(query.target);`,\n    `redirect(searchParams.get(\"u\"));`,\n    `redirect(params.next);`,\n    \"redirect(`/${req.body.path}`);\",",
+      "matchedPattern": "redirect() with request-derived URL (validNextRedirect in scope — verify usage)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        18
+      ],
+      "snippet": "    `redirect(query.target);`,\n    `redirect(searchParams.get(\"u\"));`,\n    `redirect(params.next);`,\n    \"redirect(`/${req.body.path}`);\",\n    `NextResponse.redirect(new URL(target, base));`,",
+      "matchedPattern": "redirect() with request-derived URL (validNextRedirect in scope — verify usage)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    `redirect(searchParams.get(\"u\"));`,\n    `redirect(params.next);`,\n    \"redirect(`/${req.body.path}`);\",\n    `NextResponse.redirect(new URL(target, base));`,\n    `// x-app-redirect-uri header\\nredirect(target);`,",
+      "matchedPattern": "redirect() with interpolated URL (validNextRedirect in scope — verify usage)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "    `redirect(params.next);`,\n    \"redirect(`/${req.body.path}`);\",\n    `NextResponse.redirect(new URL(target, base));`,\n    `// x-app-redirect-uri header\\nredirect(target);`,\n    `// returnUrl from query\\nredirect(target);`,",
+      "matchedPattern": "NextResponse.redirect with dynamic URL (validNextRedirect in scope — verify usage)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        21
+      ],
+      "snippet": "    \"redirect(`/${req.body.path}`);\",\n    `NextResponse.redirect(new URL(target, base));`,\n    `// x-app-redirect-uri header\\nredirect(target);`,\n    `// returnUrl from query\\nredirect(target);`,\n    `// returnTo param\\nredirect(t);`,",
+      "matchedPattern": "Redirect URL from header/param (validNextRedirect in scope — verify usage)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        22
+      ],
+      "snippet": "    `NextResponse.redirect(new URL(target, base));`,\n    `// x-app-redirect-uri header\\nredirect(target);`,\n    `// returnUrl from query\\nredirect(target);`,\n    `// returnTo param\\nredirect(t);`,\n    `// redirectUrl from body\\nredirect(t);`,",
+      "matchedPattern": "Redirect URL from header/param (validNextRedirect in scope — verify usage)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        23
+      ],
+      "snippet": "    `// x-app-redirect-uri header\\nredirect(target);`,\n    `// returnUrl from query\\nredirect(target);`,\n    `// returnTo param\\nredirect(t);`,\n    `// redirectUrl from body\\nredirect(t);`,\n    `// redirect.uri from header\\nredirect(t);`,",
+      "matchedPattern": "Redirect URL from header/param (validNextRedirect in scope — verify usage)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        24
+      ],
+      "snippet": "    `// returnUrl from query\\nredirect(target);`,\n    `// returnTo param\\nredirect(t);`,\n    `// redirectUrl from body\\nredirect(t);`,\n    `// redirect.uri from header\\nredirect(t);`,\n  ],",
+      "matchedPattern": "Redirect URL from header/param (validNextRedirect in scope — verify usage)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        25
+      ],
+      "snippet": "    `// returnTo param\\nredirect(t);`,\n    `// redirectUrl from body\\nredirect(t);`,\n    `// redirect.uri from header\\nredirect(t);`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "Redirect URL from header/param (validNextRedirect in scope — verify usage)"
+    },
+    {
+      "vulnSlug": "unsafe-redirect",
+      "lineNumbers": [
+        58
+      ],
+      "snippet": "      },\n      {\n        regex: /x-app-redirect-uri|redirect.uri|redirectUrl|returnUrl|returnTo/i,\n        label: \"Redirect URL from header/param\",\n      },",
+      "matchedPattern": "Redirect URL from header/param (validNextRedirect in scope — verify usage)"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.513Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "4c1995362c495a2d3b4d566ee0ff26fe73bda01dd6f8c33355a9eb5c7a7a47c4",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:59.739Z",
+      "durationMs": 48319,
+      "durationApiMs": 45832,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "66229215-48c4-47cc-9a9f-0265b9cf65ab",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.5060955,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 3172,
+        "cacheReadInputTokens": 230656,
+        "cacheCreationInputTokens": 49826
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-46b46eb6e55984c8",
+      "investigatedAt": "2026-05-06T21:53:40.202Z",
+      "durationMs": 10471.25,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8ba1-7460-ad8b-33c65a58b451",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.073563,
+      "usage": {
+        "inputTokens": 8391.5,
+        "outputTokens": 473.25,
+        "cacheReadInputTokens": 34816,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:40.204Z"
+  },
+  "status": "analyzed"
+}

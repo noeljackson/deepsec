@@ -1,0 +1,190 @@
+{
+  "filePath": "packages/scanner/src/matchers/algorithm-confusion.ts",
+  "projectId": "deepsec",
+  "candidates": [
+    {
+      "vulnSlug": "insecure-crypto",
+      "lineNumbers": [
+        7
+      ],
+      "snippet": "  noiseTier: \"precise\" as const,\n  slug: \"algorithm-confusion\",\n  description: \"JWT verification without algorithm pinning — algorithm confusion attack risk\",\n  filePatterns: [\"**/*.{ts,tsx,js,jsx,lua}\"],\n  match(content, filePath) {",
+      "matchedPattern": "weak cipher algorithm"
+    },
+    {
+      "vulnSlug": "jwt-handling",
+      "lineNumbers": [
+        12,
+        19
+      ],
+      "snippet": "    if (/\\.(test|spec)\\./i.test(filePath)) return [];\n\n    const hasJwtVerify = /jwt\\.verify|jwtVerify|verifyJwt|jwt_obj:verify|resty\\.jwt/.test(content);\n    if (!hasJwtVerify) return [];\n",
+      "matchedPattern": "JWT verification (verify algorithm pinning)"
+    },
+    {
+      "vulnSlug": "algorithm-confusion",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "\n    const hasJwtVerify = /jwt\\.verify|jwtVerify|verifyJwt|jwt_obj:verify|resty\\.jwt/.test(content);\n    if (!hasJwtVerify) return [];\n\n    const matches: CandidateMatch[] = [];",
+      "matchedPattern": "JWT verification WITHOUT algorithm pinning — algorithm confusion risk"
+    },
+    {
+      "vulnSlug": "algorithm-confusion",
+      "lineNumbers": [
+        19
+      ],
+      "snippet": "    for (let i = 0; i < lines.length; i++) {\n      if (/jwt\\.verify|jwtVerify|verifyJwt|jwt_obj:verify/.test(lines[i])) {\n        const window = lines.slice(i, Math.min(lines.length, i + 5)).join(\"\\n\");\n        const hasAlgPin = /algorithms\\s*:|algorithm\\s*:|alg.*RS256|alg.*HS256|alg.*ES256/.test(\n          window,",
+      "matchedPattern": "JWT verification with algorithm pin (verify correct algorithm)"
+    },
+    {
+      "vulnSlug": "jwt-handling",
+      "lineNumbers": [
+        10,
+        11,
+        12,
+        14,
+        15,
+        20,
+        27
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx,lua}\"],\n  examples: [\n    `const decoded = jwt.verify(token, secret);`,\n    `const result = await jwtVerify(token, key);`,\n    `const claims = verifyJwt(token, publicKey);`,",
+      "matchedPattern": "JWT verification (verify algorithm pinning)"
+    },
+    {
+      "vulnSlug": "algorithm-confusion",
+      "lineNumbers": [
+        10
+      ],
+      "snippet": "  examples: [\n    `const decoded = jwt.verify(token, secret);`,\n    `const result = await jwtVerify(token, key);`,\n    `const claims = verifyJwt(token, publicKey);`,\n    `local ok = jwt_obj:verify(secret, token)`,",
+      "matchedPattern": "JWT verification with algorithm pin (verify correct algorithm)"
+    },
+    {
+      "vulnSlug": "algorithm-confusion",
+      "lineNumbers": [
+        11
+      ],
+      "snippet": "    `const decoded = jwt.verify(token, secret);`,\n    `const result = await jwtVerify(token, key);`,\n    `const claims = verifyJwt(token, publicKey);`,\n    `local ok = jwt_obj:verify(secret, token)`,\n    `jwt.verify(token, key, { algorithms: [\"RS256\"] });`,",
+      "matchedPattern": "JWT verification with algorithm pin (verify correct algorithm)"
+    },
+    {
+      "vulnSlug": "algorithm-confusion",
+      "lineNumbers": [
+        12
+      ],
+      "snippet": "    `const result = await jwtVerify(token, key);`,\n    `const claims = verifyJwt(token, publicKey);`,\n    `local ok = jwt_obj:verify(secret, token)`,\n    `jwt.verify(token, key, { algorithms: [\"RS256\"] });`,\n    `await jwtVerify(token, jwks, { algorithm: \"HS256\" });`,",
+      "matchedPattern": "JWT verification with algorithm pin (verify correct algorithm)"
+    },
+    {
+      "vulnSlug": "algorithm-confusion",
+      "lineNumbers": [
+        13
+      ],
+      "snippet": "    `const claims = verifyJwt(token, publicKey);`,\n    `local ok = jwt_obj:verify(secret, token)`,\n    `jwt.verify(token, key, { algorithms: [\"RS256\"] });`,\n    `await jwtVerify(token, jwks, { algorithm: \"HS256\" });`,\n  ],",
+      "matchedPattern": "JWT verification with algorithm pin (verify correct algorithm)"
+    },
+    {
+      "vulnSlug": "algorithm-confusion",
+      "lineNumbers": [
+        14
+      ],
+      "snippet": "    `local ok = jwt_obj:verify(secret, token)`,\n    `jwt.verify(token, key, { algorithms: [\"RS256\"] });`,\n    `await jwtVerify(token, jwks, { algorithm: \"HS256\" });`,\n  ],\n  match(content, filePath) {",
+      "matchedPattern": "JWT verification with algorithm pin (verify correct algorithm)"
+    },
+    {
+      "vulnSlug": "algorithm-confusion",
+      "lineNumbers": [
+        15
+      ],
+      "snippet": "    `jwt.verify(token, key, { algorithms: [\"RS256\"] });`,\n    `await jwtVerify(token, jwks, { algorithm: \"HS256\" });`,\n  ],\n  match(content, filePath) {\n    if (/\\.(test|spec)\\./i.test(filePath)) return [];",
+      "matchedPattern": "JWT verification with algorithm pin (verify correct algorithm)"
+    },
+    {
+      "vulnSlug": "algorithm-confusion",
+      "lineNumbers": [
+        20
+      ],
+      "snippet": "\n    const hasJwtVerify = /jwt\\.verify|jwtVerify|verifyJwt|jwt_obj:verify|resty\\.jwt/.test(content);\n    if (!hasJwtVerify) return [];\n\n    const matches: CandidateMatch[] = [];",
+      "matchedPattern": "JWT verification WITHOUT algorithm pinning — algorithm confusion risk"
+    },
+    {
+      "vulnSlug": "algorithm-confusion",
+      "lineNumbers": [
+        27
+      ],
+      "snippet": "    for (let i = 0; i < lines.length; i++) {\n      if (/jwt\\.verify|jwtVerify|verifyJwt|jwt_obj:verify/.test(lines[i])) {\n        const window = lines.slice(i, Math.min(lines.length, i + 5)).join(\"\\n\");\n        const hasAlgPin = /algorithms\\s*:|algorithm\\s*:|alg.*RS256|alg.*HS256|alg.*ES256/.test(\n          window,",
+      "matchedPattern": "JWT verification with algorithm pin (verify correct algorithm)"
+    },
+    {
+      "vulnSlug": "crypto-usage",
+      "lineNumbers": [
+        10,
+        14
+      ],
+      "snippet": "  filePatterns: [\"**/*.{ts,tsx,js,jsx,lua}\"],\n  examples: [\n    `const decoded = jwt.verify(token, secret);`,\n    `const result = await jwtVerify(token, key);`,\n    `const claims = verifyJwt(token, publicKey);`,",
+      "matchedPattern": "JWT sign/verify"
+    }
+  ],
+  "lastScannedAt": "2026-05-06T21:46:56.787Z",
+  "lastScannedRunId": "20260506214655-aa977d40dc0c6524",
+  "fileHash": "df7fc38392b163a74f19915e24199c18b4839d17566cc498aaf7cde93b865d15",
+  "findings": [],
+  "analysisHistory": [
+    {
+      "runId": "20260502160808-9bbd",
+      "investigatedAt": "2026-05-02T16:08:59.902Z",
+      "durationMs": 47743,
+      "durationApiMs": 45238,
+      "agentType": "claude-agent-sdk",
+      "model": "claude-opus-4-7",
+      "modelConfig": {
+        "model": "claude-opus-4-7"
+      },
+      "agentSessionId": "ff7f6164-5dbf-4b41-a0ba-89648fbae13a",
+      "findingCount": 0,
+      "numTurns": 6,
+      "costUsd": 0.81450425,
+      "usage": {
+        "inputTokens": 11,
+        "outputTokens": 3047,
+        "cacheReadInputTokens": 184486,
+        "cacheCreationInputTokens": 103365
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "```json\n{\"refused\": false, \"reason\": null, \"skipped\": []}\n```"
+      }
+    },
+    {
+      "runId": "20260506215246-409d9e44688f956b",
+      "investigatedAt": "2026-05-06T21:53:31.618Z",
+      "durationMs": 8354,
+      "agentType": "codex",
+      "model": "gpt-5.5",
+      "modelConfig": {
+        "model": "gpt-5.5"
+      },
+      "agentSessionId": "019dff47-8bbe-7872-8058-bc2832193f0f",
+      "findingCount": 0,
+      "numTurns": 0.25,
+      "phase": "process",
+      "costUsd": 0.0533665,
+      "usage": {
+        "inputTokens": 7103.5,
+        "outputTokens": 379.5,
+        "cacheReadInputTokens": 12928,
+        "cacheCreationInputTokens": 0
+      },
+      "refusal": {
+        "refused": false,
+        "skipped": [],
+        "raw": "{\"refused\":false,\"skipped\":[]}"
+      },
+      "reinvestigateMarker": 10
+    }
+  ],
+  "gitInfo": {
+    "recentCommitters": [],
+    "enrichedAt": "2026-05-06T21:53:31.620Z"
+  },
+  "status": "analyzed"
+}

@@ -18,10 +18,11 @@ import (
 // SDK. Uses prompt caching on the system prompt and tool use for
 // structured output.
 type AnthropicBackend struct {
-	profile *providers.Profile
-	client  anthropic.Client
-	model   string
-	apiKey  string
+	profile  *providers.Profile
+	client   anthropic.Client
+	model    string
+	apiKey   string
+	settings ModelSettings
 }
 
 func NewAnthropicBackend(profile *providers.Profile, model, apiKey string) *AnthropicBackend {
@@ -37,6 +38,25 @@ func NewAnthropicBackend(profile *providers.Profile, model, apiKey string) *Anth
 		client:  anthropic.NewClient(opts...),
 		model:   model,
 		apiKey:  apiKey,
+	}
+}
+
+// WithSettings returns the backend with sampling parameters pinned.
+// Nil fields fall back to provider defaults. Seed is silently ignored
+// — the Anthropic Messages API does not expose seed.
+func (b *AnthropicBackend) WithSettings(s ModelSettings) *AnthropicBackend {
+	b.settings = s
+	return b
+}
+
+// applySettings populates Temperature/TopP on message-create params
+// when the caller pinned them.
+func (b *AnthropicBackend) applySettings(p *anthropic.MessageNewParams) {
+	if b.settings.Temperature != nil {
+		p.Temperature = anthropic.Float(*b.settings.Temperature)
+	}
+	if b.settings.TopP != nil {
+		p.TopP = anthropic.Float(*b.settings.TopP)
 	}
 }
 
@@ -82,6 +102,7 @@ func (b *AnthropicBackend) Investigate(ctx context.Context, batch *InvestigateBa
 			OfTool: &anthropic.ToolChoiceToolParam{Name: toolName},
 		},
 	}
+	b.applySettings(&params)
 	resp, err := b.client.Messages.New(ctx, params)
 	if err != nil {
 		if isAnthropicQuotaErr(err) {
@@ -152,7 +173,7 @@ func (b *AnthropicBackend) Revalidate(ctx context.Context, in *RevalidateInput) 
 	}
 
 	start := time.Now()
-	resp, err := b.client.Messages.New(ctx, anthropic.MessageNewParams{
+	revalParams := anthropic.MessageNewParams{
 		Model:     anthropic.Model(b.model),
 		MaxTokens: 4096,
 		System: []anthropic.TextBlockParam{{Text: system,
@@ -165,7 +186,9 @@ func (b *AnthropicBackend) Revalidate(ctx context.Context, in *RevalidateInput) 
 		ToolChoice: anthropic.ToolChoiceUnionParam{
 			OfTool: &anthropic.ToolChoiceToolParam{Name: toolName},
 		},
-	})
+	}
+	b.applySettings(&revalParams)
+	resp, err := b.client.Messages.New(ctx, revalParams)
 	if err != nil {
 		if isAnthropicQuotaErr(err) {
 			return nil, core.Usage{}, 0, &QuotaExhaustedError{Provider: b.profile.Name, Detail: err.Error()}
@@ -203,7 +226,7 @@ func (b *AnthropicBackend) Triage(ctx context.Context, in *TriageInput) (*Triage
 		},
 	}
 	start := time.Now()
-	resp, err := b.client.Messages.New(ctx, anthropic.MessageNewParams{
+	triageParams := anthropic.MessageNewParams{
 		Model:     anthropic.Model(b.model),
 		MaxTokens: 1024,
 		System:    []anthropic.TextBlockParam{{Text: system}},
@@ -214,7 +237,9 @@ func (b *AnthropicBackend) Triage(ctx context.Context, in *TriageInput) (*Triage
 		ToolChoice: anthropic.ToolChoiceUnionParam{
 			OfTool: &anthropic.ToolChoiceToolParam{Name: toolName},
 		},
-	})
+	}
+	b.applySettings(&triageParams)
+	resp, err := b.client.Messages.New(ctx, triageParams)
 	if err != nil {
 		if isAnthropicQuotaErr(err) {
 			return nil, core.Usage{}, 0, &QuotaExhaustedError{Provider: b.profile.Name, Detail: err.Error()}

@@ -16,7 +16,8 @@ func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 		projectID, agent, model, filter, onlySlugs, skipSlugs, filesFrom, diff string
 		files                                                                  []string
 		batchSize, concurrency, limit, reinvestigate                           int
-		maxCost                                                                float64
+		maxCost, temperature, topP                                             float64
+		seed                                                                   int64
 	)
 	cmd := &cobra.Command{
 		Use:   "process",
@@ -42,7 +43,8 @@ func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			backend, err := processor.NewBackend(profile, model, apiKey)
+			settings := modelSettingsFromFlags(cmd, temperature, topP, seed)
+			backend, err := processor.NewBackend(profile, model, apiKey, settings)
 			if err != nil {
 				return err
 			}
@@ -101,6 +103,7 @@ func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 				ReinvestigateMark: reinvestigate,
 				MaxCostUSD:        maxCost,
 				Detected:          tech,
+				ModelSettings:     settings,
 			})
 			if err != nil {
 				return err
@@ -132,5 +135,26 @@ func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 	cmd.Flags().StringVar(&diff, "diff", "", "Direct mode: process only files changed vs this git ref")
 	cmd.Flags().IntVar(&reinvestigate, "reinvestigate", 0, "Wave marker (skip files already analyzed at this marker)")
 	cmd.Flags().Float64Var(&maxCost, "max-cost-usd", 0, "Abort the run when cumulative cost exceeds this USD amount")
+	cmd.Flags().Float64Var(&temperature, "temperature", 0, "Pin sampling temperature (default: provider SDK default)")
+	cmd.Flags().Float64Var(&topP, "top-p", 0, "Pin nucleus sampling (default: provider SDK default)")
+	cmd.Flags().Int64Var(&seed, "seed", 0, "Pin sampler seed; OpenAI-compatible providers only")
 	return cmd
+}
+
+// modelSettingsFromFlags converts the temperature/top-p/seed flags into
+// a ModelSettings struct. Each field is left nil unless the user
+// explicitly passed the flag — preserves SDK-default behavior when no
+// pin is requested.
+func modelSettingsFromFlags(cmd *cobra.Command, temperature, topP float64, seed int64) processor.ModelSettings {
+	s := processor.ModelSettings{}
+	if cmd.Flags().Changed("temperature") {
+		s.Temperature = &temperature
+	}
+	if cmd.Flags().Changed("top-p") {
+		s.TopP = &topP
+	}
+	if cmd.Flags().Changed("seed") {
+		s.Seed = &seed
+	}
+	return s
 }

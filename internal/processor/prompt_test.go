@@ -1,6 +1,8 @@
 package processor
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -68,6 +70,70 @@ func TestAssemblePromptHandlesUnknownTagsGracefully(t *testing.T) {
 	b := batchFor("a.ts", "s", "x")
 	b.TechTags = []string{"unknown-framework"}
 	_, _ = AssemblePrompt(b) // must not panic
+}
+
+func TestAssemblePromptGolden(t *testing.T) {
+	sys, user := AssemblePrompt(goldenPromptBatch())
+	requireGolden(t, "assemble_prompt_system.golden", sys)
+	requireGolden(t, "assemble_prompt_user.golden", user)
+}
+
+func goldenPromptBatch() *InvestigateBatch {
+	return &InvestigateBatch{
+		ProjectRoot:  "/work/repo",
+		ProjectInfo:  "Payments API.\nAdmin routes live under src/api/admin.",
+		PromptAppend: "When auth context is ambiguous, explain the reachable attacker path.",
+		TechTags:     []string{"nextjs", "express", "unknown-framework"},
+		SlugNotes:    []string{"ssrf", "sql-injection-string-concat", "ssrf", "missing-note"},
+		Files: []InvestigateFile{
+			{
+				Path: "src/api/users.ts",
+				Content: strings.Join([]string{
+					"import { db } from '../lib/db'",
+					"export async function GET(req: Request) {",
+					"  const q = new URL(req.url).searchParams.get('q')",
+					"  return db.query('select * from users where name = ' + q)",
+					"}",
+				}, "\n"),
+				Candidates: []core.CandidateMatch{
+					{
+						VulnSlug:       "sql-injection-string-concat",
+						LineNumbers:    []int{4},
+						Snippet:        "db.query('select * from users where name = ' + q)",
+						MatchedPattern: "query concat",
+					},
+				},
+			},
+			{
+				Path: "src/lib/fetch-proxy.ts",
+				Content: strings.Join([]string{
+					"export async function proxy(url: string) {",
+					"  return fetch(url)",
+					"}",
+				}, "\n"),
+				Candidates: []core.CandidateMatch{
+					{
+						VulnSlug:       "ssrf",
+						LineNumbers:    []int{2},
+						Snippet:        "fetch(url)",
+						MatchedPattern: "fetch url",
+					},
+				},
+			},
+		},
+	}
+}
+
+func requireGolden(t *testing.T, name, got string) {
+	t.Helper()
+	path := filepath.Join("testdata", name)
+	if os.Getenv("UPDATE_PROMPT_GOLDEN") == "1" {
+		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+		require.NoError(t, os.WriteFile(path, []byte(got), 0o644))
+	}
+	want, err := os.ReadFile(path)
+	require.NoError(t, err)
+	require.Equal(t, string(want), got)
 }
 
 func TestHighlightForTagKnownAndUnknown(t *testing.T) {

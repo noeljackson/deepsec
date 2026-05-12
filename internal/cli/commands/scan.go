@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/noeljackson/deepsec/internal/cli"
@@ -31,6 +32,7 @@ func NewScanCmd(loader func() (*cli.Context, error)) *cobra.Command {
 			}
 			only := splitCSV(matchers)
 			exclude := splitCSV(skipMatchers)
+			var extras []string
 			if ctx.Config != nil {
 				if len(only) == 0 {
 					only = ctx.Config.Matchers.Only
@@ -38,15 +40,17 @@ func NewScanCmd(loader func() (*cli.Context, error)) *cobra.Command {
 				if len(exclude) == 0 {
 					exclude = ctx.Config.Matchers.Exclude
 				}
+				extras = resolveExtraPaths(ctx.Config.Matchers.ExtraPaths, ctx.ConfigPath)
 			}
 
 			opts := scanner.Options{
-				ProjectID:      projectID,
-				Root:           root,
-				DataRoot:       ctx.DataRoot,
-				MatcherOnly:    only,
-				MatcherExclude: exclude,
-				GithubURL:      proj.Decl.GithubURL,
+				ProjectID:         projectID,
+				Root:              root,
+				DataRoot:          ctx.DataRoot,
+				MatcherOnly:       only,
+				MatcherExclude:    exclude,
+				ExtraMatcherPaths: extras,
+				GithubURL:         proj.Decl.GithubURL,
 			}
 
 			resolved, err := cli.ResolveFiles(cli.FileSourceArgs{
@@ -96,6 +100,31 @@ func NewScanCmd(loader func() (*cli.Context, error)) *cobra.Command {
 	cmd.Flags().StringVar(&filesFrom, "files-from", "", `Read file paths from this file ("-" reads stdin)`)
 	cmd.Flags().StringVar(&diff, "diff", "", "Scan only files changed vs this git ref")
 	return cmd
+}
+
+// resolveExtraPaths turns the config's `[matchers].extra_paths` entries
+// into absolute paths. Relative entries are resolved against the directory
+// containing the config file (or cwd if no config file was loaded).
+func resolveExtraPaths(paths []string, configPath string) []string {
+	if len(paths) == 0 {
+		return nil
+	}
+	base := ""
+	if configPath != "" {
+		base = filepath.Dir(configPath)
+	}
+	out := make([]string, 0, len(paths))
+	for _, p := range paths {
+		if p == "" {
+			continue
+		}
+		if filepath.IsAbs(p) || base == "" {
+			out = append(out, p)
+			continue
+		}
+		out = append(out, filepath.Join(base, p))
+	}
+	return out
 }
 
 func splitCSV(s string) []string {

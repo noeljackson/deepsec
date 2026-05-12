@@ -12,6 +12,8 @@ dist/
 # Test / coverage artifacts
 *.test
 *.out
+/.tmp/
+/bench/out/
 
 # Secrets and local env
 .env*.local

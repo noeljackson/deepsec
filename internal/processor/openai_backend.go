@@ -65,6 +65,33 @@ func (b *OpenAICompatibleBackend) applySettings(p *openai.ChatCompletionNewParam
 func (b *OpenAICompatibleBackend) Kind() providers.Kind { return providers.KindOpenAIish }
 func (b *OpenAICompatibleBackend) Model() string        { return b.model }
 
+func (b *OpenAICompatibleBackend) ProposePatchJSON(ctx context.Context, system, user string, schema json.RawMessage) (string, core.Usage, float64, error) {
+	start := time.Now()
+	params := openai.ChatCompletionNewParams{
+		Model: b.model,
+		Messages: []openai.ChatCompletionMessageParamUnion{
+			openai.SystemMessage(system),
+			openai.UserMessage(user),
+		},
+	}
+	b.applySchemaFor(&params, "propose_matcher_patch", "Return one bounded matcher TOML patch decision.", schema)
+	b.applySettings(&params)
+	resp, err := b.client.Chat.Completions.New(ctx, params)
+	if err != nil {
+		if isOpenAIQuotaErr(err) {
+			return "", core.Usage{}, 0, &QuotaExhaustedError{Provider: b.profile.Name, Detail: err.Error()}
+		}
+		return "", core.Usage{}, 0, fmt.Errorf("%s: %w", b.profile.Name, err)
+	}
+	_ = start
+	usage := openaiUsage(resp)
+	body := extractJSONFromChatResp(resp)
+	if body == "" {
+		return "", usage, b.profile.Cost(b.model, usage), errors.New("patch proposer returned no JSON")
+	}
+	return body, usage, b.profile.Cost(b.model, usage), nil
+}
+
 func (b *OpenAICompatibleBackend) Investigate(ctx context.Context, batch *InvestigateBatch) (*InvestigateOutput, error) {
 	system, user := AssemblePrompt(batch)
 	start := time.Now()

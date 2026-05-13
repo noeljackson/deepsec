@@ -53,6 +53,14 @@ deepsec process --project-id myproj --agent anthropic --concurrency 4
 deepsec report --project-id myproj
 ```
 
+## Improving deepsec on a benchmark
+
+deepsec ships with an **auto-learn loop**: labeled fixtures, a
+deterministic scorer, a human-in-the-loop matcher review CLI, and an
+autonomous bounded-patch agent that hill-climbs against the bench.
+Start at [`docs/auto-learn-loop.md`](docs/auto-learn-loop.md) for the
+one-screen tour with links into each layer.
+
 ## AI backends
 
 `deepsec` ships with six provider profiles out of the box. Two backend

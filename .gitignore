@@ -45,3 +45,4 @@ dist/
 # Local workflow files
 linear-*
 plans/
+.cache/

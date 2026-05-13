@@ -223,6 +223,16 @@ func instantiateLibcHost(ctx context.Context, rt wazero.Runtime) error {
 	host.NewFunctionBuilder().WithFunc(func(_ context.Context, c uint32) uint32 {
 		return uint32(unicode.ToUpper(rune(c)))
 	}).Export("towupper")
+	// abort and __assert_fail are imported by wasi-sdk-built grammars
+	// (the toolchain emits abort() calls on unreachable paths). Treat
+	// either as a fatal grammar error — they should never fire during
+	// normal parsing, but if they do we want the runtime to fail loudly.
+	host.NewFunctionBuilder().WithFunc(func(ctx context.Context, m api.Module) {
+		panic("tree-sitter grammar called abort()")
+	}).Export("abort")
+	host.NewFunctionBuilder().WithFunc(func(ctx context.Context, m api.Module, _, _, _, _ uint32) {
+		panic("tree-sitter grammar __assert_fail (typically a memory-safety violation in the grammar)")
+	}).Export("__assert_fail")
 	if _, err := host.Instantiate(ctx); err != nil {
 		return fmt.Errorf("instantiate grammar libc host imports: %w", err)
 	}
@@ -264,6 +274,13 @@ func (w *wasmRuntime) parseCallback(ctx context.Context, m api.Module, inputBuff
 	_ = mem.WriteUint32Le(lengthAddr, uint32(units))
 }
 
+// grammarStackSize is the stack region (in bytes) allocated per
+// grammar for its __stack_pointer. wasi-sdk-built grammars decrement
+// the pointer on function entry; 256 KiB has been sufficient in
+// practice for every grammar we ship (kotlin/swift/c/cpp use the
+// most because their scanner.c does recursive descent).
+const grammarStackSize = 256 * 1024
+
 func (w *wasmRuntime) loadLanguage(ctx context.Context, rt wazero.Runtime, g Grammar) (*wasmLanguage, error) {
 	if lang := w.languages[g.Language]; lang != nil {
 		return lang, nil
@@ -284,8 +301,17 @@ func (w *wasmRuntime) loadLanguage(ctx context.Context, rt wazero.Runtime, g Gra
 		return nil, fmt.Errorf("grow tree-sitter table: %w", err)
 	}
 	tableBase := align(uint32(tableBaseOut[0]), 1<<meta.tableAlign)
+	// Allocate a stack region for the grammar's __stack_pointer. wasi-sdk
+	// builds expect a mutable i32 global initialized to the top of an
+	// 16-byte-aligned stack region; stack grows downward.
+	stackBaseOut, err := w.call(ctx, "calloc", uint64(grammarStackSize+16), 1)
+	if err != nil {
+		return nil, fmt.Errorf("allocate %s grammar stack: %w", g.Language, err)
+	}
+	stackBase := align(uint32(stackBaseOut[0]), 16)
+	stackTop := stackBase + grammarStackSize
 	bridgeName := fmt.Sprintf("g%02d", len(w.languages))
-	bridgeBytes := grammarBridgeModule(memBase, tableBase)
+	bridgeBytes := grammarBridgeModule(memBase, tableBase, stackTop)
 	if _, err := rt.InstantiateWithConfig(ctx, bridgeBytes, wazero.NewModuleConfig().WithName(bridgeName).WithStartFunctions()); err != nil {
 		return nil, fmt.Errorf("instantiate %s grammar import bridge: %w", g.Language, err)
 	}
@@ -922,9 +948,14 @@ func grammarImportModule(name, bridgeName string) string {
 	switch name {
 	case "malloc", "free", "calloc", "realloc", "memcpy":
 		return "tree-sitter-core"
-	case "iswspace", "iswalpha", "iswalnum", "iswdigit", "iswlower", "iswupper", "iswxdigit", "towlower", "towupper":
+	case "iswspace", "iswalpha", "iswalnum", "iswdigit", "iswlower", "iswupper", "iswxdigit", "towlower", "towupper",
+		"abort", "__assert_fail":
 		return "deepsec_libc"
 	default:
+		// __stack_pointer and any other env globals stay routed to
+		// the per-grammar bridge module, where the bridge exports a
+		// mutable global initialized to the top of an allocated
+		// stack region.
 		return bridgeName
 	}
 }
@@ -1006,12 +1037,12 @@ var bridgeFuncImports = []bridgeFuncImport{
 	{module: "deepsec_libc", name: "towupper", typeIndex: bridgeTypeI32ToI32},
 }
 
-func grammarBridgeModule(memoryBase, tableBase uint32) []byte {
+func grammarBridgeModule(memoryBase, tableBase, stackTop uint32) []byte {
 	var body bytes.Buffer
 	body.Write([]byte("\x00asm\x01\x00\x00\x00"))
 	writeSection(&body, 1, bridgeTypeSection())
 	writeSection(&body, 2, bridgeImportSection())
-	writeSection(&body, 6, bridgeGlobalSection(memoryBase, tableBase))
+	writeSection(&body, 6, bridgeGlobalSection(memoryBase, tableBase, stackTop))
 	writeSection(&body, 7, bridgeExportSection())
 	return body.Bytes()
 }
@@ -1046,21 +1077,23 @@ func bridgeImportSection() []byte {
 	return b.Bytes()
 }
 
-func bridgeGlobalSection(memoryBase, tableBase uint32) []byte {
+func bridgeGlobalSection(memoryBase, tableBase, stackTop uint32) []byte {
 	var b bytes.Buffer
-	writeULEB(&b, 2)
-	writeConstGlobal(&b, memoryBase)
-	writeConstGlobal(&b, tableBase)
+	writeULEB(&b, 3)
+	writeConstGlobal(&b, memoryBase) // index 0: __memory_base (immutable)
+	writeConstGlobal(&b, tableBase)  // index 1: __table_base (immutable)
+	writeMutableGlobal(&b, stackTop) // index 2: __stack_pointer (mutable)
 	return b.Bytes()
 }
 
 func bridgeExportSection() []byte {
 	var b bytes.Buffer
-	writeULEB(&b, uint32(4+len(bridgeFuncImports)))
+	writeULEB(&b, uint32(5+len(bridgeFuncImports)))
 	writeExport(&b, "memory", 0x02, 0)
 	writeExport(&b, "__indirect_function_table", 0x01, 0)
 	writeExport(&b, "__memory_base", 0x03, 0)
 	writeExport(&b, "__table_base", 0x03, 1)
+	writeExport(&b, "__stack_pointer", 0x03, 2)
 	for idx, fn := range bridgeFuncImports {
 		writeExport(&b, fn.name, 0x00, uint32(idx))
 	}
@@ -1100,6 +1133,14 @@ func writeFuncType(b *bytes.Buffer, params, results []byte) {
 func writeConstGlobal(b *bytes.Buffer, value uint32) {
 	b.WriteByte(0x7f) // i32
 	b.WriteByte(0x00) // immutable
+	b.WriteByte(0x41) // i32.const
+	writeSLEB32(b, int32(value))
+	b.WriteByte(0x0b)
+}
+
+func writeMutableGlobal(b *bytes.Buffer, value uint32) {
+	b.WriteByte(0x7f) // i32
+	b.WriteByte(0x01) // mutable
 	b.WriteByte(0x41) // i32.const
 	writeSLEB32(b, int32(value))
 	b.WriteByte(0x0b)

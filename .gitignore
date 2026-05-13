@@ -27,6 +27,7 @@ dist/
 /PROC-RESULTS.md
 /REPEAT-RESULTS.md
 /REVIEW-RESULTS.md
+/TOOLS-RESULTS.md
 
 # Agent decisions log is per-machine (records local autonomous
 # matcher patches). Production audit logs of the agent run elsewhere.

@@ -28,6 +28,9 @@ type InvestigateBatch struct {
 	PromptAppend string
 	TechTags     []string
 	SlugNotes    []string // slugs present in this batch (used to pick prompt hints)
+	ToolsEnabled bool
+	MaxTurns     int
+	MaxCostUSD   float64
 }
 
 // ProducedFinding is the model's output for one candidate site.

@@ -26,8 +26,7 @@ matcher pack reflects continued investment toward parity:
 |---|---|
 | **Strong** (20+ matchers) | TypeScript/JSX, Python, Go, Ruby |
 | **Mid** (10–19) | Java, Rust |
-| **Weak** (5–9) | PHP, C#, Swift, Kotlin |
-| **Sparse** (≤ 2) | C, C++ |
+| **Weak** (5–9) | PHP, C#, Swift, Kotlin, C, C++ |
 
 Coverage gaps are bugs. File an issue tagged with the language if you
 hit one, or send a matcher-pack PR. The AST roadmap

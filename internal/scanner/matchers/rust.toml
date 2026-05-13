@@ -60,3 +60,89 @@ patterns = [
   "(?i)\\.arg\\s*\\(\\s*&?req\\.",
 ]
 label = "shell-style command built from input"
+
+[[matcher]]
+slug = "rust-mem-transmute"
+description = "std::mem::transmute — unsoundness vector"
+noise_tier = "normal"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "(?i)\\bmem::transmute\\b",
+  "(?i)\\bstd::mem::transmute\\b",
+]
+snippet_after = 8
+label = "mem::transmute call"
+
+[[matcher]]
+slug = "rust-unsafe-raw-pointer-deref"
+description = "Raw pointer dereference inside unsafe block"
+noise_tier = "normal"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "(?i)\\bunsafe\\s*\\{[^}]*\\*\\s*[a-z_][a-z0-9_]*",
+]
+snippet_after = 6
+label = "raw pointer deref under unsafe"
+
+[[matcher]]
+slug = "rust-sqlx-query"
+description = "sqlx::query with format! — SQL injection vector"
+noise_tier = "normal"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "(?i)sqlx::query(?:_as)?\\s*\\(\\s*&?format!",
+  "(?i)sqlx::query(?:_as)?\\s*\\(\\s*&?String::from",
+]
+require_content = ["sqlx"]
+snippet_after = 6
+label = "sqlx query built via format!()"
+
+[[matcher]]
+slug = "rust-process-command-from-input"
+description = "Command::new called with a non-literal argument"
+noise_tier = "normal"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "(?i)Command::new\\s*\\(\\s*&?[a-z_][a-z0-9_]*\\s*\\)",
+  "(?i)Command::new\\s*\\(\\s*&?req\\.",
+]
+snippet_after = 6
+label = "Command::new(<var>) — argv from input?"
+
+[[matcher]]
+slug = "rust-deserialize-from-str-untrusted"
+description = "serde_json / bincode deserialize — confirm untrusted source"
+noise_tier = "noisy"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "(?i)serde_json::from_(?:str|slice|reader)\\s*\\(",
+  "(?i)bincode::deserialize(?:_from)?\\s*\\(",
+]
+require_content = ["serde_json", "bincode"]
+snippet_after = 6
+label = "deserialize from input"
+
+[[matcher]]
+slug = "rust-axum-no-auth-extractor"
+description = "Axum state-changing route without an auth extractor in the handler signature"
+noise_tier = "noisy"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "(?i)\\.route\\s*\\(\\s*\"/[^\"]*\"\\s*,\\s*(?:post|put|delete|patch)\\s*\\(",
+]
+require_content = ["axum"]
+requires = { tech = ["axum"] }
+snippet_after = 6
+label = "Axum state-changing route — check handler for auth"
+
+[[matcher]]
+slug = "rust-panic-on-untrusted"
+description = ".unwrap() / .expect() on syscalls or input — possible DoS"
+noise_tier = "noisy"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "(?i)\\.parse\\s*\\(\\s*\\)\\s*\\.unwrap\\s*\\(\\s*\\)",
+  "(?i)from_str\\s*\\([^)]*\\)\\s*\\.unwrap\\s*\\(\\s*\\)",
+]
+snippet_after = 4
+label = "unwrap on parsed input"

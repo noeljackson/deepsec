@@ -31,8 +31,8 @@ matcher pack today reflects where we started, not where we're going:
 Coverage gaps are bugs. File an issue tagged with the language if you
 hit one, or send a matcher-pack PR. The AST roadmap
 ([RFC 001](docs/rfcs/001-ast-matching.md)) lands Go + TS + Python as
-Phase 1, Rust + Java as required Phase 2, with Kotlin / Swift / C / C++
-as funded Phase 3 — not "someday".
+Phase 1; **Rust + Java are now shipped (Phase 2)**, with Kotlin /
+Swift / C / C++ as funded Phase 3 — not "someday".
 
 ## Install
 

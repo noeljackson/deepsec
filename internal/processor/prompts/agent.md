@@ -20,7 +20,7 @@ Schema:
   "require_content": "",
   "file_patterns": [],
   "requires_tech": [],
-  "ast_language": "go|typescript|tsx|javascript|jsx|python",
+  "ast_language": "go|typescript|tsx|javascript|jsx|python|rust|java",
   "ast_query": "",
   "ast_prefilter": "",
   "rationale": "",
@@ -33,7 +33,7 @@ AST pattern guidance:
 - `ast_query` must be a valid tree-sitter S-expression query for `ast_language`, with at least one capture (e.g. `@match`).
 - `ast_prefilter` is optional: a regex applied to file contents *before* parsing. Skip the parse on files that obviously don't match. Use it for slugs whose pattern depends on a rare identifier (e.g. `dangerouslySetInnerHTML`).
 - Prefer the smallest query that captures the structural shape of the true positive. Don't try to encode dataflow in a single query — defer to `needs-engine-feature` when an AST pattern alone can't distinguish TP from FP.
-- Supported languages: `go`, `typescript`, `tsx`, `javascript`, `jsx`, `python`.
+- Supported languages: `go`, `typescript`, `tsx`, `javascript`, `jsx`, `python`, `rust`, `java`.
 
 Rules:
 

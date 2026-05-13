@@ -16,6 +16,8 @@ const (
 	LanguageTypeScript Language = "typescript"
 	LanguageTSX        Language = "tsx"
 	LanguagePython     Language = "python"
+	LanguageRust       Language = "rust"
+	LanguageJava       Language = "java"
 )
 
 var supported = map[Language]struct{}{
@@ -25,6 +27,8 @@ var supported = map[Language]struct{}{
 	LanguageTypeScript: {},
 	LanguageTSX:        {},
 	LanguagePython:     {},
+	LanguageRust:       {},
+	LanguageJava:       {},
 }
 
 func IsSupported(lang Language) bool {
@@ -40,6 +44,8 @@ func SupportedLanguages() []Language {
 		LanguageTypeScript,
 		LanguageTSX,
 		LanguagePython,
+		LanguageRust,
+		LanguageJava,
 	}
 }
 
@@ -57,6 +63,10 @@ func LanguageForPath(path string) Language {
 		return LanguageJSX
 	case ".py":
 		return LanguagePython
+	case ".rs":
+		return LanguageRust
+	case ".java":
+		return LanguageJava
 	default:
 		return ""
 	}

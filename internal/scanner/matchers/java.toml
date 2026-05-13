@@ -1,0 +1,53 @@
+[[matcher]]
+slug = "java-jdbc-sqli"
+description = "JDBC executeQuery/executeUpdate with concatenated input"
+noise_tier = "normal"
+file_patterns = ["**/*.java"]
+patterns = [
+  "(?i)\\.(executeQuery|executeUpdate|execute|prepareStatement)\\s*\\(",
+]
+require_content = ["java.sql", "javax.sql", "Statement", "PreparedStatement"]
+snippet_after = 8
+label = "JDBC query built from concatenated input"
+[[matcher.ast_patterns]]
+language = "java"
+label = "JDBC executeQuery with binary concat"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["\\b(executeQuery|executeUpdate|execute|prepareStatement)\\s*\\("]
+query = '''
+(
+  method_invocation
+    name: (identifier) @method
+    arguments: (argument_list
+      (binary_expression) @arg)
+) @call
+(#match? @method "^(executeQuery|executeUpdate|execute|prepareStatement)$")
+'''
+
+[[matcher]]
+slug = "java-runtime-exec"
+description = "Runtime.exec / ProcessBuilder with dynamic argv"
+noise_tier = "normal"
+file_patterns = ["**/*.java"]
+patterns = [
+  "(?i)Runtime\\.getRuntime\\s*\\(\\s*\\)\\s*\\.exec\\s*\\(",
+  "(?i)new\\s+ProcessBuilder\\s*\\(",
+]
+snippet_after = 8
+label = "shell command from input"
+[[matcher.ast_patterns]]
+language = "java"
+label = "Runtime.exec with binary concat"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["Runtime\\.getRuntime", "ProcessBuilder"]
+query = '''
+(
+  method_invocation
+    name: (identifier) @method
+    arguments: (argument_list
+      (binary_expression) @arg)
+) @call
+(#eq? @method "exec")
+'''

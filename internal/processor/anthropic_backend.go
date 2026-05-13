@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/noeljackson/deepsec/internal/core"
 	"github.com/noeljackson/deepsec/internal/processor/providers"
+	agenttools "github.com/noeljackson/deepsec/internal/processor/tools"
 )
 
 // AnthropicBackend talks to Anthropic's Messages API via the official
@@ -30,8 +32,12 @@ func NewAnthropicBackend(profile *providers.Profile, model, apiKey string) *Anth
 	for k, v := range profile.Headers {
 		opts = append(opts, option.WithHeader(k, v))
 	}
-	if profile.BaseURL != "" {
-		opts = append(opts, option.WithBaseURL(profile.BaseURL))
+	baseURL := profile.BaseURL
+	if baseURL == "" {
+		baseURL = os.Getenv("ANTHROPIC_BASE_URL")
+	}
+	if baseURL != "" {
+		opts = append(opts, option.WithBaseURL(baseURL))
 	}
 	return &AnthropicBackend{
 		profile: profile,
@@ -121,6 +127,13 @@ func (b *AnthropicBackend) ProposePatchJSON(ctx context.Context, system, user st
 // system prompt and a `report_findings` tool the model invokes to
 // return structured output.
 func (b *AnthropicBackend) Investigate(ctx context.Context, batch *InvestigateBatch) (*InvestigateOutput, error) {
+	if batch.ToolsEnabled {
+		return runAgenticInvestigation(ctx, batch, b, toolLoopOptions{
+			MaxTurns:   batch.MaxTurns,
+			MaxCostUSD: batch.MaxCostUSD,
+		})
+	}
+
 	system, user := AssemblePrompt(batch)
 
 	systemBlocks := []anthropic.TextBlockParam{
@@ -211,6 +224,91 @@ func (b *AnthropicBackend) Investigate(ctx context.Context, batch *InvestigateBa
 		}
 	}
 	return emptyOutput(batch, usage, durationMs), nil
+}
+
+func (b *AnthropicBackend) SendToolLoop(ctx context.Context, system, user string, turns []toolLoopTurn, localTools []agenttools.Tool) (toolLoopResponse, error) {
+	systemBlocks := []anthropic.TextBlockParam{{
+		Text:         system,
+		CacheControl: anthropic.CacheControlEphemeralParam{Type: "ephemeral"},
+	}}
+	tools := []anthropic.ToolUnionParam{{OfTool: &anthropic.ToolParam{
+		Name:        reportFindingsToolName,
+		Description: anthropic.String("Report each genuine vulnerability found. Omit false positives."),
+		InputSchema: anthropic.ToolInputSchemaParam{
+			Type:       "object",
+			Properties: schemaPropertiesFor(FindingsSchema),
+			Required:   []string{"findings"},
+		},
+	}}}
+	for _, local := range localTools {
+		tool := anthropic.ToolParam{
+			Name:        local.Name(),
+			Description: anthropic.String("Read-only repository investigation tool."),
+			InputSchema: anthropic.ToolInputSchemaParam{
+				Type:       "object",
+				Properties: schemaPropertiesFor(local.Schema()),
+				Required:   schemaRequiredFor(local.Schema()),
+			},
+		}
+		tools = append(tools, anthropic.ToolUnionParam{OfTool: &tool})
+	}
+
+	messages := []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock(user))}
+	for _, turn := range turns {
+		assistantBlocks := make([]anthropic.ContentBlockParamUnion, 0, len(turn.Calls))
+		for _, call := range turn.Calls {
+			assistantBlocks = append(assistantBlocks, anthropic.NewToolUseBlock(call.ID, rawJSONAsAny(call.Args), call.Name))
+		}
+		messages = append(messages, anthropic.NewAssistantMessage(assistantBlocks...))
+		resultBlocks := make([]anthropic.ContentBlockParamUnion, 0, len(turn.Results))
+		for _, result := range turn.Results {
+			resultBlocks = append(resultBlocks, anthropic.NewToolResultBlock(result.Call.ID, result.Content, result.IsError))
+		}
+		messages = append(messages, anthropic.NewUserMessage(resultBlocks...))
+	}
+
+	params := anthropic.MessageNewParams{
+		Model:     anthropic.Model(b.model),
+		MaxTokens: 8192,
+		System:    systemBlocks,
+		Messages:  messages,
+		Tools:     tools,
+		ToolChoice: anthropic.ToolChoiceUnionParam{
+			OfAuto: &anthropic.ToolChoiceAutoParam{DisableParallelToolUse: anthropic.Bool(true)},
+		},
+	}
+	b.applySettings(&params)
+	resp, err := b.client.Messages.New(ctx, params)
+	if err != nil {
+		if isAnthropicQuotaErr(err) {
+			return toolLoopResponse{}, &QuotaExhaustedError{Provider: b.profile.Name, Detail: err.Error()}
+		}
+		return toolLoopResponse{}, fmt.Errorf("anthropic: %w", err)
+	}
+	out := toolLoopResponse{
+		Usage: core.Usage{
+			InputTokens:              uint64(resp.Usage.InputTokens),
+			OutputTokens:             uint64(resp.Usage.OutputTokens),
+			CacheReadInputTokens:     uint64(resp.Usage.CacheReadInputTokens),
+			CacheCreationInputTokens: uint64(resp.Usage.CacheCreationInputTokens),
+		},
+	}
+	out.Cost = b.profile.Cost(b.model, out.Usage)
+	for _, block := range resp.Content {
+		if tu := block.AsToolUse(); tu.Name != "" {
+			raw := json.RawMessage(tu.Input)
+			if tu.Name == reportFindingsToolName {
+				out.Report = raw
+				return out, nil
+			}
+			out.Calls = append(out.Calls, toolLoopCall{ID: tu.ID, Name: tu.Name, Args: raw})
+			continue
+		}
+		if tb := block.AsText(); tb.Text != "" {
+			out.Text += tb.Text
+		}
+	}
+	return out, nil
 }
 
 func (b *AnthropicBackend) Revalidate(ctx context.Context, in *RevalidateInput) ([]RevalidatedFinding, core.Usage, uint64, error) {
@@ -340,6 +438,22 @@ func schemaPropertiesFor(raw json.RawMessage) map[string]any {
 	}
 	_ = json.Unmarshal(raw, &schema)
 	return schema.Properties
+}
+
+func schemaRequiredFor(raw json.RawMessage) []string {
+	var schema struct {
+		Required []string `json:"required"`
+	}
+	_ = json.Unmarshal(raw, &schema)
+	return schema.Required
+}
+
+func rawJSONAsAny(raw json.RawMessage) any {
+	var out any
+	if err := json.Unmarshal(raw, &out); err != nil {
+		return map[string]any{}
+	}
+	return out
 }
 
 func isAnthropicQuotaErr(err error) bool {

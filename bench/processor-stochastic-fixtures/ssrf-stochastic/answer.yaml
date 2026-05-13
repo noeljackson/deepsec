@@ -1,0 +1,8 @@
+findings:
+  - id: ssrf-stochastic-001
+    file: src/fetch.ts
+    vulnSlugs: [ssrf, server-side-request-forgery]
+    severity: HIGH
+    location: { startLine: 2, endLine: 2, tolerance: 1 }
+    processor:
+      mustReportFinding: true

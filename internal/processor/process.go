@@ -35,6 +35,8 @@ type ProcessOptions struct {
 	DirectSource      string
 	ReinvestigateMark int // 0 = no marker
 	MaxCostUSD        float64
+	ToolsEnabled      bool
+	MaxTurns          int
 	Detected          *scanner.DetectedTech
 	// ModelSettings captures the pinned inference knobs (temperature,
 	// top-p, seed) for this run. Persisted in
@@ -139,6 +141,9 @@ func Process(ctx context.Context, opts ProcessOptions) (*ProcessOutcome, error) 
 			paths[j] = r.FilePath
 		}
 		ibatch := buildInvestigateBatch(opts.ProjectRoot, batch, techTags, opts.ProjectInfo, opts.PromptAppend)
+		ibatch.ToolsEnabled = opts.ToolsEnabled
+		ibatch.MaxTurns = opts.MaxTurns
+		ibatch.MaxCostUSD = opts.MaxCostUSD
 		g.Go(func() error {
 			if err := sem.Acquire(ggCtx, 1); err != nil {
 				// Context cancelled before we got a permit — treat as

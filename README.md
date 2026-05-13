@@ -71,6 +71,9 @@ deepsec scan --project-id myproj
 export ANTHROPIC_API_KEY=sk-ant-...
 deepsec process --project-id myproj --agent anthropic --concurrency 4
 
+# optional: let the investigator read related files before reporting
+deepsec process --project-id myproj --agent anthropic --tools --max-turns 8
+
 # render a human-readable report
 deepsec report --project-id myproj
 ```
@@ -197,6 +200,9 @@ deepsec pr-comment --project-id myproj --output pr-comment.md --skip-empty
 The `--diff <ref>` flag bounds the work to files changed against the
 given git ref. `--temperature 0 --seed N` pins the LLM sampler so
 repeated PR runs produce the same findings against the same code.
+`process --tools` enables the multi-turn read-only investigator tools
+documented in [`docs/agentic-tools.md`](docs/agentic-tools.md); leave it
+off for the lowest-latency CI path.
 `pr-comment` filters to findings whose `producedByRunId` matches the
 most recent process run.
 

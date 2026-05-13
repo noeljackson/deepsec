@@ -10,6 +10,7 @@ import (
 
 	"github.com/noeljackson/deepsec/internal/core"
 	"github.com/noeljackson/deepsec/internal/processor/providers"
+	agenttools "github.com/noeljackson/deepsec/internal/processor/tools"
 	"github.com/openai/openai-go/v3"
 	"github.com/openai/openai-go/v3/option"
 	"github.com/openai/openai-go/v3/shared"
@@ -93,6 +94,16 @@ func (b *OpenAICompatibleBackend) ProposePatchJSON(ctx context.Context, system, 
 }
 
 func (b *OpenAICompatibleBackend) Investigate(ctx context.Context, batch *InvestigateBatch) (*InvestigateOutput, error) {
+	if batch.ToolsEnabled {
+		if !b.profile.Caps.ToolUse {
+			return nil, fmt.Errorf("%s: --tools requires provider tool_use capability", b.profile.Name)
+		}
+		return runAgenticInvestigation(ctx, batch, b, toolLoopOptions{
+			MaxTurns:   batch.MaxTurns,
+			MaxCostUSD: batch.MaxCostUSD,
+		})
+	}
+
 	system, user := AssemblePrompt(batch)
 	start := time.Now()
 
@@ -136,6 +147,71 @@ func (b *OpenAICompatibleBackend) Investigate(ctx context.Context, batch *Invest
 	}
 	out := buildInvestigateOutput(batch, env, usage, dur)
 	out.CostUSD = b.profile.Cost(b.model, usage)
+	return out, nil
+}
+
+func (b *OpenAICompatibleBackend) SendToolLoop(ctx context.Context, system, user string, turns []toolLoopTurn, localTools []agenttools.Tool) (toolLoopResponse, error) {
+	messages := []openai.ChatCompletionMessageParamUnion{
+		openai.SystemMessage(system),
+		openai.UserMessage(user),
+	}
+	for _, turn := range turns {
+		asst := openai.ChatCompletionAssistantMessageParam{}
+		for _, call := range turn.Calls {
+			asst.ToolCalls = append(asst.ToolCalls, openai.ChatCompletionMessageToolCallUnionParam{
+				OfFunction: &openai.ChatCompletionMessageFunctionToolCallParam{
+					ID: call.ID,
+					Function: openai.ChatCompletionMessageFunctionToolCallFunctionParam{
+						Name:      call.Name,
+						Arguments: string(call.Args),
+					},
+				},
+			})
+		}
+		messages = append(messages, openai.ChatCompletionMessageParamUnion{OfAssistant: &asst})
+		for _, result := range turn.Results {
+			messages = append(messages, openai.ToolMessage(result.Content, result.Call.ID))
+		}
+	}
+
+	params := openai.ChatCompletionNewParams{
+		Model:    b.model,
+		Messages: messages,
+		ToolChoice: openai.ChatCompletionToolChoiceOptionUnionParam{
+			OfAuto: openai.String(string(openai.ChatCompletionToolChoiceOptionAutoAuto)),
+		},
+		ParallelToolCalls: openai.Bool(false),
+	}
+	params.Tools = append(params.Tools, openaiTool(reportFindingsToolName, "Report each genuine vulnerability found. Omit false positives.", FindingsSchema, b.profile.Caps.StructuredOutput == providers.OutputJSONSchema))
+	for _, local := range localTools {
+		params.Tools = append(params.Tools, openaiTool(local.Name(), "Read-only repository investigation tool.", local.Schema(), false))
+	}
+	b.applySettings(&params)
+	resp, err := b.client.Chat.Completions.New(ctx, params)
+	if err != nil {
+		if isOpenAIQuotaErr(err) {
+			return toolLoopResponse{}, &QuotaExhaustedError{Provider: b.profile.Name, Detail: err.Error()}
+		}
+		return toolLoopResponse{}, fmt.Errorf("%s: %w", b.profile.Name, err)
+	}
+	out := toolLoopResponse{Usage: openaiUsage(resp)}
+	out.Cost = b.profile.Cost(b.model, out.Usage)
+	if len(resp.Choices) == 0 {
+		return out, nil
+	}
+	msg := resp.Choices[0].Message
+	out.Text = msg.Content
+	for _, tc := range msg.ToolCalls {
+		if tc.Type != "function" {
+			continue
+		}
+		args := json.RawMessage(tc.Function.Arguments)
+		if tc.Function.Name == reportFindingsToolName {
+			out.Report = args
+			return out, nil
+		}
+		out.Calls = append(out.Calls, toolLoopCall{ID: tc.ID, Name: tc.Function.Name, Args: args})
+	}
 	return out, nil
 }
 
@@ -230,16 +306,7 @@ func (b *OpenAICompatibleBackend) applyStructuredOutputForTriage(p *openai.ChatC
 //	otherwise            → leave it as plain text; the caller falls back to ExtractJSON
 func (b *OpenAICompatibleBackend) applySchemaFor(p *openai.ChatCompletionNewParams, toolName, desc string, schema json.RawMessage) {
 	if b.profile.Caps.ToolUse {
-		var schemaMap map[string]any
-		_ = json.Unmarshal(schema, &schemaMap)
-		p.Tools = []openai.ChatCompletionToolUnionParam{
-			openai.ChatCompletionFunctionTool(shared.FunctionDefinitionParam{
-				Name:        toolName,
-				Description: openai.String(desc),
-				Parameters:  schemaMap,
-				Strict:      openai.Bool(b.profile.Caps.StructuredOutput == providers.OutputJSONSchema),
-			}),
-		}
+		p.Tools = []openai.ChatCompletionToolUnionParam{openaiTool(toolName, desc, schema, b.profile.Caps.StructuredOutput == providers.OutputJSONSchema)}
 		p.ToolChoice = openai.ToolChoiceOptionFunctionToolChoice(
 			openai.ChatCompletionNamedToolChoiceFunctionParam{Name: toolName},
 		)
@@ -263,6 +330,17 @@ func (b *OpenAICompatibleBackend) applySchemaFor(p *openai.ChatCompletionNewPara
 			OfJSONObject: &shared.ResponseFormatJSONObjectParam{},
 		}
 	}
+}
+
+func openaiTool(name, desc string, schema json.RawMessage, strict bool) openai.ChatCompletionToolUnionParam {
+	var schemaMap map[string]any
+	_ = json.Unmarshal(schema, &schemaMap)
+	return openai.ChatCompletionFunctionTool(shared.FunctionDefinitionParam{
+		Name:        name,
+		Description: openai.String(desc),
+		Parameters:  schemaMap,
+		Strict:      openai.Bool(strict),
+	})
 }
 
 // extractJSONInvestigate pulls the JSON envelope out of the response,

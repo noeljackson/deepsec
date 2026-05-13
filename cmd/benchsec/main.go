@@ -18,6 +18,8 @@ func main() {
 	var compareSeed uint64
 	var compareBootstrap int
 	var explosion float64
+	var reviewSlug, reviewCommit string
+	var reviewEdit, reviewEmitFPs, reviewEmitFNs, reviewRescore bool
 	root := &cobra.Command{Use: "benchsec", Short: "deepsec benchmark harness"}
 	score := &cobra.Command{
 		Use:   "score [task-id...]",
@@ -129,7 +131,35 @@ func main() {
 	lint.Flags().StringVar(&matcherDir, "matchers", "internal/scanner/matchers", "matcher TOML directory")
 	lint.Flags().StringVar(&format, "format", "tsv", "output format: tsv or json")
 
-	root.AddCommand(score, processScore, processCompare, lint)
+	review := &cobra.Command{
+		Use:   "review --slug <slug>",
+		Short: "review per-slug scanner false positives and false negatives",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return bench.RunReview(bench.ReviewOptions{
+				Slug:          reviewSlug,
+				TasksDir:      tasksDir,
+				OutDir:        outDir,
+				Edit:          reviewEdit,
+				CommitMessage: reviewCommit,
+				EmitFPs:       reviewEmitFPs,
+				EmitFNs:       reviewEmitFNs,
+				Rescore:       reviewRescore,
+			})
+		},
+	}
+	review.Flags().StringVar(&reviewSlug, "slug", "", "matcher slug to review")
+	review.Flags().BoolVar(&reviewEdit, "edit", false, "edit the bundled matcher TOML and rescore")
+	review.Flags().StringVar(&reviewCommit, "commit", "", "commit an accepted matcher edit with this message")
+	review.Flags().BoolVar(&reviewEmitFPs, "emit-fps", false, "emit false positives as JSON")
+	review.Flags().BoolVar(&reviewEmitFNs, "emit-fns", false, "emit false negatives as JSON")
+	review.Flags().BoolVar(&reviewRescore, "rescore", false, "rescore the slug without editing")
+	review.Flags().StringVar(&tasksDir, "tasks", "bench/tasks", "benchmark task directory")
+	review.Flags().StringVar(&outDir, "out", "bench/out", "report output root")
+	if err := review.MarkFlagRequired("slug"); err != nil {
+		panic(err)
+	}
+
+	root.AddCommand(score, processScore, processCompare, lint, review)
 	if err := root.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

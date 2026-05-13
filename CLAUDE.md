@@ -4,6 +4,26 @@ Pointer file for Claude Code working in this repo. User-facing docs are
 in [README.md](./README.md); contributor docs in
 [CONTRIBUTING.md](./CONTRIBUTING.md). Read those first.
 
+## Project invariant: deepsec is a universal scanner
+
+deepsec must work equally well on every language a user gives it. The
+bundled matcher pack today is skewed toward web-stack languages
+(TypeScript / Python / Go / Ruby strong; Java / Rust / PHP / C# weak;
+C / C++ / Swift / Kotlin effectively absent). That skew is a bug, not
+a feature.
+
+Any change that further entrenches the web-stack bias gets pushed back
+on. Any matcher-pack PR should:
+
+- prefer adding matchers for under-covered languages, or
+- include an explicit waiver in the PR description if it's web-stack-only,
+- never write user-facing docs in a way that implies web-stack is the
+  product.
+
+The AST work (RFC 001) lands Go + TypeScript + Python together as
+Phase 1 specifically to avoid amplifying this skew. Rust + Java are
+mandatory Phase 2; Kotlin + Swift + C + C++ are Phase 3, not "someday".
+
 ## Repo shape
 
 This is a Go module.

@@ -1155,37 +1155,108 @@ Bundled matcher query compile errors are different.
 Those should fail startup because the pack is broken.
 
 ## 7. Language Rollout Order
-Decision: Go first, but through tree-sitter WASM rather than
-`go/parser`.
-The order is:
-1. Go.
-2. TypeScript, TSX, JavaScript, JSX.
-3. Python.
-4. Rust.
-5. C and C++ only after a separate scoping issue.
 
+### 7.0 Principle: equal-quality multi-language scanning
 
-### Phase 1: Go
-Go goes first because:
-- It is the implementation language of deepsec.
-- The repo already has Go fixtures.
-- The current benchmark has Go route false positives.
-- `go-http-handler` hit `needs-engine-feature`.
-- Go syntax is comparatively stable.
-- Go imports and selectors make good first AST query examples.
-Minimum AST matcher set:
+deepsec's product goal is to be a security scanner that works well on
+*any* language a user might give it. The bundled matcher pack is
+currently skewed toward web-stack languages:
+
+| Tier | Languages |
+|---|---|
+| Strong (20+ matchers) | TypeScript/JSX (46), Python (39), Go (28), Ruby (23) |
+| Weak (5–10 matchers) | Java (9), Rust (7), PHP (7), C# (5) |
+| Effectively absent | C (1), C++ (1), Swift (0), Kotlin (0) |
+
+A Go-first or web-first AST rollout reinforces that skew. This RFC
+therefore commits to **multi-language from day one of the
+implementation**. Phase 1 must land Go *and* TypeScript *and* Python
+together, not Go followed by everything else. The implementation
+bake-off's acceptance criteria require all three.
+
+Rust, Java, and the underserved languages (Swift, Kotlin, C, C++, C#,
+PHP) get explicit Phase 2 slots, not "later, in a separate scoping
+issue."
+
+### 7.1 Phase 1 (the initial AST PR)
+
+**Three languages, simultaneous**: Go, TypeScript / TSX, Python.
+
+Each language must land with:
+- a working WASM grammar embed,
+- at least one AST matcher (rewriting an existing noisy regex matcher),
+- p50/p95 budget compliance from §6,
+- coverage tests demonstrating the new AST matcher silences a known FP
+  on the existing fixtures.
+
+Phase 1 success metrics (all three languages combined):
+- Remove all 4 current `go-http-handler` FPs on `bench/tasks/go-vulnerable-cli`.
+- Remove all 6 current `flask-route` FPs on `bench/tasks/py-vulnerable-flask`.
+- Remove the current TS `sql-injection-string-concat` FP on the
+  exec-helper test fixture.
+- Preserve recall on every TP across the three tasks.
+- p95 ≤ 5 ms (Go), ≤ 10 ms (TSX), ≤ 8 ms (Python) on 500 LOC files
+  with 10 active AST patterns.
+
+### 7.2 Phase 2 (immediate follow-up, separate PRs)
+
+**Rust** and **Java** are required Phase 2 — not optional, not deferred.
+Both have mature tree-sitter grammars (`tree-sitter-rust`,
+`tree-sitter-java`) and both are currently under-served (7 and 9
+matchers respectively). Phase 2 must land:
+
+- Rust grammar embed + ≥1 AST matcher (start with
+  `rust-unsafe-block` narrowed to function-body contexts).
+- Java grammar embed + ≥1 AST matcher (start with the JDBC SQL-injection
+  pattern; `java-jdbc-sqli` doesn't exist yet — Phase 2 creates it).
+
+### 7.3 Phase 3 (catching up on the dark languages)
+
+The four languages currently at zero or one matcher: **C, C++, Swift,
+Kotlin**. Each gets its own scoping issue; the *priority order* is
+Kotlin → Swift → C → C++. Reasoning:
+
+- **Kotlin and Swift first**: mobile apps and Android server code are
+  high-stakes targets that get scanned by everyone except us right now.
+  Both have stable tree-sitter grammars.
+- **C and C++ later**: kernel-class CWEs (use-after-free, integer
+  overflow, missing capability checks) deserve a dedicated thinking
+  pass on matcher format and dataflow needs. The Xen audit
+  (`docs/xen-audit.md`, when it lands) will inform what's actually
+  needed before we commit to C grammars.
+
+### 7.4 Phase 4 (the long tail)
+
+PHP, C#, Ruby (existing matchers exist; extend to AST), Lua, Solidity,
+Terraform/HCL, YAML manifests. Each gets a tracking issue; ordering
+follows user demand.
+
+### 7.5 Anti-pattern: matcher pack drifting back to web-stack-only
+
+Every Phase 1+ matcher PR must include either:
+1. an AST matcher for a non-strong-tier language (Java/Rust/Kotlin/Swift/C/C++/C#), or
+2. an explicit waiver in the PR description citing why this PR is
+   web-stack-only.
+
+The matcher pack's "strong tier" should equalize over time, not
+further entrench.
+
+### 7.6 The original (now superseded) Go-first plan
+
+This RFC's earlier draft proposed Go as Phase 1 alone, with TS/JS as
+Phase 2, Python as Phase 3, Rust as Phase 4, C/C++ deferred. That
+plan was wrong because it amplified the existing web-stack bias. The
+current §7.1–§7.4 plan replaces it.
+
+### 7.7 (Legacy section, retained for design rationale)
+
+Phase 1 — Go AST matcher set (now part of §7.1's multi-language Phase 1):
+
 - `go-command-injection`.
 - `go-http-handler` with direct sink-in-handler shapes.
 - `go-ssrf`.
 - `go-sql-raw`.
 - `tls-skip-verification` for Go composite literals.
-Success metric:
-- Remove all 4 current `go-http-handler` false positives from
-  `bench/tasks/go-vulnerable-cli`.
-- Preserve recall for `go-cmd-001`, `go-path-001`, `go-crypto-001`, and
-  `go-ssrf-001`.
-- Do not increase total candidates on the Go task.
-- Keep AST-added p95 under 5 ms for 500 LOC Go files.
 
 
 ### Phase 2: TypeScript and JavaScript

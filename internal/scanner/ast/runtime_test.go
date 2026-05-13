@@ -381,6 +381,70 @@ func TestWazeroBridgeRunsJavaQuery(t *testing.T) {
 	}
 }
 
+func TestWazeroBridgeParsesKotlin(t *testing.T) {
+	rt, err := NewRuntime(context.Background(), DefaultGrammars())
+	if err != nil {
+		t.Fatalf("NewRuntime() error = %v", err)
+	}
+	defer rt.Close(context.Background())
+	tree, err := rt.Parse(context.Background(), LanguageKotlin, []byte("fun greet(name: String): String {\n    return \"hello $name\"\n}\n"), "Greet.kt")
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	defer tree.Close()
+	if got := tree.Root().Kind(); got == "ERROR" || got == "" {
+		t.Fatalf("Kotlin root kind = %q", got)
+	}
+}
+
+func TestWazeroBridgeParsesSwift(t *testing.T) {
+	rt, err := NewRuntime(context.Background(), DefaultGrammars())
+	if err != nil {
+		t.Fatalf("NewRuntime() error = %v", err)
+	}
+	defer rt.Close(context.Background())
+	tree, err := rt.Parse(context.Background(), LanguageSwift, []byte("func greet(name: String) -> String {\n    return \"hello \\(name)\"\n}\n"), "greet.swift")
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	defer tree.Close()
+	if got := tree.Root().Kind(); got == "ERROR" || got == "" {
+		t.Fatalf("Swift root kind = %q", got)
+	}
+}
+
+func TestWazeroBridgeParsesC(t *testing.T) {
+	rt, err := NewRuntime(context.Background(), DefaultGrammars())
+	if err != nil {
+		t.Fatalf("NewRuntime() error = %v", err)
+	}
+	defer rt.Close(context.Background())
+	tree, err := rt.Parse(context.Background(), LanguageC, []byte("#include <stdio.h>\nint main(int argc, char **argv) {\n    printf(\"hi\\n\");\n    return 0;\n}\n"), "main.c")
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	defer tree.Close()
+	if got := tree.Root().Kind(); got != "translation_unit" {
+		t.Fatalf("C root kind = %q, want translation_unit", got)
+	}
+}
+
+func TestWazeroBridgeParsesCpp(t *testing.T) {
+	rt, err := NewRuntime(context.Background(), DefaultGrammars())
+	if err != nil {
+		t.Fatalf("NewRuntime() error = %v", err)
+	}
+	defer rt.Close(context.Background())
+	tree, err := rt.Parse(context.Background(), LanguageCpp, []byte("#include <string>\nstd::string greet(const std::string& name) {\n    return \"hello \" + name;\n}\n"), "greet.cpp")
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	defer tree.Close()
+	if got := tree.Root().Kind(); got != "translation_unit" {
+		t.Fatalf("C++ root kind = %q, want translation_unit", got)
+	}
+}
+
 func TestWazeroBridgeFreesMemory(t *testing.T) {
 	rt, err := NewRuntime(context.Background(), DefaultGrammars())
 	if err != nil {

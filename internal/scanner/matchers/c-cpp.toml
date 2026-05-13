@@ -1,0 +1,135 @@
+# c-cpp.toml — C and C++ matchers.
+#
+# Per RFC 001 §7.3, kernel-class CWEs deserve their own thinking pass
+# that the Xen audit will inform. These are starting matchers for the
+# classics — unbounded strcpy, printf format-string, rand() for
+# security — that don't need that scoping work. Heavier dataflow
+# matchers (use-after-free, integer-overflow malloc) wait on the
+# audit + AST grammar pipeline.
+
+[[matcher]]
+slug = "c-unbounded-strcpy"
+description = "strcpy / strcat / gets / sprintf without bounds — classic stack overflow vectors"
+noise_tier = "normal"
+file_patterns = ["**/*.c", "**/*.h", "**/*.cc", "**/*.cpp", "**/*.cxx", "**/*.hpp"]
+patterns = [
+  "(?i)\\bstrcpy\\s*\\(",
+  "(?i)\\bstrcat\\s*\\(",
+  "(?i)\\bgets\\s*\\(",
+  "(?i)\\bsprintf\\s*\\(",
+]
+snippet_after = 4
+label = "unbounded string copy"
+
+[[matcher]]
+slug = "c-format-string-non-literal"
+description = "printf / fprintf / syslog with a non-literal format string"
+noise_tier = "normal"
+file_patterns = ["**/*.c", "**/*.h", "**/*.cc", "**/*.cpp", "**/*.cxx", "**/*.hpp"]
+patterns = [
+  "(?i)\\b(?:printf|fprintf|syslog|warn|err)\\s*\\(\\s*[a-z_][a-z0-9_]*\\s*\\)",
+  "(?i)\\bprintf\\s*\\(\\s*[a-z_][a-z0-9_]*\\s*,",
+]
+snippet_after = 4
+label = "format string from variable"
+
+[[matcher]]
+slug = "c-system-non-constant"
+description = "system() / popen() with non-literal argument — command injection vector"
+noise_tier = "normal"
+file_patterns = ["**/*.c", "**/*.h", "**/*.cc", "**/*.cpp", "**/*.cxx", "**/*.hpp"]
+patterns = [
+  "(?i)\\b(?:system|popen)\\s*\\(\\s*[a-z_][a-z0-9_]*\\s*\\)",
+  "(?i)\\b(?:system|popen)\\s*\\([^)]*\\+",
+]
+snippet_after = 4
+label = "system() with variable argument"
+
+[[matcher]]
+slug = "c-rand-for-security"
+description = "rand() / srand(time(...)) used in apparently security-sensitive context"
+noise_tier = "noisy"
+file_patterns = ["**/*.c", "**/*.h", "**/*.cc", "**/*.cpp", "**/*.cxx", "**/*.hpp"]
+patterns = [
+  "(?i)\\bsrand\\s*\\(\\s*time\\s*\\(",
+  "(?i)\\bsrand\\s*\\(\\s*\\(\\s*unsigned",
+  "(?i)\\brand\\s*\\(\\s*\\)\\s*%",
+]
+require_content = ["token", "nonce", "secret", "key", "password", "session", "salt", "csrf"]
+snippet_after = 4
+label = "rand() in a security-flavoured context"
+
+[[matcher]]
+slug = "c-toctou-access-then-open"
+description = "access() then fopen() — classic TOCTOU race"
+noise_tier = "normal"
+file_patterns = ["**/*.c", "**/*.h", "**/*.cc", "**/*.cpp", "**/*.cxx", "**/*.hpp"]
+patterns = [
+  "(?i)\\baccess\\s*\\(",
+  "(?i)\\bfopen\\s*\\(",
+]
+require_content = ["access", "fopen"]
+snippet_after = 8
+label = "access/fopen — TOCTOU pattern"
+
+[[matcher]]
+slug = "c-memcpy-untrusted-length"
+description = "memcpy / memmove with non-constant length — possible heap overflow"
+noise_tier = "noisy"
+file_patterns = ["**/*.c", "**/*.h", "**/*.cc", "**/*.cpp", "**/*.cxx", "**/*.hpp"]
+patterns = [
+  "(?i)\\b(?:memcpy|memmove|bcopy)\\s*\\([^,]+,[^,]+,\\s*(?:[a-z_][a-z0-9_]*->|[a-z_][a-z0-9_]*\\.)",
+]
+snippet_after = 6
+label = "memcpy with structure-derived length"
+
+# C++ specific
+
+[[matcher]]
+slug = "cpp-iostream-format"
+description = "ostream operator<< chains that may concatenate format chars from user input"
+noise_tier = "noisy"
+file_patterns = ["**/*.cc", "**/*.cpp", "**/*.cxx", "**/*.hpp"]
+patterns = [
+  "(?i)std::cout\\s*<<[^;]*\\b(?:argv|input|cin|getenv|getline)\\b",
+]
+snippet_after = 4
+label = "C++ cout with input-sourced argument"
+
+[[matcher]]
+slug = "cpp-unique-ptr-raw-handoff"
+description = "Handing a raw pointer out of a unique_ptr — ownership confusion"
+noise_tier = "noisy"
+file_patterns = ["**/*.cc", "**/*.cpp", "**/*.cxx", "**/*.hpp"]
+patterns = [
+  "(?i)\\.release\\s*\\(\\s*\\)",
+  "(?i)\\.get\\s*\\(\\s*\\)",
+]
+require_content = ["unique_ptr"]
+snippet_after = 4
+label = "raw pointer extracted from unique_ptr"
+
+[[matcher]]
+slug = "cpp-deserialize-boost"
+description = "Boost.Serialization on possibly untrusted input — deserialization sink"
+noise_tier = "normal"
+file_patterns = ["**/*.cc", "**/*.cpp", "**/*.cxx", "**/*.hpp"]
+patterns = [
+  "(?i)boost::archive::(?:binary|text|xml)_iarchive",
+  "(?i)\\boa\\s*>>\\s*",
+  "(?i)\\bia\\s*>>\\s*",
+]
+require_content = ["boost::archive"]
+snippet_after = 6
+label = "Boost.Serialization deserialize"
+
+[[matcher]]
+slug = "cpp-dynamic-cast-untrusted"
+description = "dynamic_cast on attacker-controlled types — RTTI-based confusion"
+noise_tier = "noisy"
+file_patterns = ["**/*.cc", "**/*.cpp", "**/*.cxx", "**/*.hpp"]
+patterns = [
+  "(?i)dynamic_cast\\s*<",
+]
+snippet_after = 4
+label = "dynamic_cast<>"

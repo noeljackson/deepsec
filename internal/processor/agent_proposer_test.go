@@ -44,3 +44,43 @@ func TestParsePatchRejectsUnknownFields(t *testing.T) {
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "unknown field")
 }
+
+func TestProposePatchAcceptsASTPattern(t *testing.T) {
+	patch, err := ProposePatch(context.Background(), patchJSONMockBackend{
+		body: `{"decision":"ast_pattern","ast_language":"python","ast_query":"(call function: (identifier) @fn (#eq? @fn \"eval\")) @match","ast_prefilter":"eval\\(","rationale":"narrow eval to direct calls"}`,
+	}, "python-eval-exec", nil, nil, `[[matcher]]`)
+	require.NoError(t, err)
+	require.Equal(t, "ast_pattern", patch.Decision)
+	require.Equal(t, "python", patch.AstLanguage)
+	require.Contains(t, patch.AstQuery, "@match")
+	require.Equal(t, "eval\\(", patch.AstPrefilter)
+}
+
+func TestProposePatchASTRequiresLanguageAndQuery(t *testing.T) {
+	_, err := ProposePatch(context.Background(), patchJSONMockBackend{
+		body: `{"decision":"ast_pattern","ast_query":"(identifier) @x"}`,
+	}, "x", nil, nil, `[[matcher]]`)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "ast_language")
+
+	_, err = ProposePatch(context.Background(), patchJSONMockBackend{
+		body: `{"decision":"ast_pattern","ast_language":"go"}`,
+	}, "x", nil, nil, `[[matcher]]`)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "ast_query")
+}
+
+func TestProposePatchRejectsMixedFields(t *testing.T) {
+	// suppress_pattern + ast_query in the same patch is the kind of
+	// model confusion the schema must catch.
+	_, err := ProposePatch(context.Background(), patchJSONMockBackend{
+		body: `{"decision":"suppress_pattern","suppress_pattern":"(?i)x","ast_query":"(identifier) @match"}`,
+	}, "x", nil, nil, `[[matcher]]`)
+	require.Error(t, err)
+}
+
+func TestPatchSummaryAST(t *testing.T) {
+	p := Patch{Decision: "ast_pattern", AstLanguage: "python", AstQuery: "(call) @match"}
+	require.Contains(t, p.Summary(), "python")
+	require.Contains(t, p.Summary(), "AST")
+}

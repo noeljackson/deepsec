@@ -22,7 +22,6 @@ type Runtime struct {
 	mu       sync.Mutex
 	rt       wazero.Runtime
 	grammars map[Language]Grammar
-	compiled map[Language]wazero.CompiledModule
 	wasm     *wasmRuntime
 }
 
@@ -30,7 +29,6 @@ func NewRuntime(ctx context.Context, grammars []Grammar) (*Runtime, error) {
 	r := &Runtime{
 		rt:       wazero.NewRuntime(ctx),
 		grammars: map[Language]Grammar{},
-		compiled: map[Language]wazero.CompiledModule{},
 	}
 	for _, g := range grammars {
 		if !IsSupported(g.Language) {
@@ -71,27 +69,6 @@ func (r *Runtime) GrammarVersion(lang Language) string {
 		return ""
 	}
 	return g.Version
-}
-
-func (r *Runtime) ensureCompiled(ctx context.Context, lang Language) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	if r.rt == nil {
-		return fmt.Errorf("AST runtime closed")
-	}
-	if _, ok := r.compiled[lang]; ok {
-		return nil
-	}
-	g, ok := r.grammars[lang]
-	if !ok || len(g.WASM) == 0 {
-		return fmt.Errorf("%w: %s", ErrLanguageUnavailable, lang)
-	}
-	mod, err := r.rt.CompileModule(ctx, g.WASM)
-	if err != nil {
-		return fmt.Errorf("compile %s AST grammar wasm: %w", lang, err)
-	}
-	r.compiled[lang] = mod
-	return nil
 }
 
 func (r *Runtime) Parse(ctx context.Context, lang Language, content []byte, filePath string) (Tree, error) {

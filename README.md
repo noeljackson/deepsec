@@ -20,13 +20,14 @@ regression checks.
 ## Universal-scanner invariant
 
 deepsec aims to work equally well on every language. The bundled
-matcher pack today reflects where we started, not where we're going:
+matcher pack reflects continued investment toward parity:
 
 | Tier | Languages |
 |---|---|
 | **Strong** (20+ matchers) | TypeScript/JSX, Python, Go, Ruby |
-| **Weak** (5–10) | Java, Rust, PHP, C# |
-| **Sparse** (≤ 1) | C, C++, Swift, Kotlin |
+| **Mid** (10–19) | Java, Rust |
+| **Weak** (5–9) | PHP, C#, Swift, Kotlin |
+| **Sparse** (≤ 2) | C, C++ |
 
 Coverage gaps are bugs. File an issue tagged with the language if you
 hit one, or send a matcher-pack PR. The AST roadmap

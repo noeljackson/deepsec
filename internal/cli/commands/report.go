@@ -15,14 +15,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewReportCmd writes markdown + JSON + CSV reports.
+// NewReportCmd writes markdown + JSON + CSV reports, or a single
+// compliance-formatted JSON for `--format soc2|ssdf`.
 func NewReportCmd(loader func() (*cli.Context, error)) *cobra.Command {
-	var projectID, minSeverity, runID string
+	var projectID, minSeverity, runID, format, output, verifyPath string
 	var realOnly bool
 	cmd := &cobra.Command{
 		Use:   "report",
-		Short: "Render a project report (markdown + JSON + CSV)",
+		Short: "Render a project report (markdown + JSON + CSV) or compliance-formatted output",
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if verifyPath != "" {
+				return runComplianceVerify(verifyPath)
+			}
 			ctx, err := loader()
 			if err != nil {
 				return err
@@ -30,6 +34,10 @@ func NewReportCmd(loader func() (*cli.Context, error)) *cobra.Command {
 			records, err := ctx.DataRoot.LoadAllFileRecords(projectID)
 			if err != nil {
 				return err
+			}
+
+			if format == "soc2" || format == "ssdf" {
+				return runComplianceReport(ctx, projectID, records, format, output)
 			}
 			minSev := core.SeverityLow
 			if minSeverity != "" {
@@ -76,12 +84,62 @@ func NewReportCmd(loader func() (*cli.Context, error)) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&projectID, "project-id", "", "Project id (required)")
-	_ = cmd.MarkFlagRequired("project-id")
-	cmd.Flags().StringVar(&minSeverity, "min-severity", "", "Minimum severity to include")
+	cmd.Flags().StringVar(&projectID, "project-id", "", "Project id (required unless --verify is used)")
+	cmd.Flags().StringVar(&minSeverity, "min-severity", "", "Minimum severity to include (default 3 outputs only)")
 	cmd.Flags().StringVar(&runID, "run-id", "", "Only include findings produced by this run")
-	cmd.Flags().BoolVar(&realOnly, "real-only", false, "Drop FP/Fixed findings")
+	cmd.Flags().BoolVar(&realOnly, "real-only", false, "Drop FP/Fixed findings (default 3 outputs only)")
+	cmd.Flags().StringVar(&format, "format", "", "Output format: empty for the default markdown+JSON+CSV trio, or 'soc2'/'ssdf' for compliance-formatted output")
+	cmd.Flags().StringVar(&output, "output", "", "Output file path for compliance-formatted output (default: data/<project>/reports/compliance.json)")
+	cmd.Flags().StringVar(&verifyPath, "verify", "", "Verify a previously generated compliance report against DEEPSEC_REPORT_SIGNING_KEY")
 	return cmd
+}
+
+func runComplianceReport(ctx *cli.Context, projectID string, records []*core.FileRecord, format, output string) error {
+	if projectID == "" {
+		return fmt.Errorf("--project-id is required for compliance reports")
+	}
+	runs, err := ctx.DataRoot.ListRuns(projectID)
+	if err != nil {
+		return err
+	}
+	flat := make([]core.RunMeta, 0, len(runs))
+	for _, r := range runs {
+		if r != nil {
+			flat = append(flat, *r)
+		}
+	}
+	rep, err := BuildComplianceReport(format, projectID, records, flat)
+	if err != nil {
+		return err
+	}
+	if output == "" {
+		root, err := ctx.DataRoot.ReportJSONPath(projectID, "")
+		if err != nil {
+			return err
+		}
+		output = filepath.Join(filepath.Dir(root), "compliance."+format+".json")
+	}
+	if err := writeComplianceReport(rep, output); err != nil {
+		return err
+	}
+	signed := ""
+	if rep.Signature != nil {
+		signed = fmt.Sprintf(" (signed: %s key_hint=%s)", rep.Signature.Algorithm, rep.Signature.KeyHint)
+	}
+	fmt.Printf("compliance report (%s) findings=%d → %s%s\n", format, len(rep.Findings), output, signed)
+	return nil
+}
+
+func runComplianceVerify(path string) error {
+	key := os.Getenv("DEEPSEC_REPORT_SIGNING_KEY")
+	if key == "" {
+		return fmt.Errorf("DEEPSEC_REPORT_SIGNING_KEY required for --verify")
+	}
+	if err := verifyComplianceFile(path, []byte(key)); err != nil {
+		return err
+	}
+	fmt.Printf("compliance report verified: %s\n", path)
+	return nil
 }
 
 type row struct {

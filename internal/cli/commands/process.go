@@ -13,11 +13,11 @@ import (
 // NewProcessCmd runs the AI investigation pipeline.
 func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 	var (
-		projectID, agent, model, filter, onlySlugs, skipSlugs, filesFrom, diff string
-		files                                                                  []string
-		batchSize, concurrency, limit, reinvestigate                           int
-		maxCost, temperature, topP                                             float64
-		seed                                                                   int64
+		projectID, agent, model, filter, onlySlugs, skipSlugs, filesFrom, diff, record string
+		files                                                                          []string
+		batchSize, concurrency, limit, reinvestigate                                   int
+		maxCost, temperature, topP                                                     float64
+		seed                                                                           int64
 	)
 	cmd := &cobra.Command{
 		Use:   "process",
@@ -47,6 +47,14 @@ func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 			backend, err := processor.NewBackend(profile, model, apiKey, settings)
 			if err != nil {
 				return err
+			}
+			if record != "" {
+				rec, err := processor.NewRecordingBackend(backend, record)
+				if err != nil {
+					return err
+				}
+				defer func() { _ = rec.Close() }()
+				backend = rec
 			}
 
 			resolved, err := cli.ResolveFiles(cli.FileSourceArgs{
@@ -138,6 +146,7 @@ func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 	cmd.Flags().Float64Var(&temperature, "temperature", 0, "Pin sampling temperature (default: provider SDK default)")
 	cmd.Flags().Float64Var(&topP, "top-p", 0, "Pin nucleus sampling (default: provider SDK default)")
 	cmd.Flags().Int64Var(&seed, "seed", 0, "Pin sampler seed; OpenAI-compatible providers only")
+	cmd.Flags().StringVar(&record, "record", "", "Tee every backend response into this JSONL path (use to capture a fixture under bench/processor-fixtures/)")
 	return cmd
 }
 

@@ -78,14 +78,36 @@ in file-path order. Finally, curate `answer.yaml` with the findings the
 processor should report, including slug aliases and a small line
 tolerance.
 
-## Recording Plan
+## Recording a real fixture
 
-Recording real fixtures is intentionally deferred. The intended workflow
-for a future recorder is:
+`deepsec process --record <path>` captures every Investigate batch into
+a JSONL file in dispatch order — the same format the replay scorer
+consumes. Workflow:
 
-1. Run `deepsec scan` against the target project to populate a DataRoot.
-2. Run `deepsec process --agent <real> ... --record bench/processor-fixtures/<task-id>` so the real backend runs normally while every `(batch, InvestigateOutput)` pair is teed into `responses.jsonl`.
-3. Manually curate `answer.yaml` to label the findings that should appear after processing.
+```bash
+# 1. Scan the target project so candidates exist.
+deepsec scan --project-id myproj --root /path/to/project
 
-The replay scorer added here is the consumer for those future recordings;
-it does not call real Anthropic, OpenAI, or OpenAI-compatible providers.
+# 2. Process with a real backend AND tee the responses into a fixture.
+deepsec process \
+  --project-id myproj \
+  --agent anthropic \
+  --batch-size 1 --concurrency 1 \
+  --record bench/processor-fixtures/myproj/responses.jsonl
+
+# 3. Move the relevant FileRecord JSONs into the fixture's files/
+#    directory (deepsec writes them under data/<project>/files/).
+
+# 4. Hand-author answer.yaml to label the findings that should be
+#    reported when the recorded responses are replayed.
+```
+
+The recorder writes only successful Investigate batches. Failed or
+quota-exhausted batches are skipped — the replay scorer treats every
+line of `responses.jsonl` as a known-good response, and a half-recorded
+batch would mismatch on replay. Pin `--batch-size 1 --concurrency 1`
+during recording so batches are deterministic; otherwise the recorded
+JSONL line ordering can race with the model's per-batch dispatch.
+
+Pair `--record` with `--temperature 0` and `--seed N` (OpenAI-compat
+providers) to make the captured run as reproducible as possible.

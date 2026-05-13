@@ -12,6 +12,11 @@ import (
 func main() {
 	var tasksDir, outDir string
 	var processTasksDir, processOutDir string
+	var processRepeat, processBootstrap int
+	var processSeed uint64
+	var compareThreshold float64
+	var compareSeed uint64
+	var compareBootstrap int
 	var explosion float64
 	root := &cobra.Command{Use: "benchsec", Short: "deepsec benchmark harness"}
 	score := &cobra.Command{
@@ -38,7 +43,23 @@ func main() {
 		Use:   "process-score [task-id...]",
 		Short: "score processor replay fixtures against answer keys",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			result, err := bench.ProcessScore(args, bench.ProcessScoreOptions{TasksDir: processTasksDir, OutDir: processOutDir})
+			opts := bench.ProcessScoreOptions{
+				TasksDir: processTasksDir, OutDir: processOutDir,
+				Repeat: processRepeat, Seed: processSeed, BootstrapSamples: processBootstrap,
+			}
+			if processRepeat > 1 {
+				result, err := bench.ProcessScoreRepeated(args, opts)
+				if err != nil {
+					return err
+				}
+				body, err := json.MarshalIndent(result, "", "  ")
+				if err != nil {
+					return err
+				}
+				fmt.Println(string(body))
+				return nil
+			}
+			result, err := bench.ProcessScore(args, opts)
 			if err != nil {
 				return err
 			}
@@ -52,6 +73,28 @@ func main() {
 	}
 	processScore.Flags().StringVar(&processTasksDir, "tasks", "bench/processor-fixtures", "processor fixture directory")
 	processScore.Flags().StringVar(&processOutDir, "out", "bench/out-processor", "processor report output root")
+	processScore.Flags().IntVar(&processRepeat, "repeat", 1, "number of serial processor scoring repeats")
+	processScore.Flags().Uint64Var(&processSeed, "seed", 1, "base seed for repeat and stochastic replay")
+	processScore.Flags().IntVar(&processBootstrap, "bootstrap-samples", 1000, "bootstrap resamples for repeated scoring intervals")
+
+	processCompare := &cobra.Command{
+		Use:   "process-compare <a-dir> <b-dir>",
+		Short: "compare two repeated processor scoring runs",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			report, err := bench.ProcessCompare(args[0], args[1], bench.ProcessCompareOptions{
+				Threshold: compareThreshold, Seed: compareSeed, BootstrapSamples: compareBootstrap,
+			})
+			if err != nil {
+				return err
+			}
+			fmt.Print(bench.ProcessCompareTSV(report))
+			return nil
+		},
+	}
+	processCompare.Flags().Float64Var(&compareThreshold, "threshold", 0, "minimum absolute CI exclusion threshold for improved/regressed verdicts")
+	processCompare.Flags().Uint64Var(&compareSeed, "seed", 1, "bootstrap seed for comparison intervals")
+	processCompare.Flags().IntVar(&compareBootstrap, "bootstrap-samples", 1000, "bootstrap resamples for comparison intervals")
 
 	var matcherDir, format string
 	lint := &cobra.Command{
@@ -86,7 +129,7 @@ func main() {
 	lint.Flags().StringVar(&matcherDir, "matchers", "internal/scanner/matchers", "matcher TOML directory")
 	lint.Flags().StringVar(&format, "format", "tsv", "output format: tsv or json")
 
-	root.AddCommand(score, processScore, lint)
+	root.AddCommand(score, processScore, processCompare, lint)
 	if err := root.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

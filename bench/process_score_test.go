@@ -65,6 +65,84 @@ func TestProcessScoreReportsAreDeterministic(t *testing.T) {
 	require.Equal(t, firstReports, readReportFiles(t, second.Summary.OutputDir))
 }
 
+func TestProcessScoreRepeatedDeterministicFixturesAreByteIdentical(t *testing.T) {
+	optsA := ProcessScoreOptions{
+		TasksDir: "processor-fixtures", OutDir: filepath.Join(t.TempDir(), "out-a"),
+		Now: "20260101T000000Z", Repeat: 10, Seed: 1, BootstrapSamples: 1000,
+	}
+	first, err := ProcessScoreRepeated(nil, optsA)
+	require.NoError(t, err)
+	optsB := optsA
+	optsB.OutDir = filepath.Join(t.TempDir(), "out-b")
+	second, err := ProcessScoreRepeated(nil, optsB)
+	require.NoError(t, err)
+
+	firstBody, err := os.ReadFile(filepath.Join(optsA.OutDir, optsA.Now, "summary-repeated.json"))
+	require.NoError(t, err)
+	secondBody, err := os.ReadFile(filepath.Join(optsB.OutDir, optsB.Now, "summary-repeated.json"))
+	require.NoError(t, err)
+	require.Equal(t, firstBody, secondBody)
+	require.Equal(t, 0.0, first.Metrics["processor_precision"].Stddev)
+	require.Equal(t, 0.0, second.Metrics["processor_precision"].CIHigh-second.Metrics["processor_precision"].CILow)
+}
+
+func TestProcessScoreRepeatedStochasticFixtureHasNonZeroCI(t *testing.T) {
+	outDir := filepath.Join(t.TempDir(), "out")
+	result, err := ProcessScoreRepeated(nil, ProcessScoreOptions{
+		TasksDir: "processor-stochastic-fixtures", OutDir: outDir,
+		Now: "20260101T000000Z", Repeat: 30, Seed: 1, BootstrapSamples: 1000,
+	})
+	require.NoError(t, err)
+	metric := result.Metrics["processor_recall"]
+	require.Greater(t, metric.CIHigh-metric.CILow, 0.0)
+	require.FileExists(t, filepath.Join(outDir, "20260101T000000Z", "summary-repeated.json"))
+}
+
+func TestProcessCompareVerdicts(t *testing.T) {
+	tmp := t.TempDir()
+	aDir := filepath.Join(tmp, "a")
+	bDir := filepath.Join(tmp, "b")
+	cDir := filepath.Join(tmp, "c")
+	require.NoError(t, os.MkdirAll(aDir, 0o755))
+	require.NoError(t, os.MkdirAll(bDir, 0o755))
+	require.NoError(t, os.MkdirAll(cDir, 0o755))
+
+	writeRepeatedSummary(t, aDir, []float64{0.45, 0.46, 0.47, 0.48, 0.49})
+	writeRepeatedSummary(t, bDir, []float64{0.80, 0.81, 0.82, 0.83, 0.84})
+	writeRepeatedSummary(t, cDir, []float64{0.44, 0.45, 0.46, 0.47, 0.48})
+
+	improved, err := ProcessCompare(aDir, bDir, ProcessCompareOptions{Seed: 1, BootstrapSamples: 1000})
+	require.NoError(t, err)
+	require.Equal(t, "improved", improved.Metrics[0].Verdict)
+	require.FileExists(t, filepath.Join(bDir, "process-compare.tsv"))
+	require.FileExists(t, filepath.Join(bDir, "process-compare.json"))
+
+	overlap, err := ProcessCompare(aDir, cDir, ProcessCompareOptions{Seed: 1, BootstrapSamples: 1000})
+	require.NoError(t, err)
+	require.Equal(t, "inconclusive", overlap.Metrics[0].Verdict)
+}
+
+func TestBootstrapReproducible(t *testing.T) {
+	first := summarizeRepeatedSample([]float64{0, 1, 0, 1, 1, 0}, 1000, 42)
+	second := summarizeRepeatedSample([]float64{0, 1, 0, 1, 1, 0}, 1000, 42)
+	require.Equal(t, first.CILow, second.CILow)
+	require.Equal(t, first.CIHigh, second.CIHigh)
+}
+
+func writeRepeatedSummary(t *testing.T, dir string, samples []float64) {
+	t.Helper()
+	body := ProcessRepeatedResult{
+		GeneratedAt:      "20260101T000000Z",
+		Repeat:           len(samples),
+		Seed:             1,
+		BootstrapSamples: 1000,
+		Metrics: map[string]RepeatedMetric{
+			"processor_precision": summarizeRepeatedSample(samples, 1000, 1),
+		},
+	}
+	require.NoError(t, writeJSON(filepath.Join(dir, "summary-repeated.json"), body))
+}
+
 func readReportFiles(t *testing.T, dir string) map[string]string {
 	t.Helper()
 	entries, err := os.ReadDir(dir)

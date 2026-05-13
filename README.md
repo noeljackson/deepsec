@@ -25,8 +25,8 @@ matcher pack reflects continued investment toward parity:
 | Tier | Languages |
 |---|---|
 | **Strong** (20+ matchers) | TypeScript/JSX, Python, Go, Ruby |
-| **Mid** (10–19) | Java, Rust, Swift, Kotlin |
-| **Weak** (5–9) | PHP, C# |
+| **Mid** (10–19) | Java, Rust |
+| **Weak** (5–9) | PHP, C#, Swift, Kotlin |
 | **Sparse** (≤ 2) | C, C++ |
 
 Coverage gaps are bugs. File an issue tagged with the language if you

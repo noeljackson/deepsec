@@ -8,6 +8,21 @@ configurable AI backend then investigates each candidate against the
 actual source code and emits real findings — severity, confidence,
 recommendation, and revalidatable verdicts on each one.
 
+deepsec is a **universal scanner**: the goal is to work equally well on
+every language. The bundled matcher pack today reflects where we
+started, not where we're going:
+
+| Tier | Languages |
+|---|---|
+| **Strong** (20+ matchers) | TypeScript/JSX, Python, Go, Ruby |
+| **Weak** (5–10) | Java, Rust, PHP, C# |
+| **Sparse** (≤1) | C, C++, Swift, Kotlin |
+
+Coverage gaps are bugs. File an issue tagged with the language if you
+hit one, or send a matcher-pack PR. The AST roadmap (RFC 001) lands
+Go + TS + Python as Phase 1, Rust + Java as required Phase 2, with
+Kotlin / Swift / C / C++ as funded Phase 3 — not "someday".
+
 > **Note.** This is the Go implementation. The original TypeScript code
 > is preserved in git history (see `git log` before commit
 > `claude/rewrite-deepsec-go`).

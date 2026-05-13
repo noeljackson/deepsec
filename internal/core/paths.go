@@ -144,6 +144,25 @@ func (r DataRoot) ReportsDir(projectID string) (string, error) {
 	return filepath.Join(d, "reports"), nil
 }
 
+func (r DataRoot) PatchesDir(projectID string) (string, error) {
+	d, err := r.DataDir(projectID)
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(d, "patches"), nil
+}
+
+func (r DataRoot) PatchJSONPath(projectID, findingID string) (string, error) {
+	if err := AssertSafeSegment(findingID, "findingId"); err != nil {
+		return "", err
+	}
+	d, err := r.PatchesDir(projectID)
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(d, findingID+".patch.json"), nil
+}
+
 func reportName(prefix, runID, ext string) (string, error) {
 	if runID == "" {
 		return prefix + "." + ext, nil

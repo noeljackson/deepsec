@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/noeljackson/deepsec/internal/cli"
 	"github.com/noeljackson/deepsec/internal/processor"
@@ -13,12 +14,12 @@ import (
 // NewProcessCmd runs the AI investigation pipeline.
 func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 	var (
-		projectID, agent, model, filter, onlySlugs, skipSlugs, filesFrom, diff, record, failOn string
-		files                                                                                  []string
-		batchSize, concurrency, limit, reinvestigate, maxTurns                                 int
-		maxCost, temperature, topP                                                             float64
-		seed                                                                                   int64
-		toolsEnabled, skepticEnabled                                                           bool
+		projectID, agent, agentsCSV, model, filter, onlySlugs, skipSlugs, filesFrom, diff, record, failOn string
+		files                                                                                             []string
+		batchSize, concurrency, limit, reinvestigate, maxTurns                                            int
+		maxCost, temperature, topP                                                                        float64
+		seed                                                                                              int64
+		toolsEnabled, skepticEnabled                                                                      bool
 	)
 	cmd := &cobra.Command{
 		Use:   "process",
@@ -32,31 +33,43 @@ func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			agentName := ctx.ResolveAgent(agent)
-			if err := cli.Preflight(ctx, agentName); err != nil {
-				return err
-			}
-			profile := ctx.Providers.Get(agentName)
-			if profile == nil {
-				return fmt.Errorf("unknown provider %q", agentName)
-			}
-			apiKey, err := ctx.Providers.LookupKey(agentName)
-			if err != nil {
-				return err
-			}
 			settings := modelSettingsFromFlags(cmd, temperature, topP, seed)
-			backend, err := processor.NewBackend(profile, model, apiKey, settings)
-			if err != nil {
-				return err
+			agentNames := splitCSV(agentsCSV)
+			if len(agentNames) == 0 {
+				agentNames = []string{ctx.ResolveAgent(agent)}
 			}
+			var namedBackends []processor.NamedBackend
+			for _, name := range agentNames {
+				if err := cli.Preflight(ctx, name); err != nil {
+					return err
+				}
+				profile := ctx.Providers.Get(name)
+				if profile == nil {
+					return fmt.Errorf("unknown provider %q", name)
+				}
+				apiKey, err := ctx.Providers.LookupKey(name)
+				if err != nil {
+					return err
+				}
+				b, err := processor.NewBackend(profile, model, apiKey, settings)
+				if err != nil {
+					return err
+				}
+				namedBackends = append(namedBackends, processor.NamedBackend{Name: name, Backend: b})
+			}
+			// Recording wraps only the first (or only) backend — ensemble
+			// runs would multiply replay fixtures across providers and
+			// the captured shape would be ambiguous.
 			if record != "" {
-				rec, err := processor.NewRecordingBackend(backend, record)
+				rec, err := processor.NewRecordingBackend(namedBackends[0].Backend, record)
 				if err != nil {
 					return err
 				}
 				defer func() { _ = rec.Close() }()
-				backend = rec
+				namedBackends[0].Backend = rec
 			}
+			agentName := namedBackends[0].Name
+			backend := namedBackends[0].Backend
 
 			resolved, err := cli.ResolveFiles(cli.FileSourceArgs{
 				Files:     files,
@@ -93,7 +106,7 @@ func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 
 			tech, _ := scanner.ReadTechJSON(ctx.DataRoot, projectID)
 
-			out, err := processor.Process(context.Background(), processor.ProcessOptions{
+			procOpts := processor.ProcessOptions{
 				ProjectID:         projectID,
 				ProjectRoot:       proj.Root,
 				DataRoot:          ctx.DataRoot,
@@ -116,7 +129,27 @@ func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 				SkepticEnabled:    skepticEnabled,
 				Detected:          tech,
 				ModelSettings:     settings,
-			})
+			}
+			if len(namedBackends) > 1 {
+				ens, err := processor.EnsembleProcess(context.Background(), procOpts, namedBackends)
+				if err != nil {
+					return err
+				}
+				fmt.Printf("ensemble runs=%d agents=%s\n", len(ens.RunIDs), strings.Join(agentNames, ","))
+				fmt.Printf("  unique findings: %d  (consensus=%d  solo=%d)\n",
+					ens.UniqueFindings, ens.ConsensusCount, ens.SoloCount)
+				for i, oc := range ens.Outcomes {
+					fmt.Printf("  [%s] run=%s findings=%d cost=$%.4f\n",
+						agentNames[i], oc.RunID, oc.FindingCount, oc.TotalCostUSD)
+				}
+				if failOn != "" {
+					// Run-id scoping doesn't fit ensemble; use empty
+					// runID to scope across all findings in the project.
+					return enforceFailOn(ctx, projectID, "", failOn)
+				}
+				return nil
+			}
+			out, err := processor.Process(context.Background(), procOpts)
 			if err != nil {
 				return err
 			}
@@ -138,6 +171,7 @@ func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 	cmd.Flags().StringVar(&projectID, "project-id", "", "Project id (required)")
 	_ = cmd.MarkFlagRequired("project-id")
 	cmd.Flags().StringVar(&agent, "agent", "", "Provider name (defaults to config.default_agent or 'anthropic')")
+	cmd.Flags().StringVar(&agentsCSV, "agents", "", "Multi-model ensemble: csv of provider names; runs each agent over the same candidates and tags findings with AgreeingAgents (~N× cost)")
 	cmd.Flags().StringVar(&model, "model", "", "Override the backend model")
 	cmd.Flags().IntVar(&batchSize, "batch-size", 5, "Files per batch sent to the model")
 	cmd.Flags().IntVar(&concurrency, "concurrency", 4, "Max concurrent in-flight batches")

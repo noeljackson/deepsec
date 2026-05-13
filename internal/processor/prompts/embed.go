@@ -5,7 +5,7 @@ import (
 	"io/fs"
 )
 
-//go:embed core.md framework_hints.toml slug_hints.toml agent.md
+//go:embed core.md framework_hints.toml slug_hints.toml agent.md patcher.md
 var promptFiles embed.FS
 
 // BundledPromptFS exposes the embedded prompt files so callers outside

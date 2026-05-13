@@ -111,6 +111,14 @@ human-in-the-loop matcher review CLI, and an autonomous bounded-patch
 agent — all wired together, with statistical gates and a `needs-engine-feature`
 escape valve when a regex narrowing isn't safe.
 
+Findings can also move into source fixes with `deepsec patch`. The
+patcher asks the configured AI backend for a strict JSON unified diff,
+applies it in a throwaway clone/copy, runs an optional validation
+command such as `go test ./...`, and writes provenance under
+`data/<project>/patches/`. `--apply` commits the validated diff on a
+`deepsec-patch/<finding-id>` branch; `--push` additionally opens a PR
+through `gh`.
+
 ```
 matcher TOMLs ─► scan ─► candidates ─► process ─► findings
        ▲                                            │

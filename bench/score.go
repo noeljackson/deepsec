@@ -101,14 +101,15 @@ type FalsePositive struct {
 }
 
 type FalseNegative struct {
-	TaskID           string   `json:"task_id"`
-	IssueID          string   `json:"issue_id"`
-	File             string   `json:"file"`
-	StartLine        int      `json:"start_line"`
-	EndLine          int      `json:"end_line"`
-	VulnSlugs        []string `json:"vuln_slugs"`
-	ClosestCandidate string   `json:"closest_candidate,omitempty"`
-	Reason           string   `json:"reason"`
+	TaskID           string        `json:"task_id"`
+	IssueID          string        `json:"issue_id"`
+	File             string        `json:"file"`
+	Severity         core.Severity `json:"severity,omitempty"`
+	StartLine        int           `json:"start_line"`
+	EndLine          int           `json:"end_line"`
+	VulnSlugs        []string      `json:"vuln_slugs"`
+	ClosestCandidate string        `json:"closest_candidate,omitempty"`
+	Reason           string        `json:"reason"`
 }
 
 type CandidateExplosion struct {
@@ -440,7 +441,7 @@ func falseNegative(taskID string, issue Issue, candidates []candidateRef) FalseN
 		}
 	}
 	return FalseNegative{
-		TaskID: taskID, IssueID: issue.ID, File: issue.File,
+		TaskID: taskID, IssueID: issue.ID, File: issue.File, Severity: issue.Severity,
 		StartLine: issue.Location.StartLine, EndLine: issue.Location.EndLine,
 		VulnSlugs: issue.VulnSlugs, ClosestCandidate: closest, Reason: reason,
 	}

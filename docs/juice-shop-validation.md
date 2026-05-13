@@ -122,15 +122,47 @@ The recall-improvement loop (`benchsec agent --mode recall`) can
 turn these AI-emitted slugs into new bundled matchers for the next
 project's scan.
 
+## Skeptic pass
+
+Re-ran the same slug filter with `--skeptic` (one re-investigation
+per finding asking "try to disprove this"). 18 findings (vs 19
+baseline), all 18 carry the `[survived skeptic]` or
+`[demoted by skeptic …]` annotation in the description. One MEDIUM
+`insecure-crypto` finding was demoted to LOW; the rest survived. The
+severity distribution shifted toward CRITICAL/HIGH — that's LLM
+variance on the first investigation pass, not the skeptic (which
+only demotes or keeps-as-is, never upgrades).
+
+Honest reading: the LLM produces moderately variable severity
+classifications on these slugs; the skeptic doesn't dramatically
+prune the set on a fixture this dense with real vulns. The skeptic
+becomes more useful on production corpora where many candidates are
+false positives.
+
+## Ensemble pass
+
+Attempted `--agents zai-coding,glm`. The ensemble architecture runs
+both backends serially as designed, merges by stable identity, and
+reports consensus/solo split. On this fixture, the `glm` run
+errored: the `ZAI_API_KEY` used was a Coding-Plan key — valid for
+`api.z.ai/api/anthropic` (`zai-coding`) but not for
+`api.z.ai/api/paas/v4` (`glm`). The ensemble produced 21 findings
+all marked solo from `zai-coding`; `glm` contributed zero.
+
+Two takeaways:
+
+1. The ensemble code didn't surface the silent failure — it reported
+   success even though one of the two agent runs had `phase=error`
+   in its RunMeta. Filed as a follow-up.
+2. A real cross-provider ensemble on this corpus needs two keyed
+   providers — `anthropic,zai-coding` or `openai,zai-coding`. The
+   architecture is exercised end-to-end; the consensus data is
+   pending a multi-keyed environment.
+
 ## What's not yet validated
 
-- `--skeptic` — adversarial second pass wasn't run on this fixture.
-  The 19 findings are first-pass output. A future run with `--skeptic`
-  would tell us how many survive the disprove-it stance.
-- `--agents anthropic,zai-coding` — ensemble run wasn't made.
-  Consensus-vs-solo split would be useful to see on this corpus.
-- The taint pre-filter is opt-in per matcher and isn't applied to
-  `sql-injection-string-concat`. Worth measuring the FP delta when
-  it is.
-
-These are follow-up evidence-collection runs, not blockers on v0.1.
+- Taint pre-filter delta — opt-in per matcher; `sql-injection-string-concat`
+  doesn't use it. A bench fixture with explicit web-vs-CLI variants
+  would isolate the FP-reduction effect.
+- Cross-provider consensus on a corpus with real keys for two
+  providers.

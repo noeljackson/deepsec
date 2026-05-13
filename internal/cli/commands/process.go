@@ -13,12 +13,12 @@ import (
 // NewProcessCmd runs the AI investigation pipeline.
 func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 	var (
-		projectID, agent, model, filter, onlySlugs, skipSlugs, filesFrom, diff, record string
-		files                                                                          []string
-		batchSize, concurrency, limit, reinvestigate, maxTurns                         int
-		maxCost, temperature, topP                                                     float64
-		seed                                                                           int64
-		toolsEnabled, skepticEnabled                                                   bool
+		projectID, agent, model, filter, onlySlugs, skipSlugs, filesFrom, diff, record, failOn string
+		files                                                                                  []string
+		batchSize, concurrency, limit, reinvestigate, maxTurns                                 int
+		maxCost, temperature, topP                                                             float64
+		seed                                                                                   int64
+		toolsEnabled, skepticEnabled                                                           bool
 	)
 	cmd := &cobra.Command{
 		Use:   "process",
@@ -129,6 +129,9 @@ func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 				fmt.Print(" (budget cap reached)")
 			}
 			fmt.Println()
+			if failOn != "" {
+				return enforceFailOn(ctx, projectID, out.RunID, failOn)
+			}
 			return nil
 		},
 	}
@@ -150,6 +153,7 @@ func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 	cmd.Flags().BoolVar(&toolsEnabled, "tools", false, "Enable multi-turn read-only investigation tools")
 	cmd.Flags().IntVar(&maxTurns, "max-turns", 8, "Max model turns per investigation when --tools is enabled")
 	cmd.Flags().BoolVar(&skepticEnabled, "skeptic", false, "Second-pass adversarial review: try to disprove each finding before persisting it")
+	cmd.Flags().StringVar(&failOn, "fail-on", "", "Exit non-zero when this run produces a finding at or above this severity (CRITICAL|HIGH|MEDIUM|LOW)")
 	cmd.Flags().Float64Var(&temperature, "temperature", 0, "Pin sampling temperature (default: provider SDK default)")
 	cmd.Flags().Float64Var(&topP, "top-p", 0, "Pin nucleus sampling (default: provider SDK default)")
 	cmd.Flags().Int64Var(&seed, "seed", 0, "Pin sampler seed; OpenAI-compatible providers only")

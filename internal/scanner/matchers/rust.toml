@@ -60,6 +60,7 @@ patterns = [
   "(?i)\\.arg\\s*\\(\\s*&?req\\.",
 ]
 label = "shell-style command built from input"
+require_taint_within = 25
 
 [[matcher]]
 slug = "rust-mem-transmute"

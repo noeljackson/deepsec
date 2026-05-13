@@ -56,6 +56,11 @@ type MatcherDef struct {
 	SnippetAfter        int             `toml:"snippet_after,omitempty"`
 	Label               string          `toml:"label,omitempty"`
 	Requires            MatcherGate     `toml:"requires,omitempty"`
+	// RequireTaintWithin (lines) drops candidates that aren't within
+	// this many lines of a taint source for the file's language. 0
+	// disables the filter (default). Per-language sources are defined
+	// in taint.go.
+	RequireTaintWithin int `toml:"require_taint_within,omitempty"`
 }
 
 type ASTPatternDef struct {
@@ -135,12 +140,24 @@ func (m *Matcher) Match(content, filePath string) []core.CandidateMatch {
 		}
 	}
 	lines := strings.Split(content, "\n")
+	var tainted map[int]struct{}
+	if m.Def.RequireTaintWithin > 0 {
+		tainted = taintedLines(content, filePath)
+		if len(tainted) == 0 {
+			// No taint sources at all in this file → matcher cannot
+			// fire under proximity rules.
+			return nil
+		}
+	}
 	out := make([]core.CandidateMatch, 0)
 	seen := map[string]bool{}
 	for _, pat := range m.patterns {
 		matches := pat.FindAllStringIndex(content, -1)
 		for _, m2 := range matches {
 			lineNum := 1 + strings.Count(content[:m2[0]], "\n")
+			if m.Def.RequireTaintWithin > 0 && !lineWithinTaint(lineNum, m.Def.RequireTaintWithin, tainted) {
+				continue
+			}
 			snippet := buildSnippet(lines, lineNum, m.snippetBefore, m.snippetAfter)
 			if anyMatch(m.suppress, snippet) {
 				continue
@@ -199,7 +216,15 @@ func (m *Matcher) EligibleASTPatterns(content, filePath string, lang scannerast.
 }
 
 func (m *Matcher) MatchAST(tree scannerast.Tree, filePath string, patterns []compiledASTPattern) []core.CandidateMatch {
-	lines := strings.Split(tree.Content(), "\n")
+	content := tree.Content()
+	lines := strings.Split(content, "\n")
+	var tainted map[int]struct{}
+	if m.Def.RequireTaintWithin > 0 {
+		tainted = taintedLines(content, filePath)
+		if len(tainted) == 0 {
+			return nil
+		}
+	}
 	out := make([]core.CandidateMatch, 0)
 	seen := map[string]bool{}
 	for _, pat := range patterns {
@@ -218,6 +243,9 @@ func (m *Matcher) MatchAST(tree scannerast.Tree, filePath string, patterns []com
 			}
 			rng := primary.Range()
 			lineNum := rng.StartLine
+			if m.Def.RequireTaintWithin > 0 && !lineWithinTaint(lineNum, m.Def.RequireTaintWithin, tainted) {
+				continue
+			}
 			snippetRange := snippetNode.Range()
 			snippet := buildSnippet(lines, snippetRange.StartLine, m.snippetBefore, m.snippetAfter)
 			if anyMatch(m.suppress, snippet) {

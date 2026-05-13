@@ -11,11 +11,12 @@ import (
 )
 
 const (
-	corePromptFile     = "core.md"
-	agentPromptFile    = "agent.md"
-	patcherPromptFile  = "patcher.md"
-	frameworkHintsFile = "framework_hints.toml"
-	slugHintsFile      = "slug_hints.toml"
+	corePromptFile        = "core.md"
+	agentPromptFile       = "agent.md"
+	patcherPromptFile     = "patcher.md"
+	recallAgentPromptFile = "recall_agent.md"
+	frameworkHintsFile    = "framework_hints.toml"
+	slugHintsFile         = "slug_hints.toml"
 )
 
 var bundledProfile = mustLoad(promptFiles)
@@ -95,6 +96,16 @@ func AgentPrompt() string {
 // PatcherPrompt returns the finding-to-source-patch proposer prompt.
 func PatcherPrompt() string {
 	body, err := fs.ReadFile(promptFiles, patcherPromptFile)
+	if err != nil {
+		panic(err)
+	}
+	return string(body)
+}
+
+// RecallAgentPrompt returns the new-matcher proposer prompt used by
+// `benchsec agent --mode recall`.
+func RecallAgentPrompt() string {
+	body, err := fs.ReadFile(promptFiles, recallAgentPromptFile)
 	if err != nil {
 		panic(err)
 	}

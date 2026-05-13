@@ -97,6 +97,15 @@ func (m *Matcher) NoiseTier() NoiseTier   { return m.Def.NoiseTier }
 func (m *Matcher) Description() string    { return m.Def.Description }
 func (m *Matcher) HasASTPatterns() bool   { return len(m.astPatterns) > 0 }
 
+func (m *Matcher) HasASTLanguage(lang scannerast.Language) bool {
+	for _, p := range m.astPatterns {
+		if p.language == lang {
+			return true
+		}
+	}
+	return false
+}
+
 func (m *Matcher) ASTLanguages() []scannerast.Language {
 	seen := map[scannerast.Language]struct{}{}
 	var out []scannerast.Language

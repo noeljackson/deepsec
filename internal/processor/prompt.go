@@ -94,14 +94,27 @@ func uniqueSlugs(in []string) []string {
 }
 
 // BuildRevalidatePrompt produces (system, user) for one revalidation call.
+// When in.Skeptic is true, the system prompt is swapped for an adversarial
+// "try to disprove this finding" stance; output shape is unchanged so
+// the same RevalidatedFinding parsing applies.
 func BuildRevalidatePrompt(in *RevalidateInput) (system, user string) {
-	system = `You are revalidating previously reported security findings against the CURRENT state of the file. For each finding decide one of:
+	if in.Skeptic {
+		system = `You are a skeptical security reviewer doing a second-pass audit. Each finding below was reported by a previous reviewer. Your job is to TRY TO DISPROVE each one: look for the sanitisation, the auth check, the unreachable path, the framework default that already protects this site. For each finding decide one of:
+- "true-positive": you tried to disprove it and could not — the vulnerability holds up
+- "false-positive": you found a concrete reason it does not exploit (specific sanitiser, auth gate, dead code)
+- "fixed": the code already has the mitigation in place
+- "uncertain": you cannot confidently disprove it but the evidence is thin — caller may demote severity
+
+Be specific in "reasoning": name the sanitiser, the function, the line. Generic doubt is not enough to flip a true-positive. Return verdicts via the structured output channel. ` + "`adjustedSeverity`" + ` is optional and only set when you want to demote a finding whose original severity overstates the residual risk.`
+	} else {
+		system = `You are revalidating previously reported security findings against the CURRENT state of the file. For each finding decide one of:
 - "true-positive": the vulnerability is still present and exploitable
 - "false-positive": the original report was wrong
 - "fixed": the code has been changed and the issue is no longer present
 - "uncertain": you can't tell from this file alone
 
 Return findings via the structured output channel. ` + "`adjustedSeverity`" + ` is optional and only set when you want to change the original severity.`
+	}
 
 	var u strings.Builder
 	fmt.Fprintf(&u, "File: %s\nCode:\n", in.FilePath)

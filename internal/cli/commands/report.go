@@ -46,6 +46,9 @@ func NewReportCmd(loader func() (*cli.Context, error)) *cobra.Command {
 					return fmt.Errorf("unknown severity: %s", minSeverity)
 				}
 			}
+			if format == "html" {
+				return runHTMLReport(projectID, records, minSev, runID, realOnly, output)
+			}
 			rows := collectRows(records, minSev, runID, realOnly)
 			sort.SliceStable(rows, func(i, j int) bool {
 				return rows[i].finding.Severity.Rank() > rows[j].finding.Severity.Rank()
@@ -88,8 +91,8 @@ func NewReportCmd(loader func() (*cli.Context, error)) *cobra.Command {
 	cmd.Flags().StringVar(&minSeverity, "min-severity", "", "Minimum severity to include (default 3 outputs only)")
 	cmd.Flags().StringVar(&runID, "run-id", "", "Only include findings produced by this run")
 	cmd.Flags().BoolVar(&realOnly, "real-only", false, "Drop FP/Fixed findings (default 3 outputs only)")
-	cmd.Flags().StringVar(&format, "format", "", "Output format: empty for the default markdown+JSON+CSV trio, or 'soc2'/'ssdf' for compliance-formatted output")
-	cmd.Flags().StringVar(&output, "output", "", "Output file path for compliance-formatted output (default: data/<project>/reports/compliance.json)")
+	cmd.Flags().StringVar(&format, "format", "", "Output format: empty for the default markdown+JSON+CSV trio, 'html' for a static-site viewer, or 'soc2'/'ssdf' for compliance-formatted output")
+	cmd.Flags().StringVar(&output, "output", "", "Output directory or file for the chosen format (required for html; default for compliance: data/<project>/reports/compliance.json)")
 	cmd.Flags().StringVar(&verifyPath, "verify", "", "Verify a previously generated compliance report against DEEPSEC_REPORT_SIGNING_KEY")
 	return cmd
 }

@@ -54,24 +54,24 @@ type ComplianceManifest struct {
 // designed to round-trip through GRC ingestion without manual
 // remapping.
 type ComplianceFinding struct {
-	FindingID       string   `json:"finding_id"`
-	DetectedAt      string   `json:"detected_at"`
-	DetectedByRun   string   `json:"detected_by_run"`
-	Provider        string   `json:"provider"`
-	Model           string   `json:"model"`
-	Severity        string   `json:"severity"`
-	CWE             string   `json:"cwe,omitempty"`
-	VulnSlug        string   `json:"vuln_slug"`
-	File            string   `json:"file"`
-	Lines           []int    `json:"lines"`
-	Title           string   `json:"title"`
-	Description     string   `json:"description"`
-	Recommendation  string   `json:"recommendation"`
-	Confidence      string   `json:"confidence"`
-	Status          string   `json:"status"`
-	StatusChangedAt string   `json:"status_changed_at,omitempty"`
-	StatusReason    string   `json:"status_reason,omitempty"`
-	EvidenceHash    string   `json:"evidence_hash"`
+	FindingID       string `json:"finding_id"`
+	DetectedAt      string `json:"detected_at"`
+	DetectedByRun   string `json:"detected_by_run"`
+	Provider        string `json:"provider"`
+	Model           string `json:"model"`
+	Severity        string `json:"severity"`
+	CWE             string `json:"cwe,omitempty"`
+	VulnSlug        string `json:"vuln_slug"`
+	File            string `json:"file"`
+	Lines           []int  `json:"lines"`
+	Title           string `json:"title"`
+	Description     string `json:"description"`
+	Recommendation  string `json:"recommendation"`
+	Confidence      string `json:"confidence"`
+	Status          string `json:"status"`
+	StatusChangedAt string `json:"status_changed_at,omitempty"`
+	StatusReason    string `json:"status_reason,omitempty"`
+	EvidenceHash    string `json:"evidence_hash"`
 }
 
 // ComplianceSig is an HMAC-SHA256 over the canonical-JSON encoding of

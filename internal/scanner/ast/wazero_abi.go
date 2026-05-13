@@ -8,6 +8,7 @@ import (
 	"math"
 	"regexp"
 	"sync"
+	"unicode"
 
 	_ "embed"
 
@@ -44,6 +45,7 @@ type wasmRuntime struct {
 	env           api.Module
 	transfer      uint32
 	currentSource string
+	currentUTF16  []uint32
 	languages     map[Language]*wasmLanguage
 }
 
@@ -64,6 +66,7 @@ type wasmTree struct {
 	treePtr  uint32
 	filePath string
 	content  string
+	utf16    []uint32
 }
 
 type wasmNode struct {
@@ -123,6 +126,9 @@ func (w *wasmRuntime) instantiate(ctx context.Context, rt wazero.Runtime) error 
 		return fmt.Errorf("tree-sitter core module missing")
 	}
 	w.core = core
+	if err := instantiateLibcHost(ctx, rt); err != nil {
+		return err
+	}
 	if err := w.callVoid(ctx, "__wasm_apply_data_relocs"); err != nil {
 		return err
 	}
@@ -163,13 +169,77 @@ func (w *wasmRuntime) resizeHeap(ctx context.Context, m api.Module, requested ui
 	return 1
 }
 
+func instantiateLibcHost(ctx context.Context, rt wazero.Runtime) error {
+	if rt.Module("deepsec_libc") != nil {
+		return nil
+	}
+	host := rt.NewHostModuleBuilder("deepsec_libc")
+	host.NewFunctionBuilder().WithFunc(func(_ context.Context, c uint32) uint32 {
+		if unicode.IsSpace(rune(c)) {
+			return 1
+		}
+		return 0
+	}).Export("iswspace")
+	host.NewFunctionBuilder().WithFunc(func(_ context.Context, c uint32) uint32 {
+		if unicode.IsLetter(rune(c)) {
+			return 1
+		}
+		return 0
+	}).Export("iswalpha")
+	host.NewFunctionBuilder().WithFunc(func(_ context.Context, c uint32) uint32 {
+		r := rune(c)
+		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			return 1
+		}
+		return 0
+	}).Export("iswalnum")
+	host.NewFunctionBuilder().WithFunc(func(_ context.Context, c uint32) uint32 {
+		if unicode.IsDigit(rune(c)) {
+			return 1
+		}
+		return 0
+	}).Export("iswdigit")
+	host.NewFunctionBuilder().WithFunc(func(_ context.Context, c uint32) uint32 {
+		if unicode.IsLower(rune(c)) {
+			return 1
+		}
+		return 0
+	}).Export("iswlower")
+	host.NewFunctionBuilder().WithFunc(func(_ context.Context, c uint32) uint32 {
+		if unicode.IsUpper(rune(c)) {
+			return 1
+		}
+		return 0
+	}).Export("iswupper")
+	host.NewFunctionBuilder().WithFunc(func(_ context.Context, c uint32) uint32 {
+		if isASCIIHex(c) {
+			return 1
+		}
+		return 0
+	}).Export("iswxdigit")
+	host.NewFunctionBuilder().WithFunc(func(_ context.Context, c uint32) uint32 {
+		return uint32(unicode.ToLower(rune(c)))
+	}).Export("towlower")
+	host.NewFunctionBuilder().WithFunc(func(_ context.Context, c uint32) uint32 {
+		return uint32(unicode.ToUpper(rune(c)))
+	}).Export("towupper")
+	if _, err := host.Instantiate(ctx); err != nil {
+		return fmt.Errorf("instantiate grammar libc host imports: %w", err)
+	}
+	return nil
+}
+
+func isASCIIHex(c uint32) bool {
+	return ('0' <= c && c <= '9') || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F')
+}
+
 func (w *wasmRuntime) parseCallback(ctx context.Context, m api.Module, inputBuffer, index, _, _ uint32, lengthAddr uint32) {
 	mem := m.Memory()
-	if mem == nil || index >= uint32(len(w.currentSource)) {
+	if mem == nil || len(w.currentUTF16) == 0 || index >= uint32(len(w.currentUTF16)-1) {
 		_ = mem.WriteUint32Le(lengthAddr, 0)
 		return
 	}
-	src := w.currentSource[index:]
+	src := w.currentSource[w.currentUTF16[index]:]
 	units := 0
 	off := inputBuffer
 	for _, r := range src {
@@ -208,16 +278,21 @@ func (w *wasmRuntime) loadLanguage(ctx context.Context, rt wazero.Runtime, g Gra
 		return nil, err
 	}
 	memBase := align(uint32(memBaseOut[0]), 1<<meta.memoryAlign)
-	tableBaseOut, err := w.env.ExportedFunction("grow_table").Call(ctx, uint64(meta.tableSize))
+	tableSize := meta.tableSize + (1 << meta.tableAlign)
+	tableBaseOut, err := w.env.ExportedFunction("grow_table").Call(ctx, uint64(tableSize))
 	if err != nil {
 		return nil, fmt.Errorf("grow tree-sitter table: %w", err)
 	}
-	tableBase := uint32(tableBaseOut[0])
-	bridgeBytes := grammarBridgeModule("g00", memBase, tableBase)
-	if _, err := rt.InstantiateWithConfig(ctx, bridgeBytes, wazero.NewModuleConfig().WithName("g00").WithStartFunctions()); err != nil {
+	tableBase := align(uint32(tableBaseOut[0]), 1<<meta.tableAlign)
+	bridgeName := fmt.Sprintf("g%02d", len(w.languages))
+	bridgeBytes := grammarBridgeModule(memBase, tableBase)
+	if _, err := rt.InstantiateWithConfig(ctx, bridgeBytes, wazero.NewModuleConfig().WithName(bridgeName).WithStartFunctions()); err != nil {
 		return nil, fmt.Errorf("instantiate %s grammar import bridge: %w", g.Language, err)
 	}
-	patched := patchImportModule(g.WASM, "env", "g00")
+	patched, err := patchGrammarImports(g.WASM, bridgeName)
+	if err != nil {
+		return nil, fmt.Errorf("patch %s grammar imports: %w", g.Language, err)
+	}
 	name := "tree-sitter-" + string(g.Language)
 	if _, err := rt.InstantiateWithConfig(ctx, patched, wazero.NewModuleConfig().WithName(name).WithStartFunctions()); err != nil {
 		return nil, fmt.Errorf("instantiate %s grammar wasm: %w", g.Language, err)
@@ -236,7 +311,11 @@ func (w *wasmRuntime) loadLanguage(ctx context.Context, rt wazero.Runtime, g Gra
 			return nil, fmt.Errorf("%s grammar constructors: %w", g.Language, err)
 		}
 	}
-	ctor := mod.ExportedFunction("tree_sitter_" + string(g.Language))
+	entry := g.EntryName
+	if entry == "" {
+		entry = string(g.Language)
+	}
+	ctor := mod.ExportedFunction("tree_sitter_" + entry)
 	if ctor == nil {
 		return nil, fmt.Errorf("%s grammar constructor missing", g.Language)
 	}
@@ -258,7 +337,7 @@ func (w *wasmRuntime) loadLanguage(ctx context.Context, rt wazero.Runtime, g Gra
 		version:   int(version[0]),
 		symbols:   map[uint32]string{},
 		fieldIDs:  map[string]uint32{},
-		bridgeMod: rt.Module("g00"),
+		bridgeMod: rt.Module(bridgeName),
 	}
 	if err := w.fillLanguageTables(ctx, lang); err != nil {
 		return nil, err
@@ -332,8 +411,14 @@ func (w *wasmRuntime) parse(ctx context.Context, rt wazero.Runtime, g Grammar, c
 	if _, err := w.call(ctx, "ts_parser_reset", uint64(lang.parser)); err != nil {
 		return nil, err
 	}
-	w.currentSource = string(content)
-	defer func() { w.currentSource = "" }()
+	source := string(content)
+	utf16Map := utf16ByteMap(source)
+	w.currentSource = source
+	w.currentUTF16 = utf16Map
+	defer func() {
+		w.currentSource = ""
+		w.currentUTF16 = nil
+	}()
 	treeOut, err := w.call(ctx, "ts_parser_parse_wasm", uint64(lang.parser), uint64(lang.parserBuf), 0, 0, 0)
 	if err != nil {
 		return nil, err
@@ -341,7 +426,19 @@ func (w *wasmRuntime) parse(ctx context.Context, rt wazero.Runtime, g Grammar, c
 	if treeOut[0] == 0 {
 		return nil, fmt.Errorf("tree-sitter parse returned null")
 	}
-	return &wasmTree{rt: w, lang: lang, treePtr: uint32(treeOut[0]), filePath: filePath, content: string(content)}, nil
+	return &wasmTree{rt: w, lang: lang, treePtr: uint32(treeOut[0]), filePath: filePath, content: source, utf16: utf16Map}, nil
+}
+
+func utf16ByteMap(s string) []uint32 {
+	out := make([]uint32, 0, len(s)+1)
+	for byteOffset, r := range s {
+		out = append(out, uint32(byteOffset))
+		if r > 0xffff {
+			out = append(out, uint32(byteOffset))
+		}
+	}
+	out = append(out, uint32(len(s)))
+	return out
 }
 
 func ExecuteQuery(ctx context.Context, tree Tree, q Query) ([]QueryMatch, error) {
@@ -539,6 +636,12 @@ func (t *wasmTree) FilePath() string   { return t.filePath }
 func (t *wasmTree) Content() string    { return t.content }
 func (t *wasmTree) Source() []byte     { return []byte(t.content) }
 func (t *wasmTree) RootRange() Range   { return t.Root().Range() }
+func (t *wasmTree) byteOffset(utf16Offset uint32) int {
+	if int(utf16Offset) >= len(t.utf16) {
+		return len(t.content)
+	}
+	return int(t.utf16[utf16Offset])
+}
 func (t *wasmTree) Root() Node {
 	if _, err := t.rt.call(context.Background(), "ts_tree_root_node_wasm", uint64(t.treePtr)); err != nil {
 		return nil
@@ -572,8 +675,8 @@ func (n *wasmNode) Range() Range {
 	_, _ = rt.call(context.Background(), "ts_node_end_point_wasm", uint64(n.tree.treePtr))
 	endRow, _ := rt.mem().ReadUint32Le(rt.transfer)
 	return Range{
-		StartByte: int(n.startIndex),
-		EndByte:   int(endIndexOut[0]),
+		StartByte: n.tree.byteOffset(n.startIndex),
+		EndByte:   n.tree.byteOffset(uint32(endIndexOut[0])),
 		StartLine: int(n.startRow) + 1,
 		EndLine:   int(endRow) + 1,
 	}
@@ -717,25 +820,215 @@ func align(v, by uint32) uint32 {
 	return (v + by - 1) &^ (by - 1)
 }
 
-func patchImportModule(wasm []byte, old, new string) []byte {
-	out := append([]byte(nil), wasm...)
-	oldSeq := append([]byte{byte(len(old))}, []byte(old)...)
-	newSeq := append([]byte{byte(len(new))}, []byte(new)...)
-	return bytes.ReplaceAll(out, oldSeq, newSeq)
+func patchGrammarImports(wasm []byte, bridgeName string) ([]byte, error) {
+	if len(wasm) < 8 || string(wasm[:4]) != "\x00asm" {
+		return nil, errors.New("invalid wasm header")
+	}
+	var out bytes.Buffer
+	out.Write(wasm[:8])
+	pos := 8
+	patched := false
+	for pos < len(wasm) {
+		sectionStart := pos
+		id := wasm[pos]
+		pos++
+		sectionSize, n := readULEB(wasm[pos:])
+		if n == 0 {
+			return nil, errors.New("invalid wasm section size")
+		}
+		pos += n
+		payloadStart := pos
+		payloadEnd := payloadStart + int(sectionSize)
+		if payloadEnd > len(wasm) {
+			return nil, errors.New("wasm section exceeds input")
+		}
+		if id != 2 {
+			out.Write(wasm[sectionStart:payloadEnd])
+			pos = payloadEnd
+			continue
+		}
+		imports, err := rewriteImportSection(wasm[payloadStart:payloadEnd], bridgeName)
+		if err != nil {
+			return nil, err
+		}
+		writeSection(&out, 2, imports)
+		patched = true
+		pos = payloadEnd
+	}
+	if !patched {
+		return nil, errors.New("import section not found")
+	}
+	return out.Bytes(), nil
 }
 
-func grammarBridgeModule(name string, memoryBase, tableBase uint32) []byte {
+func rewriteImportSection(payload []byte, bridgeName string) ([]byte, error) {
+	count, pos := readULEB(payload)
+	if pos == 0 {
+		return nil, errors.New("invalid import count")
+	}
+	type importEntry struct {
+		module string
+		name   string
+		kind   byte
+		desc   []byte
+	}
+	entries := make([]importEntry, 0, count)
+	for i := uint32(0); i < count; i++ {
+		module, used, ok := readName(payload[pos:])
+		if !ok {
+			return nil, errors.New("invalid import module name")
+		}
+		pos += used
+		name, used, ok := readName(payload[pos:])
+		if !ok {
+			return nil, errors.New("invalid import name")
+		}
+		pos += used
+		if pos >= len(payload) {
+			return nil, errors.New("missing import kind")
+		}
+		kind := payload[pos]
+		pos++
+		descStart := pos
+		var err error
+		pos, err = skipImportDesc(payload, pos, kind)
+		if err != nil {
+			return nil, err
+		}
+		if module == "env" {
+			module = grammarImportModule(name, bridgeName)
+		}
+		entries = append(entries, importEntry{
+			module: module,
+			name:   name,
+			kind:   kind,
+			desc:   append([]byte(nil), payload[descStart:pos]...),
+		})
+	}
+	if pos != len(payload) {
+		return nil, errors.New("trailing import section bytes")
+	}
+	var out bytes.Buffer
+	writeULEB(&out, uint32(len(entries)))
+	for _, entry := range entries {
+		writeImport(&out, entry.module, entry.name)
+		out.WriteByte(entry.kind)
+		out.Write(entry.desc)
+	}
+	return out.Bytes(), nil
+}
+
+func grammarImportModule(name, bridgeName string) string {
+	switch name {
+	case "malloc", "free", "calloc", "realloc", "memcpy":
+		return "tree-sitter-core"
+	case "iswspace", "iswalpha", "iswalnum", "iswdigit", "iswlower", "iswupper", "iswxdigit", "towlower", "towupper":
+		return "deepsec_libc"
+	default:
+		return bridgeName
+	}
+}
+
+func skipImportDesc(payload []byte, pos int, kind byte) (int, error) {
+	switch kind {
+	case 0x00: // function type index
+		_, n := readULEB(payload[pos:])
+		if n == 0 {
+			return 0, errors.New("invalid function import descriptor")
+		}
+		return pos + n, nil
+	case 0x01: // table
+		if pos >= len(payload) {
+			return 0, errors.New("invalid table import descriptor")
+		}
+		pos++ // element type
+		return skipLimits(payload, pos)
+	case 0x02: // memory
+		return skipLimits(payload, pos)
+	case 0x03: // global
+		if pos+2 > len(payload) {
+			return 0, errors.New("invalid global import descriptor")
+		}
+		return pos + 2, nil
+	default:
+		return 0, fmt.Errorf("unsupported import kind %d", kind)
+	}
+}
+
+func skipLimits(payload []byte, pos int) (int, error) {
+	if pos >= len(payload) {
+		return 0, errors.New("invalid limits descriptor")
+	}
+	flags := payload[pos]
+	pos++
+	_, n := readULEB(payload[pos:])
+	if n == 0 {
+		return 0, errors.New("invalid limits minimum")
+	}
+	pos += n
+	if flags&0x01 != 0 {
+		_, n = readULEB(payload[pos:])
+		if n == 0 {
+			return 0, errors.New("invalid limits maximum")
+		}
+		pos += n
+	}
+	return pos, nil
+}
+
+type bridgeFuncImport struct {
+	module    string
+	name      string
+	typeIndex uint32
+}
+
+const (
+	bridgeTypeI32ToI32 uint32 = iota
+	bridgeTypeI32I32ToI32
+	bridgeTypeI32I32I32ToI32
+	bridgeTypeI32ToVoid
+)
+
+var bridgeFuncImports = []bridgeFuncImport{
+	{module: "tree-sitter-core", name: "malloc", typeIndex: bridgeTypeI32ToI32},
+	{module: "tree-sitter-core", name: "free", typeIndex: bridgeTypeI32ToVoid},
+	{module: "tree-sitter-core", name: "calloc", typeIndex: bridgeTypeI32I32ToI32},
+	{module: "tree-sitter-core", name: "realloc", typeIndex: bridgeTypeI32I32ToI32},
+	{module: "tree-sitter-core", name: "memcpy", typeIndex: bridgeTypeI32I32I32ToI32},
+	{module: "deepsec_libc", name: "iswspace", typeIndex: bridgeTypeI32ToI32},
+	{module: "deepsec_libc", name: "iswalpha", typeIndex: bridgeTypeI32ToI32},
+	{module: "deepsec_libc", name: "iswalnum", typeIndex: bridgeTypeI32ToI32},
+	{module: "deepsec_libc", name: "iswdigit", typeIndex: bridgeTypeI32ToI32},
+	{module: "deepsec_libc", name: "iswlower", typeIndex: bridgeTypeI32ToI32},
+	{module: "deepsec_libc", name: "iswupper", typeIndex: bridgeTypeI32ToI32},
+	{module: "deepsec_libc", name: "iswxdigit", typeIndex: bridgeTypeI32ToI32},
+	{module: "deepsec_libc", name: "towlower", typeIndex: bridgeTypeI32ToI32},
+	{module: "deepsec_libc", name: "towupper", typeIndex: bridgeTypeI32ToI32},
+}
+
+func grammarBridgeModule(memoryBase, tableBase uint32) []byte {
 	var body bytes.Buffer
 	body.Write([]byte("\x00asm\x01\x00\x00\x00"))
+	writeSection(&body, 1, bridgeTypeSection())
 	writeSection(&body, 2, bridgeImportSection())
 	writeSection(&body, 6, bridgeGlobalSection(memoryBase, tableBase))
 	writeSection(&body, 7, bridgeExportSection())
 	return body.Bytes()
 }
 
+func bridgeTypeSection() []byte {
+	var b bytes.Buffer
+	writeULEB(&b, 4)
+	writeFuncType(&b, []byte{0x7f}, []byte{0x7f})
+	writeFuncType(&b, []byte{0x7f, 0x7f}, []byte{0x7f})
+	writeFuncType(&b, []byte{0x7f, 0x7f, 0x7f}, []byte{0x7f})
+	writeFuncType(&b, []byte{0x7f}, nil)
+	return b.Bytes()
+}
+
 func bridgeImportSection() []byte {
 	var b bytes.Buffer
-	writeULEB(&b, 2)
+	writeULEB(&b, uint32(2+len(bridgeFuncImports)))
 	writeImport(&b, "env", "memory")
 	b.WriteByte(0x02) // memory
 	b.WriteByte(0x00) // min only
@@ -745,6 +1038,11 @@ func bridgeImportSection() []byte {
 	b.WriteByte(0x70) // funcref
 	b.WriteByte(0x00) // min only
 	writeULEB(&b, 2)
+	for _, fn := range bridgeFuncImports {
+		writeImport(&b, fn.module, fn.name)
+		b.WriteByte(0x00) // function
+		writeULEB(&b, fn.typeIndex)
+	}
 	return b.Bytes()
 }
 
@@ -758,11 +1056,14 @@ func bridgeGlobalSection(memoryBase, tableBase uint32) []byte {
 
 func bridgeExportSection() []byte {
 	var b bytes.Buffer
-	writeULEB(&b, 4)
+	writeULEB(&b, uint32(4+len(bridgeFuncImports)))
 	writeExport(&b, "memory", 0x02, 0)
 	writeExport(&b, "__indirect_function_table", 0x01, 0)
 	writeExport(&b, "__memory_base", 0x03, 0)
 	writeExport(&b, "__table_base", 0x03, 1)
+	for idx, fn := range bridgeFuncImports {
+		writeExport(&b, fn.name, 0x00, uint32(idx))
+	}
 	return b.Bytes()
 }
 
@@ -788,10 +1089,33 @@ func writeNameBytes(b *bytes.Buffer, name string) {
 	b.WriteString(name)
 }
 
+func writeFuncType(b *bytes.Buffer, params, results []byte) {
+	b.WriteByte(0x60)
+	writeULEB(b, uint32(len(params)))
+	b.Write(params)
+	writeULEB(b, uint32(len(results)))
+	b.Write(results)
+}
+
 func writeConstGlobal(b *bytes.Buffer, value uint32) {
 	b.WriteByte(0x7f) // i32
 	b.WriteByte(0x00) // immutable
 	b.WriteByte(0x41) // i32.const
-	writeULEB(b, value)
+	writeSLEB32(b, int32(value))
 	b.WriteByte(0x0b)
+}
+
+func writeSLEB32(buf *bytes.Buffer, v int32) {
+	for {
+		b := byte(v & 0x7f)
+		v >>= 7
+		done := (v == 0 && b&0x40 == 0) || (v == -1 && b&0x40 != 0)
+		if !done {
+			b |= 0x80
+		}
+		buf.WriteByte(b)
+		if done {
+			return
+		}
+	}
 }

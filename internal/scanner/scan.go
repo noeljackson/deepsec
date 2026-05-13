@@ -293,8 +293,8 @@ func runMatchers(reg *Registry, active []string, content, rel string, astRT *sca
 		if !matchesAnyGlob(m.FilePatterns(), rel) {
 			continue
 		}
-		out = append(out, m.Match(content, rel)...)
-		if astRT == nil || astLang == "" || !m.HasASTPatterns() {
+		if astRT == nil || astLang == "" || !m.HasASTLanguage(astLang) {
+			out = append(out, m.Match(content, rel)...)
 			continue
 		}
 		patterns := m.EligibleASTPatterns(content, rel, astLang)

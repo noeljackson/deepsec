@@ -37,6 +37,23 @@ follow the links for depth.
 
 ## The five layers, in plain English
 
+### 0. Fixtures: vendored or git-pinned
+
+Bench tasks point at source either by vendoring `source/` files or by
+pinning a remote repo + SHA in `task.toml`:
+
+```toml
+[repo]
+url    = "https://github.com/tailscale/tailscale.git"
+commit = "abc123…"
+```
+
+External-repo tasks are shallow-cloned to a fresh temp dir per scoring
+run; the source never lands in the deepsec tree. Lets the bench grow
+toward realistic-scale corpora (kubernetes, tailscale, etc.) where the
+agent's matcher-narrowing has signal. See [`../bench/README.md`](../bench/README.md)
+for the worked example and cross-model labeling layout.
+
 ### 1. The harness measures what's currently there
 
 - **Scanner eval** ([`bench/README.md`](../bench/README.md)): runs the

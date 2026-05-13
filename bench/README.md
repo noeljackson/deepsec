@@ -127,6 +127,77 @@ but are not honestly detectable by the current regex scanner. Those
 issues are reported as scanner-uncovered and excluded from scanner recall
 denominators.
 
+## External fixtures: worked example
+
+Pin a real OSS repo at a SHA and label only the sites you care about.
+The source never enters the deepsec tree:
+
+```text
+bench/tasks/tailscale-tls/
+  answer.yaml
+  task.toml
+```
+
+`task.toml`:
+
+```toml
+[repo]
+url    = "https://github.com/tailscale/tailscale.git"
+commit = "<pinned-sha>"
+
+# Optional: only score one slug across the (large) external repo.
+matcher_only = ["tls-skip-verification"]
+```
+
+`answer.yaml`:
+
+```yaml
+issues:
+  - id: tailscale-tls-001
+    file: derp/derphttp/derphttp_server.go
+    severity: HIGH
+    vulnSlugs: [tls-skip-verification]
+    location: { startLine: 142, endLine: 142, tolerance: 3 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: tailscale-tls-decoy-cert-test
+    file: net/tlsdial/tlsdial_test.go
+    line: 78
+    forbiddenSlugs: [tls-skip-verification]
+```
+
+Run `benchsec score tailscale-tls`. The runner shallow-clones the SHA,
+scans, scores, and removes the clone. CI safely scores external
+fixtures the same way; the clone is per-run and bounded by `--depth 1`.
+
+### Cross-model labeling
+
+When you have findings from a second model (e.g. a specialized
+cybersecurity model run on the same SHA), drop the JSON next to the
+task:
+
+```text
+bench/tasks/tailscale-tls/
+  answer.yaml
+  task.toml
+  findings/
+    gpt-cyber.json   # findings from a second model
+    glm-5.1.json     # optional: cached findings from our default LLM
+```
+
+The 3-way diff (regex candidates vs. model A vs. model B vs.
+human-labeled answer.yaml) tells you:
+
+- **Both models hit, answer.yaml agrees** → high-confidence true positive.
+- **Only one model hit** → labeling question for human review.
+- **Both models refused but regex fired** → high-confidence false
+  positive; good decoy candidate.
+- **Both models hit something we missed entirely** → matcher-pack
+  coverage gap; add a new matcher slug.
+
+This format is stable; a dedicated subcommand for 3-way comparison will
+land separately when there's enough real data to validate against.
+
 ## Metrics
 
 - `scanner_recall`: detectable answer-key issues matched by at least one

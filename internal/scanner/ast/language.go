@@ -18,6 +18,10 @@ const (
 	LanguagePython     Language = "python"
 	LanguageRust       Language = "rust"
 	LanguageJava       Language = "java"
+	LanguageKotlin     Language = "kotlin"
+	LanguageSwift      Language = "swift"
+	LanguageC          Language = "c"
+	LanguageCpp        Language = "cpp"
 )
 
 var supported = map[Language]struct{}{
@@ -29,6 +33,10 @@ var supported = map[Language]struct{}{
 	LanguagePython:     {},
 	LanguageRust:       {},
 	LanguageJava:       {},
+	LanguageKotlin:     {},
+	LanguageSwift:      {},
+	LanguageC:          {},
+	LanguageCpp:        {},
 }
 
 func IsSupported(lang Language) bool {
@@ -46,6 +54,10 @@ func SupportedLanguages() []Language {
 		LanguagePython,
 		LanguageRust,
 		LanguageJava,
+		LanguageKotlin,
+		LanguageSwift,
+		LanguageC,
+		LanguageCpp,
 	}
 }
 
@@ -67,6 +79,14 @@ func LanguageForPath(path string) Language {
 		return LanguageRust
 	case ".java":
 		return LanguageJava
+	case ".kt", ".kts":
+		return LanguageKotlin
+	case ".swift":
+		return LanguageSwift
+	case ".c", ".h":
+		return LanguageC
+	case ".cc", ".cpp", ".cxx", ".hpp":
+		return LanguageCpp
 	default:
 		return ""
 	}

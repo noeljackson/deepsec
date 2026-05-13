@@ -76,6 +76,11 @@ AST changes.
 - **Recorder** (`deepsec process --record`): captures a live run into
   the same JSONL format the replay backend consumes. Real-mode runs
   become reproducible fixtures.
+- **Agentic process mode** (`deepsec process --tools`): lets the
+  investigator call read-only project tools before `report_findings`.
+  This is useful when processor false positives depend on surrounding
+  middleware, helper functions, or upstream sanitization rather than the
+  candidate line alone. See [`agentic-tools.md`](agentic-tools.md).
 
 ### 2. Sampling pins make scores reproducible
 
@@ -148,6 +153,7 @@ valve works.
 | Architecture overview | [`architecture.md`](architecture.md) |
 | Scanner eval harness | [`../bench/README.md`](../bench/README.md) |
 | Processor replay eval | [`../bench/PROCESSOR.md`](../bench/PROCESSOR.md) |
+| Agentic process mode | [`agentic-tools.md`](agentic-tools.md) |
 | Writing matchers | [`writing-matchers.md`](writing-matchers.md) |
 | Configuration | [`configuration.md`](configuration.md) |
 | Human review CLI | [`matcher-review.md`](matcher-review.md) |
@@ -160,7 +166,7 @@ valve works.
 ## Common workflows
 
 **Find vulns in a real project** — `getting-started.md` → `scan` →
-`process` → `report`.
+`process` or `process --tools` → `report`.
 
 **Improve a noisy matcher by hand** — `matcher-review.md` → `benchsec
 review --slug X --edit` → accept → commit.

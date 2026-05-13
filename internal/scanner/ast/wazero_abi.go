@@ -3,7 +3,6 @@ package ast
 import (
 	"bytes"
 	"context"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"math"
@@ -796,5 +795,3 @@ func writeConstGlobal(b *bytes.Buffer, value uint32) {
 	writeULEB(b, value)
 	b.WriteByte(0x0b)
 }
-
-func u32(buf []byte) uint32 { return binary.LittleEndian.Uint32(buf) }

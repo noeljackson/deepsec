@@ -19,6 +19,7 @@ type ScoreOptions struct {
 	TasksDir           string
 	OutDir             string
 	CandidateExplosion float64
+	ExtraMatcherPaths  []string
 }
 
 type TaskConfig struct {
@@ -96,6 +97,7 @@ type FalsePositive struct {
 	Slug        string `json:"slug"`
 	Contradicts string `json:"contradicts"`
 	Snippet     string `json:"snippet,omitempty"`
+	Matched     string `json:"matched,omitempty"`
 }
 
 type FalseNegative struct {
@@ -145,6 +147,21 @@ func Score(taskIDs []string, opts ScoreOptions) (*RunResult, error) {
 	if err != nil {
 		return nil, err
 	}
+	for _, p := range opts.ExtraMatcherPaths {
+		info, err := os.Stat(p)
+		if err != nil {
+			return nil, fmt.Errorf("extra matcher path %q: %w", p, err)
+		}
+		if info.IsDir() {
+			if err := reg.LoadTOMLDir(p); err != nil {
+				return nil, fmt.Errorf("extra matcher path %q: %w", p, err)
+			}
+			continue
+		}
+		if err := reg.LoadTOMLFile(p); err != nil {
+			return nil, fmt.Errorf("extra matcher path %q: %w", p, err)
+		}
+	}
 	noise := map[string]scanner.NoiseTier{}
 	for _, m := range reg.All() {
 		noise[m.Slug()] = m.NoiseTier()
@@ -155,7 +172,7 @@ func Score(taskIDs []string, opts ScoreOptions) (*RunResult, error) {
 	result := &RunResult{}
 	agg := accumulator{}
 	for _, id := range taskIDs {
-		tr, err := scoreTask(id, opts.TasksDir, outDir, opts.CandidateExplosion, noise)
+		tr, err := scoreTask(id, opts.TasksDir, outDir, opts.CandidateExplosion, noise, opts.ExtraMatcherPaths)
 		if err != nil {
 			return nil, err
 		}
@@ -189,7 +206,7 @@ type scoredTask struct {
 	slugNoisy           map[string]int
 }
 
-func scoreTask(id, tasksDir, outDir string, explosionThreshold float64, noise map[string]scanner.NoiseTier) (scoredTask, error) {
+func scoreTask(id, tasksDir, outDir string, explosionThreshold float64, noise map[string]scanner.NoiseTier, extraMatcherPaths []string) (scoredTask, error) {
 	taskDir := filepath.Join(tasksDir, id)
 	source := filepath.Join(taskDir, "source")
 	key, err := LoadAnswerKey(filepath.Join(taskDir, "answer.yaml"))
@@ -207,11 +224,12 @@ func scoreTask(id, tasksDir, outDir string, explosionThreshold float64, noise ma
 	defer os.RemoveAll(dataDir)
 
 	outcome, err := scanner.Scan(scanner.Options{
-		ProjectID:      id,
-		Root:           source,
-		DataRoot:       core.DataRootFromPath(dataDir),
-		MatcherOnly:    cfg.MatcherOnly,
-		MatcherExclude: cfg.MatcherExclude,
+		ProjectID:         id,
+		Root:              source,
+		DataRoot:          core.DataRootFromPath(dataDir),
+		MatcherOnly:       cfg.MatcherOnly,
+		MatcherExclude:    cfg.MatcherExclude,
+		ExtraMatcherPaths: extraMatcherPaths,
 	})
 	if err != nil {
 		return scoredTask{}, err
@@ -277,6 +295,7 @@ func scoreTask(id, tasksDir, outDir string, explosionThreshold float64, noise ma
 			Slug:        c.VulnSlug,
 			Contradicts: contradicts,
 			Snippet:     c.Snippet,
+			Matched:     c.MatchedPattern,
 		})
 	}
 

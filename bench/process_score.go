@@ -18,9 +18,12 @@ import (
 )
 
 type ProcessScoreOptions struct {
-	TasksDir string
-	OutDir   string
-	Now      string
+	TasksDir         string
+	OutDir           string
+	Now              string
+	Repeat           int
+	Seed             uint64
+	BootstrapSamples int
 }
 
 type ProcessorAnswerKey struct {
@@ -129,6 +132,13 @@ type producedFindingRef struct {
 }
 
 func ProcessScore(taskIDs []string, opts ProcessScoreOptions) (*ProcessRunResult, error) {
+	if opts.Repeat > 1 {
+		repeated, err := ProcessScoreRepeated(taskIDs, opts)
+		if err != nil {
+			return nil, err
+		}
+		return repeated.LastRun, nil
+	}
 	if opts.TasksDir == "" {
 		opts.TasksDir = filepath.Join("bench", "processor-fixtures")
 	}
@@ -146,13 +156,17 @@ func ProcessScore(taskIDs []string, opts ProcessScoreOptions) (*ProcessRunResult
 		}
 		taskIDs = ids
 	}
-	outDir := filepath.Join(opts.OutDir, now)
+	opts.Now = now
+	return processScoreOnce(taskIDs, opts, filepath.Join(opts.OutDir, now), opts.Seed)
+}
+
+func processScoreOnce(taskIDs []string, opts ProcessScoreOptions, outDir string, seed uint64) (*ProcessRunResult, error) {
 	result := &ProcessRunResult{}
 	agg := processAccumulator{
 		slugTP: map[string]int{}, slugFP: map[string]int{}, slugFN: map[string]int{},
 	}
 	for _, id := range taskIDs {
-		task, err := processScoreTask(id, opts.TasksDir)
+		task, err := processScoreTask(id, opts.TasksDir, seed)
 		if err != nil {
 			return nil, err
 		}
@@ -163,7 +177,7 @@ func ProcessScore(taskIDs []string, opts ProcessScoreOptions) (*ProcessRunResult
 		result.SeverityMismatches = append(result.SeverityMismatches, task.SeverityMismatches...)
 		agg.add(task)
 	}
-	result.Summary = agg.summary(now, outDir)
+	result.Summary = agg.summary(opts.Now, outDir)
 	result.Summary.TaskCount = len(result.Tasks)
 	if err := writeProcessReports(outDir, result); err != nil {
 		return nil, err
@@ -182,7 +196,7 @@ type scoredProcessTask struct {
 	slugFN             map[string]int
 }
 
-func processScoreTask(id, tasksDir string) (scoredProcessTask, error) {
+func processScoreTask(id, tasksDir string, seed uint64) (scoredProcessTask, error) {
 	taskDir := filepath.Join(tasksDir, id)
 	key, err := loadProcessorAnswerKey(filepath.Join(taskDir, "answer.yaml"))
 	if err != nil {
@@ -206,7 +220,7 @@ func processScoreTask(id, tasksDir string) (scoredProcessTask, error) {
 	if err != nil {
 		return scoredProcessTask{}, err
 	}
-	backend, err := mockbackend.New(filepath.Join(taskDir, "responses.jsonl"))
+	backend, err := mockbackend.NewSeeded(filepath.Join(taskDir, "responses.jsonl"), seed)
 	if err != nil {
 		return scoredProcessTask{}, err
 	}

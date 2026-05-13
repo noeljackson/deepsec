@@ -1,0 +1,159 @@
+# jvm.toml — matchers shared across JVM languages.
+# Java first; Kotlin matchers should land here too as Phase 3 progresses.
+
+[[matcher]]
+slug = "java-jdbc-sqli"
+description = "JDBC executeQuery/executeUpdate with concatenated input"
+noise_tier = "normal"
+file_patterns = ["**/*.java"]
+patterns = [
+  "(?i)\\.(executeQuery|executeUpdate|execute|prepareStatement)\\s*\\(",
+]
+require_content = ["java.sql", "javax.sql", "Statement", "PreparedStatement"]
+snippet_after = 8
+label = "JDBC query built from concatenated input"
+[[matcher.ast_patterns]]
+language = "java"
+label = "JDBC executeQuery with binary concat"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["\\b(executeQuery|executeUpdate|execute|prepareStatement)\\s*\\("]
+query = '''
+(
+  method_invocation
+    name: (identifier) @method
+    arguments: (argument_list
+      (binary_expression) @arg)
+) @call
+(#match? @method "^(executeQuery|executeUpdate|execute|prepareStatement)$")
+'''
+
+[[matcher]]
+slug = "java-runtime-exec"
+description = "Runtime.exec / ProcessBuilder with dynamic argv"
+noise_tier = "normal"
+file_patterns = ["**/*.java"]
+patterns = [
+  "(?i)Runtime\\.getRuntime\\s*\\(\\s*\\)\\s*\\.exec\\s*\\(",
+  "(?i)new\\s+ProcessBuilder\\s*\\(",
+]
+snippet_after = 8
+label = "shell command from input"
+[[matcher.ast_patterns]]
+language = "java"
+label = "Runtime.exec with binary concat"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["Runtime\\.getRuntime", "ProcessBuilder"]
+query = '''
+(
+  method_invocation
+    name: (identifier) @method
+    arguments: (argument_list
+      (binary_expression) @arg)
+) @call
+(#eq? @method "exec")
+'''
+
+[[matcher]]
+slug = "java-xxe"
+description = "DocumentBuilder / SAXParser without external-entity hardening"
+noise_tier = "normal"
+file_patterns = ["**/*.java"]
+patterns = [
+  "(?i)DocumentBuilderFactory\\.newInstance\\s*\\(",
+  "(?i)SAXParserFactory\\.newInstance\\s*\\(",
+  "(?i)XMLInputFactory\\.newInstance\\s*\\(",
+  "(?i)TransformerFactory\\.newInstance\\s*\\(",
+]
+snippet_after = 12
+label = "XML parser without XXE hardening"
+
+[[matcher]]
+slug = "java-deserialize-objectinputstream"
+description = "ObjectInputStream.readObject() — Java native deserialization sink"
+noise_tier = "normal"
+file_patterns = ["**/*.java"]
+patterns = [
+  "(?i)\\bObjectInputStream\\b",
+  "(?i)\\.readObject\\s*\\(",
+]
+require_content = ["ObjectInputStream"]
+snippet_after = 8
+label = "Java deserialization sink"
+
+[[matcher]]
+slug = "java-spring-cors-wildcard"
+description = "@CrossOrigin(origins=\"*\") + allowCredentials true"
+noise_tier = "noisy"
+file_patterns = ["**/*.java"]
+patterns = [
+  "(?i)@CrossOrigin\\s*\\([^)]*origins\\s*=\\s*\"\\*\"",
+  "(?i)allowCredentials\\s*=\\s*true",
+]
+require_content = ["@CrossOrigin"]
+snippet_after = 4
+label = "Spring CORS wildcard origin"
+
+[[matcher]]
+slug = "java-jwt-none"
+description = "JWT verifier accepting algorithm \"none\""
+noise_tier = "normal"
+file_patterns = ["**/*.java"]
+patterns = [
+  "(?i)\"alg\"\\s*:\\s*\"none\"",
+  "(?i)Algorithm\\.none\\s*\\(",
+  "(?i)\\.setAlgorithm\\s*\\(\\s*\"none\"",
+]
+snippet_after = 6
+label = "JWT none-algorithm"
+
+[[matcher]]
+slug = "java-ssrf-resttemplate"
+description = "RestTemplate / WebClient calling a URL built from input"
+noise_tier = "normal"
+file_patterns = ["**/*.java"]
+patterns = [
+  "(?i)RestTemplate\\b.*\\.(getForObject|getForEntity|exchange|postForObject)",
+  "(?i)WebClient\\b.*\\.(uri|get|post)\\s*\\(",
+]
+require_content = ["RestTemplate", "WebClient"]
+snippet_after = 6
+label = "outbound HTTP from input — possible SSRF"
+
+[[matcher]]
+slug = "java-path-traversal-newfile"
+description = "new File(userInput) — possible path traversal"
+noise_tier = "noisy"
+file_patterns = ["**/*.java"]
+patterns = [
+  "(?i)new\\s+File\\s*\\([^)]*\\b(request|input|param|name|path)\\b",
+  "(?i)Files\\.(read|write|copy|move|delete)\\s*\\(\\s*Paths\\.get\\s*\\(",
+]
+snippet_after = 6
+label = "filesystem path from input"
+
+[[matcher]]
+slug = "java-mac-weak-algorithm"
+description = "Mac.getInstance with MD5/SHA1-based HMAC"
+noise_tier = "normal"
+file_patterns = ["**/*.java"]
+patterns = [
+  "(?i)MessageDigest\\.getInstance\\s*\\(\\s*\"(MD5|MD2|SHA-?1)\"",
+  "(?i)Mac\\.getInstance\\s*\\(\\s*\"HmacMD5\"",
+]
+snippet_after = 4
+label = "weak cryptographic algorithm"
+
+[[matcher]]
+slug = "java-ldap-injection"
+description = "LDAP query / DN built from concatenated input"
+noise_tier = "normal"
+file_patterns = ["**/*.java"]
+patterns = [
+  "(?i)\\.search\\s*\\([^)]*\\+",
+  "(?i)new\\s+(SearchControls|InitialDirContext)\\b",
+]
+require_content = ["javax.naming", "DirContext"]
+snippet_after = 6
+label = "LDAP search built from input"

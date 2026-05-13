@@ -106,3 +106,39 @@ with the pinned grammar before committing it. The scanner linter checks
 TOML shape, supported predicates, captures, and prefilter regexes; it
 does not replace fixture tests.
 
+## Adding a Grammar
+
+Grammars live under `internal/scanner/ast/grammars/` and are embedded by
+`internal/scanner/ast/grammars.go`. Prefer the `.wasm` artifact published
+by the upstream npm grammar package.
+
+For Go, the committed artifact came from `tree-sitter-go@0.25.0`:
+
+```bash
+npm pack tree-sitter-go@0.25.0
+tar -xzf tree-sitter-go-0.25.0.tgz package/tree-sitter-go.wasm
+cp package/tree-sitter-go.wasm internal/scanner/ast/grammars/tree-sitter-go.wasm
+```
+
+Then add it to `DefaultGrammars()` with the language, pinned version, and
+embedded bytes. The runtime loads grammars lazily on first parse through
+the shared `web-tree-sitter` wazero bridge.
+
+If an npm package does not publish a `.wasm`, generate one with the
+tree-sitter CLI:
+
+```bash
+npm install --save-dev tree-sitter-cli tree-sitter-javascript
+npx tree-sitter build --wasm node_modules/tree-sitter-javascript
+```
+
+## Testing a Query Locally
+
+Use the upstream tree-sitter playground or CLI with the same grammar
+version that is embedded in this repo. For scanner behavior, add a fixture
+test or run the targeted benchmark task:
+
+```bash
+go test ./internal/scanner/ast -run TestWazeroBridgeRunsQuery
+go run ./cmd/benchsec score go-vulnerable-cli --out /tmp/deepsec-score
+```

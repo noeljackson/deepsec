@@ -3,10 +3,7 @@ slug = "go-http-handler"
 description = "Go net/http handler"
 noise_tier = "noisy"
 file_patterns = ["**/*.go"]
-patterns = [
-  "(?i)\\bfunc\\s+\\w+\\s*\\(\\s*\\w+\\s+http\\.ResponseWriter\\s*,\\s*\\w+\\s+\\*http\\.Request",
-  "(?i)\\bhttp\\.HandleFunc\\s*\\(",
-]
+patterns = []
 snippet_after = 12
 label = "Go http handler"
 [[matcher.ast_patterns]]
@@ -21,15 +18,24 @@ query = '''
     parameters: (parameter_list
       (parameter_declaration
         type: (pointer_type
-          (selector_expression
-            operand: (identifier) @http_pkg
-            field: (field_identifier) @request_type))))
+          (qualified_type
+            package: (package_identifier) @http_pkg
+            name: (type_identifier) @request_type))))
     body: (block
-      (expression_statement
-        (call_expression
-          function: (selector_expression
-            operand: (identifier) @exec_pkg
-            field: (field_identifier) @exec_method))))*) @function
+      (statement_list
+        (short_var_declaration
+          right: (expression_list
+            (call_expression
+              function: (selector_expression
+                operand: (call_expression
+                  function: (selector_expression
+                    operand: (identifier) @exec_pkg
+                    field: (field_identifier) @exec_method)
+                  arguments: (argument_list
+                    (interpreted_string_literal)
+                    (interpreted_string_literal)
+                    (binary_expression) @dynamic_arg))
+                field: (field_identifier)))))))) @function
 (#eq? @http_pkg "http")
 (#eq? @request_type "Request")
 (#eq? @exec_pkg "exec")

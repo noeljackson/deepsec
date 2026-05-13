@@ -13,9 +13,10 @@ var ErrLanguageUnavailable = errors.New("AST grammar wasm unavailable")
 var ErrParserAdapterUnavailable = errors.New("AST parser wasm ABI adapter unavailable")
 
 type Grammar struct {
-	Language Language
-	Version  string
-	WASM     []byte
+	Language  Language
+	Version   string
+	WASM      []byte
+	EntryName string
 }
 
 type Runtime struct {

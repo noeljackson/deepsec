@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"sort"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -47,6 +48,78 @@ func TestWazeroBridgeParsesGo(t *testing.T) {
 	}
 }
 
+func TestWazeroBridgeParsesPython(t *testing.T) {
+	rt, err := NewRuntime(context.Background(), DefaultGrammars())
+	if err != nil {
+		t.Fatalf("NewRuntime() error = %v", err)
+	}
+	defer rt.Close(context.Background())
+	tree, err := rt.Parse(context.Background(), LanguagePython, []byte("def route(user):\n    return f'/u/{user}'\n"), "app.py")
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	defer tree.Close()
+	root := tree.Root()
+	if root.Kind() != "module" {
+		t.Fatalf("root kind = %q, want module", root.Kind())
+	}
+	children := root.NamedChildren()
+	if len(children) != 1 {
+		t.Fatalf("root named children = %d, want 1", len(children))
+	}
+	if got := children[0].Kind(); got != "function_definition" {
+		t.Fatalf("first child kind = %q, want function_definition", got)
+	}
+}
+
+func TestWazeroBridgeParsesTypeScript(t *testing.T) {
+	rt, err := NewRuntime(context.Background(), DefaultGrammars())
+	if err != nil {
+		t.Fatalf("NewRuntime() error = %v", err)
+	}
+	defer rt.Close(context.Background())
+	tree, err := rt.Parse(context.Background(), LanguageTypeScript, []byte("export function run(user: string): string {\n  return `select ${user}`;\n}\n"), "app.ts")
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	defer tree.Close()
+	root := tree.Root()
+	if root.Kind() != "program" {
+		t.Fatalf("root kind = %q, want program", root.Kind())
+	}
+	children := root.NamedChildren()
+	if len(children) != 1 {
+		t.Fatalf("root named children = %d, want 1", len(children))
+	}
+	if got := children[0].Kind(); got != "export_statement" {
+		t.Fatalf("first child kind = %q, want export_statement", got)
+	}
+}
+
+func TestWazeroBridgeParsesTSX(t *testing.T) {
+	rt, err := NewRuntime(context.Background(), DefaultGrammars())
+	if err != nil {
+		t.Fatalf("NewRuntime() error = %v", err)
+	}
+	defer rt.Close(context.Background())
+	tree, err := rt.Parse(context.Background(), LanguageTSX, []byte("export function View(props: { name: string }) {\n  return <section data-id={props.name}><span>{props.name}</span></section>;\n}\n"), "view.tsx")
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	defer tree.Close()
+	root := tree.Root()
+	if root.Kind() != "program" {
+		t.Fatalf("root kind = %q, want program", root.Kind())
+	}
+	children := root.NamedChildren()
+	if len(children) != 1 {
+		t.Fatalf("root named children = %d, want 1", len(children))
+	}
+	if got := children[0].Kind(); got != "export_statement" {
+		t.Fatalf("first child kind = %q, want export_statement", got)
+	}
+}
+
 func TestWazeroBridgeRunsQuery(t *testing.T) {
 	rt, err := NewRuntime(context.Background(), DefaultGrammars())
 	if err != nil {
@@ -87,6 +160,108 @@ func TestWazeroBridgeRunsQuery(t *testing.T) {
 	}
 }
 
+func TestWazeroBridgeRunsPythonQuery(t *testing.T) {
+	rt, err := NewRuntime(context.Background(), DefaultGrammars())
+	if err != nil {
+		t.Fatalf("NewRuntime() error = %v", err)
+	}
+	defer rt.Close(context.Background())
+	tree, err := rt.Parse(context.Background(), LanguagePython, []byte("def route(user):\n    return f'/u/{user}'\n"), "app.py")
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	defer tree.Close()
+	q, err := ParseQuery(LanguagePython, `
+(
+  function_definition
+    name: (identifier) @name
+    body: (block (return_statement) @ret)
+) @func
+(#eq? @name "route")
+`)
+	if err != nil {
+		t.Fatalf("ParseQuery() error = %v", err)
+	}
+	matches, err := ExecuteQuery(context.Background(), tree, q)
+	if err != nil {
+		t.Fatalf("ExecuteQuery() error = %v", err)
+	}
+	if len(matches) != 1 {
+		t.Fatalf("matches = %d, want 1", len(matches))
+	}
+	if got := matches[0].Captures["@ret"].Kind(); got != "return_statement" {
+		t.Fatalf("@ret kind = %q, want return_statement", got)
+	}
+}
+
+func TestWazeroBridgeRunsTypeScriptQuery(t *testing.T) {
+	rt, err := NewRuntime(context.Background(), DefaultGrammars())
+	if err != nil {
+		t.Fatalf("NewRuntime() error = %v", err)
+	}
+	defer rt.Close(context.Background())
+	tree, err := rt.Parse(context.Background(), LanguageTypeScript, []byte("export function run(user: string): string {\n  return `select ${user}`;\n}\n"), "app.ts")
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	defer tree.Close()
+	q, err := ParseQuery(LanguageTypeScript, `
+(
+  function_declaration
+    name: (identifier) @name
+    body: (statement_block (return_statement) @ret)
+) @func
+(#eq? @name "run")
+`)
+	if err != nil {
+		t.Fatalf("ParseQuery() error = %v", err)
+	}
+	matches, err := ExecuteQuery(context.Background(), tree, q)
+	if err != nil {
+		t.Fatalf("ExecuteQuery() error = %v", err)
+	}
+	if len(matches) != 1 {
+		t.Fatalf("matches = %d, want 1", len(matches))
+	}
+	if got := matches[0].Captures["@ret"].Kind(); got != "return_statement" {
+		t.Fatalf("@ret kind = %q, want return_statement", got)
+	}
+}
+
+func TestWazeroBridgeRunsTSXQuery(t *testing.T) {
+	rt, err := NewRuntime(context.Background(), DefaultGrammars())
+	if err != nil {
+		t.Fatalf("NewRuntime() error = %v", err)
+	}
+	defer rt.Close(context.Background())
+	tree, err := rt.Parse(context.Background(), LanguageTSX, []byte("export function View(props: { name: string }) {\n  return <section data-id={props.name}><span>{props.name}</span></section>;\n}\n"), "view.tsx")
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	defer tree.Close()
+	q, err := ParseQuery(LanguageTSX, `
+(
+  jsx_element
+    open_tag: (jsx_opening_element
+      name: (identifier) @tag)
+) @element
+(#eq? @tag "section")
+`)
+	if err != nil {
+		t.Fatalf("ParseQuery() error = %v", err)
+	}
+	matches, err := ExecuteQuery(context.Background(), tree, q)
+	if err != nil {
+		t.Fatalf("ExecuteQuery() error = %v", err)
+	}
+	if len(matches) != 1 {
+		t.Fatalf("matches = %d, want 1", len(matches))
+	}
+	if got := matches[0].Captures["@element"].Kind(); got != "jsx_element" {
+		t.Fatalf("@element kind = %q, want jsx_element", got)
+	}
+}
+
 func TestWazeroBridgeFreesMemory(t *testing.T) {
 	rt, err := NewRuntime(context.Background(), DefaultGrammars())
 	if err != nil {
@@ -103,18 +278,33 @@ func TestWazeroBridgeFreesMemory(t *testing.T) {
 }
 
 func BenchmarkASTParse_Go(b *testing.B) {
+	benchmarkASTParse(b, LanguageGo, []byte(goSample500LOC()), "sample.go")
+}
+
+func BenchmarkASTParse_Python(b *testing.B) {
+	benchmarkASTParse(b, LanguagePython, []byte(pythonSample500LOC()), "sample.py")
+}
+
+func BenchmarkASTParse_TypeScript(b *testing.B) {
+	benchmarkASTParse(b, LanguageTypeScript, []byte(typeScriptSample500LOC()), "sample.ts")
+}
+
+func BenchmarkASTParse_TSX(b *testing.B) {
+	benchmarkASTParse(b, LanguageTSX, []byte(tsxSample500LOC()), "sample.tsx")
+}
+
+func benchmarkASTParse(b *testing.B, lang Language, content []byte, filePath string) {
 	rt, err := NewRuntime(context.Background(), DefaultGrammars())
 	if err != nil {
 		b.Fatalf("NewRuntime() error = %v", err)
 	}
 	defer rt.Close(context.Background())
-	content := []byte(goSample500LOC())
 	b.ReportAllocs()
 	durations := make([]time.Duration, 0, b.N)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		start := time.Now()
-		tree, err := rt.Parse(context.Background(), LanguageGo, content, "sample.go")
+		tree, err := rt.Parse(context.Background(), lang, content, filePath)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -138,5 +328,32 @@ func goSample500LOC() string {
 		out += "\t// scanner budget sample\n"
 	}
 	out += "}\n"
+	return out
+}
+
+func pythonSample500LOC() string {
+	out := "from flask import Flask, request\n\napp = Flask(__name__)\n\ndef sample(user):\n"
+	for i := 0; i < 490; i++ {
+		out += "    value_" + strconv.Itoa(i) + " = user\n"
+	}
+	out += "    return value_0\n"
+	return out
+}
+
+func typeScriptSample500LOC() string {
+	out := "type User = { name: string; id: number };\n\nexport function sample(user: User): string {\n"
+	for i := 0; i < 490; i++ {
+		out += "  ;\n"
+	}
+	out += "  return user.name;\n}\n"
+	return out
+}
+
+func tsxSample500LOC() string {
+	out := "type Props = { name: string; id: number };\n\nexport function View(props: Props) {\n"
+	for i := 0; i < 488; i++ {
+		out += "  ;\n"
+	}
+	out += "  return <section data-id={props.id}><span>{props.name}</span></section>;\n}\n"
 	return out
 }

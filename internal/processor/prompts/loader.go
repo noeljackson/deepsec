@@ -12,6 +12,7 @@ import (
 
 const (
 	corePromptFile     = "core.md"
+	agentPromptFile    = "agent.md"
 	frameworkHintsFile = "framework_hints.toml"
 	slugHintsFile      = "slug_hints.toml"
 )
@@ -79,6 +80,15 @@ func Load(fsys fs.FS) (*Profile, error) {
 // CorePrompt returns the shared system-prompt preamble.
 func CorePrompt() string {
 	return bundledProfile.CorePrompt
+}
+
+// AgentPrompt returns the bounded matcher-patch proposer prompt.
+func AgentPrompt() string {
+	body, err := fs.ReadFile(promptFiles, agentPromptFile)
+	if err != nil {
+		panic(err)
+	}
+	return string(body)
 }
 
 // HighlightForTag returns framework-specific threat context for a detected

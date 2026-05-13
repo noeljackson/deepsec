@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/noeljackson/deepsec/bench"
+	"github.com/noeljackson/deepsec/internal/processor"
+	"github.com/noeljackson/deepsec/internal/processor/providers"
 	"github.com/spf13/cobra"
 )
 
@@ -20,6 +24,10 @@ func main() {
 	var explosion float64
 	var reviewSlug, reviewCommit string
 	var reviewEdit, reviewEmitFPs, reviewEmitFNs, reviewRescore bool
+	var agentSlug, agentHeldOut, agentMockPatch, agentProvider, agentModel string
+	var agentApply bool
+	var agentMaxIterations, agentMaxRejections int
+	var agentMaxCost, agentCandidateBudget float64
 	root := &cobra.Command{Use: "benchsec", Short: "deepsec benchmark harness"}
 	score := &cobra.Command{
 		Use:   "score [task-id...]",
@@ -159,9 +167,83 @@ func main() {
 		panic(err)
 	}
 
-	root.AddCommand(score, processScore, processCompare, lint, review)
+	agent := &cobra.Command{
+		Use:   "agent",
+		Short: "run the bounded matcher-patch agent",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			opts := bench.AgentOptions{
+				Slug:                  agentSlug,
+				TasksDir:              tasksDir,
+				OutDir:                outDir,
+				Apply:                 agentApply,
+				MaxIterations:         agentMaxIterations,
+				MaxRejections:         agentMaxRejections,
+				MaxCostUSD:            agentMaxCost,
+				CandidateGrowthBudget: agentCandidateBudget,
+				HeldOut:               splitCSV(agentHeldOut),
+				RunTests:              agentApply,
+				RequireClean:          agentApply,
+				Out:                   os.Stdout,
+			}
+			if agentMockPatch != "" {
+				p, err := processor.ParsePatch(agentMockPatch)
+				if err != nil {
+					return err
+				}
+				opts.MockPatch = &p
+			} else {
+				backend, err := newAgentBackend(agentProvider, agentModel)
+				if err != nil {
+					return err
+				}
+				opts.Backend = backend
+			}
+			return bench.RunAgent(context.Background(), opts)
+		},
+	}
+	agent.Flags().StringVar(&agentSlug, "slug", "", "matcher slug to improve; defaults to worst precision slug with >1 FP")
+	agent.Flags().BoolVar(&agentApply, "apply", false, "apply accepted patches and commit them")
+	agent.Flags().IntVar(&agentMaxIterations, "max-iterations", 1, "maximum accepted patches per invocation")
+	agent.Flags().IntVar(&agentMaxRejections, "max-rejections", 3, "halt after this many consecutive rejected proposals")
+	agent.Flags().Float64Var(&agentMaxCost, "max-cost-usd", 0, "maximum proposer cost budget; 0 means provider default/subscription")
+	agent.Flags().Float64Var(&agentCandidateBudget, "candidate-growth-budget", 0.05, "relative candidate-count growth budget")
+	agent.Flags().StringVar(&agentHeldOut, "held-out", "", "comma-separated task IDs excluded from gate/context and scored separately")
+	agent.Flags().StringVar(&agentProvider, "provider", "zai-coding", "provider profile for the proposer")
+	agent.Flags().StringVar(&agentModel, "model", "", "override proposer model")
+	agent.Flags().StringVar(&agentMockPatch, "mock-patch", "", "strict JSON patch used instead of calling an LLM")
+	agent.Flags().StringVar(&tasksDir, "tasks", "bench/tasks", "benchmark task directory")
+	agent.Flags().StringVar(&outDir, "out", "bench/out-agent", "agent report output root")
+
+	root.AddCommand(score, processScore, processCompare, lint, review, agent)
 	if err := root.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+}
+
+func newAgentBackend(providerName, model string) (processor.AgentBackend, error) {
+	reg, err := providers.LoadBuiltin()
+	if err != nil {
+		return nil, err
+	}
+	profile := reg.Get(providerName)
+	if profile == nil {
+		return nil, fmt.Errorf("unknown provider %q", providerName)
+	}
+	key, err := reg.LookupKey(providerName)
+	if err != nil {
+		return nil, err
+	}
+	return processor.NewBackend(profile, model, key, processor.ModelSettings{})
+}
+
+func splitCSV(s string) []string {
+	var out []string
+	for _, part := range strings.Split(s, ",") {
+		part = strings.TrimSpace(part)
+		if part != "" {
+			out = append(out, part)
+		}
+	}
+	return out
 }

@@ -78,6 +78,11 @@ type RevalidateInput struct {
 	FilePath    string
 	FileContent string
 	Findings    []RevalidateInputFinding
+	// Skeptic flips the revalidation prompt from "is this still
+	// present" to "try to disprove this finding." The output shape is
+	// identical (RevalidatedFinding) but verdicts are produced with a
+	// more adversarial stance. Used by Process when --skeptic is set.
+	Skeptic bool
 }
 
 // RevalidatedFinding is the agent's verdict on one input finding.

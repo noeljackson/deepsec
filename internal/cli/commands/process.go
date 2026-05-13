@@ -18,7 +18,7 @@ func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 		batchSize, concurrency, limit, reinvestigate, maxTurns                         int
 		maxCost, temperature, topP                                                     float64
 		seed                                                                           int64
-		toolsEnabled                                                                   bool
+		toolsEnabled, skepticEnabled                                                   bool
 	)
 	cmd := &cobra.Command{
 		Use:   "process",
@@ -113,6 +113,7 @@ func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 				MaxCostUSD:        maxCost,
 				ToolsEnabled:      toolsEnabled,
 				MaxTurns:          maxTurns,
+				SkepticEnabled:    skepticEnabled,
 				Detected:          tech,
 				ModelSettings:     settings,
 			})
@@ -148,6 +149,7 @@ func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 	cmd.Flags().Float64Var(&maxCost, "max-cost-usd", 0, "Abort the run when cumulative cost exceeds this USD amount")
 	cmd.Flags().BoolVar(&toolsEnabled, "tools", false, "Enable multi-turn read-only investigation tools")
 	cmd.Flags().IntVar(&maxTurns, "max-turns", 8, "Max model turns per investigation when --tools is enabled")
+	cmd.Flags().BoolVar(&skepticEnabled, "skeptic", false, "Second-pass adversarial review: try to disprove each finding before persisting it")
 	cmd.Flags().Float64Var(&temperature, "temperature", 0, "Pin sampling temperature (default: provider SDK default)")
 	cmd.Flags().Float64Var(&topP, "top-p", 0, "Pin nucleus sampling (default: provider SDK default)")
 	cmd.Flags().Int64Var(&seed, "seed", 0, "Pin sampler seed; OpenAI-compatible providers only")

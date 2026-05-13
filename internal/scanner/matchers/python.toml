@@ -34,6 +34,26 @@ patterns = [
 snippet_after = 12
 requires = { tech = ["flask"] }
 label = "Flask route"
+[[matcher.ast_patterns]]
+language = "python"
+label = "Flask route with direct sink"
+primary_capture = "@function"
+snippet_capture = "@function"
+prefilter_patterns = ["@(?:app|bp|blueprint)\\.(?:route|get|post|put|patch|delete)", "\\b(?:execute|eval|exec|requests\\.(?:get|post))\\s*\\("]
+query = '''
+(
+  decorated_definition
+    (decorator
+      (call
+        function: (attribute
+          attribute: (identifier) @route_method)))
+    definition: (function_definition
+      body: (block
+        (_) @sink))
+) @function
+(#match? @route_method "^(route|get|post|put|patch|delete)$")
+(#match? @sink "^(execute|eval|exec|get|post)$")
+'''
 
 [[matcher]]
 slug = "python-pickle-load"

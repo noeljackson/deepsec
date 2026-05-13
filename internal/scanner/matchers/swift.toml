@@ -1,0 +1,100 @@
+# swift.toml — Swift matchers (iOS / macOS / SwiftUI / Vapor).
+# Phase 3 of the universal-scanner roadmap. Regex-only for now;
+# tree-sitter-swift WASM requires emscripten compilation (issue #36).
+
+[[matcher]]
+slug = "swift-wkwebview-javascript-enabled"
+description = "WKWebView with JavaScript enabled on user-controlled URLs"
+noise_tier = "noisy"
+file_patterns = ["**/*.swift"]
+patterns = [
+  "(?i)\\.preferences\\.javaScriptEnabled\\s*=\\s*true",
+  "(?i)\\.allowsContentJavaScript\\s*=\\s*true",
+]
+require_content = ["WKWebView", "WKWebpagePreferences"]
+snippet_after = 6
+label = "WKWebView with JS enabled"
+
+[[matcher]]
+slug = "swift-allow-arbitrary-loads"
+description = "NSAppTransportSecurity / NSAllowsArbitraryLoads — disables ATS"
+noise_tier = "normal"
+file_patterns = ["**/Info.plist", "**/*.plist"]
+patterns = [
+  "(?i)NSAllowsArbitraryLoads",
+  "(?i)NSExceptionAllowsInsecureHTTPLoads",
+]
+snippet_after = 4
+label = "App Transport Security bypass in Info.plist"
+
+[[matcher]]
+slug = "swift-string-format-tainted"
+description = "String(format:) with non-literal format string — possible format-string vuln"
+noise_tier = "noisy"
+file_patterns = ["**/*.swift"]
+patterns = [
+  "(?i)String\\s*\\(\\s*format:\\s*[a-z_][a-z0-9_]*",
+]
+snippet_after = 4
+label = "String(format:) with variable format"
+
+[[matcher]]
+slug = "swift-keychain-no-access-control"
+description = "SecItemAdd without kSecAttrAccessControl — keychain item readable without auth"
+noise_tier = "normal"
+file_patterns = ["**/*.swift"]
+patterns = [
+  "(?i)SecItemAdd\\s*\\(",
+]
+require_content = ["SecItemAdd"]
+snippet_after = 12
+label = "Keychain add — verify kSecAttrAccessControl"
+
+[[matcher]]
+slug = "swift-insecure-trust"
+description = "URLSession trust callback always-accepts the cert chain"
+noise_tier = "normal"
+file_patterns = ["**/*.swift"]
+patterns = [
+  "(?i)URLSession\\b.*didReceive\\s+challenge",
+  "(?i)\\.useCredential",
+  "(?i)serverTrust\\s*=\\s*nil",
+]
+require_content = ["URLSession"]
+snippet_after = 8
+label = "URLSession with permissive trust handler"
+
+[[matcher]]
+slug = "swift-eval-injection"
+description = "Process / NSTask / system() with concatenated input"
+noise_tier = "normal"
+file_patterns = ["**/*.swift"]
+patterns = [
+  "(?i)Process\\s*\\(\\s*\\)\\b.*\\.arguments\\s*=",
+  "(?i)NSTask\\s*\\(\\s*\\)",
+  "(?i)\\bsystem\\s*\\(\\s*[a-z_][a-z0-9_]*\\s*\\)",
+]
+snippet_after = 6
+label = "Process / system() from variable"
+
+[[matcher]]
+slug = "swift-print-secrets"
+description = "print() / NSLog of strings labelled token/secret/password"
+noise_tier = "noisy"
+file_patterns = ["**/*.swift"]
+patterns = [
+  "(?i)(print|NSLog)\\s*\\([^)]*\\b(token|password|secret|api_?key|jwt)\\b",
+]
+snippet_after = 2
+label = "logging a secret"
+
+[[matcher]]
+slug = "swift-userdefaults-secret"
+description = "UserDefaults storing tokens / passwords (should use Keychain instead)"
+noise_tier = "normal"
+file_patterns = ["**/*.swift"]
+patterns = [
+  "(?i)UserDefaults\\.[a-z]+\\.set\\s*\\([^)]*\\b(token|password|secret|api_?key|jwt)\\b",
+]
+snippet_after = 4
+label = "secret stored in UserDefaults"

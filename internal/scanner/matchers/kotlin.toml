@@ -1,0 +1,104 @@
+# kotlin.toml — Kotlin matchers (Android + JVM server).
+# Phase 3 of the universal-scanner roadmap. Regex-only for now;
+# tree-sitter-kotlin WASM requires emscripten compilation (issue #36).
+#
+# Many Kotlin matchers overlap with java.* matchers in jvm.toml but use
+# Kotlin-specific syntax (string templates, lambdas) that don't hit the
+# Java patterns reliably.
+
+[[matcher]]
+slug = "kt-webview-javascript-enabled"
+description = "WebView.settings.javaScriptEnabled = true"
+noise_tier = "noisy"
+file_patterns = ["**/*.kt", "**/*.kts"]
+patterns = [
+  "(?i)\\.settings\\.javaScriptEnabled\\s*=\\s*true",
+  "(?i)\\.setJavaScriptEnabled\\s*\\(\\s*true\\s*\\)",
+]
+require_content = ["WebView"]
+snippet_after = 6
+label = "Android WebView with JS enabled"
+
+[[matcher]]
+slug = "kt-android-exported-component"
+description = "android:exported=\"true\" on an Activity / Service / Receiver without permission"
+noise_tier = "noisy"
+file_patterns = ["**/AndroidManifest.xml"]
+patterns = [
+  "(?i)android:exported=\"true\"",
+]
+snippet_after = 6
+label = "exported Android component"
+
+[[matcher]]
+slug = "kt-jdbc-string-template-sqli"
+description = "JDBC query built with Kotlin string templates"
+noise_tier = "normal"
+file_patterns = ["**/*.kt"]
+patterns = [
+  "(?i)\\.(executeQuery|executeUpdate|execute|prepareStatement)\\s*\\(\\s*\"[^\"]*\\$",
+]
+require_content = ["java.sql", "javax.sql", "Statement"]
+snippet_after = 6
+label = "JDBC SQL built from Kotlin template"
+
+[[matcher]]
+slug = "kt-runtime-exec-template"
+description = "Runtime.getRuntime().exec with Kotlin string templates"
+noise_tier = "normal"
+file_patterns = ["**/*.kt"]
+patterns = [
+  "(?i)Runtime\\.getRuntime\\s*\\(\\s*\\)\\s*\\.exec\\s*\\(\\s*\"[^\"]*\\$",
+  "(?i)ProcessBuilder\\s*\\([^)]*\\$",
+]
+snippet_after = 6
+label = "shell command from Kotlin template"
+
+[[matcher]]
+slug = "kt-insecure-trust-manager"
+description = "Custom X509TrustManager that no-ops checkClientTrusted / checkServerTrusted"
+noise_tier = "normal"
+file_patterns = ["**/*.kt"]
+patterns = [
+  "(?i)X509TrustManager",
+  "(?i)checkServerTrusted\\s*\\([^)]*\\)\\s*\\{[^}]*\\}",
+]
+require_content = ["X509TrustManager"]
+snippet_after = 12
+label = "custom X509TrustManager — likely accepts all"
+
+[[matcher]]
+slug = "kt-coroutine-globalscope"
+description = "GlobalScope.launch — leaks coroutines, harms cancellation"
+noise_tier = "noisy"
+file_patterns = ["**/*.kt"]
+patterns = [
+  "(?i)GlobalScope\\.(launch|async)",
+]
+snippet_after = 4
+label = "GlobalScope coroutine — prefer structured concurrency"
+
+[[matcher]]
+slug = "kt-shared-prefs-secret"
+description = "SharedPreferences storing tokens / passwords (should use EncryptedSharedPreferences or Keystore)"
+noise_tier = "normal"
+file_patterns = ["**/*.kt"]
+patterns = [
+  "(?i)\\.putString\\s*\\(\\s*\"(?:token|password|secret|api_?key|jwt)\"",
+]
+require_content = ["SharedPreferences"]
+snippet_after = 4
+label = "secret stored in SharedPreferences"
+
+[[matcher]]
+slug = "kt-intent-implicit-data"
+description = "Intent with implicit ACTION and untrusted data — risk of redirection"
+noise_tier = "noisy"
+file_patterns = ["**/*.kt"]
+patterns = [
+  "(?i)Intent\\s*\\(\\s*Intent\\.ACTION_VIEW",
+  "(?i)\\.setData\\s*\\(\\s*Uri\\.parse\\s*\\(",
+]
+require_content = ["Intent"]
+snippet_after = 6
+label = "implicit intent with parsed URI"

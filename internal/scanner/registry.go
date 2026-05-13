@@ -24,6 +24,7 @@ type MatcherFile struct {
 type Registry struct {
 	matchers map[string]*Matcher
 	order    []string
+	hasAST   bool
 }
 
 func NewRegistry() *Registry {
@@ -100,6 +101,7 @@ func (r *Registry) Register(m *Matcher) {
 		r.order = append(r.order, m.Slug())
 	}
 	r.matchers[m.Slug()] = m
+	r.refreshHasAST()
 }
 
 func (r *Registry) Get(slug string) *Matcher { return r.matchers[slug] }
@@ -151,6 +153,7 @@ func (r *Registry) ApplyFilter(only, exclude []string) {
 	}
 	r.matchers = kept
 	r.order = keptOrder
+	r.refreshHasAST()
 }
 
 func toSet(xs []string) map[string]struct{} {
@@ -159,4 +162,16 @@ func toSet(xs []string) map[string]struct{} {
 		out[x] = struct{}{}
 	}
 	return out
+}
+
+func (r *Registry) HasASTPatterns() bool { return r.hasAST }
+
+func (r *Registry) refreshHasAST() {
+	r.hasAST = false
+	for _, m := range r.matchers {
+		if m.HasASTPatterns() {
+			r.hasAST = true
+			return
+		}
+	}
 }

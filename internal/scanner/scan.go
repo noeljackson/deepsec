@@ -26,6 +26,10 @@ type Options struct {
 	// with a slug that already exists in the bundle override it.
 	ExtraMatcherPaths []string
 	GithubURL         string
+	// ForceRescan disables the file-hash cache. When true, every file is
+	// re-evaluated even when both its content and the matcher pack are
+	// unchanged since the last scan.
+	ForceRescan bool
 }
 
 // LanguageStat is one row of the per-language scan summary.
@@ -40,6 +44,7 @@ type Outcome struct {
 	RunID           string
 	FilesScanned    int
 	CandidateCount  int
+	CacheHits       int
 	Detected        DetectedTech
 	ActiveMatchers  []string
 	SkippedMatchers []string
@@ -52,6 +57,7 @@ type FilesOutcome struct {
 	RunID           string
 	FilesScanned    int
 	CandidateCount  int
+	CacheHits       int
 	Detected        DetectedTech
 	ActiveMatchers  []string
 	SkippedMatchers []string
@@ -92,7 +98,9 @@ func Scan(opts Options) (*Outcome, error) {
 		return nil, err
 	}
 
+	packHash := reg.PackHash()
 	candidateCount := 0
+	cacheHits := 0
 	byLang := map[string]*LanguageStat{}
 	for _, rel := range files {
 		abs := filepath.Join(opts.Root, rel)
@@ -101,7 +109,7 @@ func Scan(opts Options) (*Outcome, error) {
 			continue
 		}
 		content := strings.ReplaceAll(string(body), "\r\n", "\n")
-		matches := runMatchers(reg, active, content, rel, astRT)
+		fileHash := core.FileHashHex([]byte(content))
 		lang := langFor(rel)
 		st, ok := byLang[lang]
 		if !ok {
@@ -109,11 +117,28 @@ func Scan(opts Options) (*Outcome, error) {
 			byLang[lang] = st
 		}
 		st.FilesScanned++
+		cached, hit, err := cachedCandidates(opts, rel, fileHash, packHash)
+		if err != nil {
+			return nil, err
+		}
+		var matches []core.CandidateMatch
+		if hit {
+			matches = cached
+			cacheHits++
+		} else {
+			matches = runMatchers(reg, active, content, rel, astRT)
+		}
 		if len(matches) > 0 {
 			st.FilesWithMatch++
 		}
 		candidateCount += len(matches)
-		if err := upsertRecord(opts.DataRoot, opts.ProjectID, rel, runID, content, matches); err != nil {
+		if hit {
+			if err := touchRecord(opts.DataRoot, opts.ProjectID, rel, runID, fileHash, packHash); err != nil {
+				return nil, err
+			}
+			continue
+		}
+		if err := upsertRecord(opts.DataRoot, opts.ProjectID, rel, runID, content, packHash, matches); err != nil {
 			return nil, err
 		}
 	}
@@ -143,6 +168,7 @@ func Scan(opts Options) (*Outcome, error) {
 		RunID:           runID,
 		FilesScanned:    fs,
 		CandidateCount:  candidateCount,
+		CacheHits:       cacheHits,
 		Detected:        tech,
 		ActiveMatchers:  active,
 		SkippedMatchers: skipped,
@@ -180,14 +206,33 @@ func ScanFiles(opts Options, files []string, source string) (*FilesOutcome, erro
 		defer astRT.Close(context.Background())
 	}
 
+	packHash := reg.PackHash()
 	candidateCount := 0
+	cacheHits := 0
 	for _, rel := range files {
 		abs := filepath.Join(opts.Root, rel)
 		body, _ := os.ReadFile(abs)
 		content := strings.ReplaceAll(string(body), "\r\n", "\n")
-		matches := runMatchers(reg, active, content, rel, astRT)
+		fileHash := core.FileHashHex([]byte(content))
+		cached, hit, err := cachedCandidates(opts, rel, fileHash, packHash)
+		if err != nil {
+			return nil, err
+		}
+		var matches []core.CandidateMatch
+		if hit {
+			matches = cached
+			cacheHits++
+		} else {
+			matches = runMatchers(reg, active, content, rel, astRT)
+		}
 		candidateCount += len(matches)
-		if err := upsertRecord(opts.DataRoot, opts.ProjectID, rel, runID, content, matches); err != nil {
+		if hit {
+			if err := touchRecord(opts.DataRoot, opts.ProjectID, rel, runID, fileHash, packHash); err != nil {
+				return nil, err
+			}
+			continue
+		}
+		if err := upsertRecord(opts.DataRoot, opts.ProjectID, rel, runID, content, packHash, matches); err != nil {
 			return nil, err
 		}
 	}
@@ -213,6 +258,7 @@ func ScanFiles(opts Options, files []string, source string) (*FilesOutcome, erro
 		RunID:           runID,
 		FilesScanned:    count,
 		CandidateCount:  candidateCount,
+		CacheHits:       cacheHits,
 		Detected:        tech,
 		ActiveMatchers:  active,
 		SkippedMatchers: skipped,
@@ -346,7 +392,7 @@ func matchesAnyGlob(patterns []string, rel string) bool {
 	return false
 }
 
-func upsertRecord(root core.DataRoot, projectID, rel, runID, content string, newMatches []core.CandidateMatch) error {
+func upsertRecord(root core.DataRoot, projectID, rel, runID, content, matcherPackHash string, newMatches []core.CandidateMatch) error {
 	now := core.NowISO()
 	hash := core.FileHashHex([]byte(content))
 	existing, err := root.ReadFileRecord(projectID, rel)
@@ -355,20 +401,22 @@ func upsertRecord(root core.DataRoot, projectID, rel, runID, content string, new
 	}
 	if existing == nil {
 		existing = &core.FileRecord{
-			FilePath:         rel,
-			ProjectID:        projectID,
-			Candidates:       []core.CandidateMatch{},
-			LastScannedAt:    now,
-			LastScannedRunID: runID,
-			FileHash:         hash,
-			Findings:         []core.Finding{},
-			AnalysisHistory:  []core.AnalysisEntry{},
-			Status:           core.StatusPending,
+			FilePath:            rel,
+			ProjectID:           projectID,
+			Candidates:          []core.CandidateMatch{},
+			LastScannedAt:       now,
+			LastScannedRunID:    runID,
+			FileHash:            hash,
+			LastMatcherPackHash: matcherPackHash,
+			Findings:            []core.Finding{},
+			AnalysisHistory:     []core.AnalysisEntry{},
+			Status:              core.StatusPending,
 		}
 	}
 	existing.LastScannedAt = now
 	existing.LastScannedRunID = runID
 	existing.FileHash = hash
+	existing.LastMatcherPackHash = matcherPackHash
 
 	seen := map[string]struct{}{}
 	for _, c := range existing.Candidates {
@@ -381,6 +429,48 @@ func upsertRecord(root core.DataRoot, projectID, rel, runID, content string, new
 		seen[candidateKey(c)] = struct{}{}
 		existing.Candidates = append(existing.Candidates, c)
 	}
+	return root.WriteFileRecord(existing)
+}
+
+// cachedCandidates returns this file's existing candidates if the file
+// content hash AND the matcher pack hash both match the previous scan.
+// `hit` is true exactly when the caller should skip matcher execution.
+// `--force-rescan` (opts.ForceRescan) always returns hit=false.
+func cachedCandidates(opts Options, rel, fileHash, packHash string) ([]core.CandidateMatch, bool, error) {
+	if opts.ForceRescan {
+		return nil, false, nil
+	}
+	existing, err := opts.DataRoot.ReadFileRecord(opts.ProjectID, rel)
+	if err != nil {
+		return nil, false, err
+	}
+	if existing == nil {
+		return nil, false, nil
+	}
+	if existing.FileHash != fileHash {
+		return nil, false, nil
+	}
+	if existing.LastMatcherPackHash != packHash {
+		return nil, false, nil
+	}
+	return existing.Candidates, true, nil
+}
+
+// touchRecord updates LastScannedAt/RunID/FileHash/LastMatcherPackHash
+// for a cache hit without rewriting Candidates or other fields.
+func touchRecord(root core.DataRoot, projectID, rel, runID, fileHash, packHash string) error {
+	existing, err := root.ReadFileRecord(projectID, rel)
+	if err != nil {
+		return err
+	}
+	if existing == nil {
+		// Should not happen for a cache hit, but be defensive.
+		return nil
+	}
+	existing.LastScannedAt = core.NowISO()
+	existing.LastScannedRunID = runID
+	existing.FileHash = fileHash
+	existing.LastMatcherPackHash = packHash
 	return root.WriteFileRecord(existing)
 }
 

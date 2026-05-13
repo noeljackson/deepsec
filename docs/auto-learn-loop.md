@@ -133,6 +133,21 @@ seat. One iteration is:
 **Dry-run by default.** `--apply` is required to actually write. The
 agent refuses to run on a dirty git tree.
 
+### 6. Finding-to-patch generation
+
+[`docs/patch-generation.md`](patch-generation.md). `deepsec patch`
+starts from produced findings instead of matcher bench evidence. It
+selects one finding by id, run, severity, or slug; asks the configured
+processor backend for a strict JSON source patch; applies the unified
+diff in a throwaway clone/copy; and runs the caller's validation command.
+Successful dry-runs persist provenance in `data/<project>/patches/`.
+`--apply` commits the same validated diff on a `deepsec-patch/<finding-id>`
+branch, while `--push` requires `--apply` and uses `gh` to open a PR.
+
+This is deliberately separate from the bounded matcher-patch agent: the
+bounded agent tunes detector TOML, while `deepsec patch` changes the
+scanned project source.
+
 ### The `needs-engine-feature` escape valve
 
 If a slug's FPs can't be fixed by any of the four allowed TOML edits
@@ -158,6 +173,7 @@ valve works.
 | Configuration | [`configuration.md`](configuration.md) |
 | Human review CLI | [`matcher-review.md`](matcher-review.md) |
 | Bounded-patch agent | [`bounded-patch-agent.md`](bounded-patch-agent.md) |
+| Finding patch generation | [`patch-generation.md`](patch-generation.md) |
 | Bake-off pattern | [`bake-off.md`](bake-off.md) |
 | Data layout on disk | [`data-layout.md`](data-layout.md) |
 | Getting started | [`getting-started.md`](getting-started.md) |

@@ -16,6 +16,7 @@ func main() {
 		root.AddCommand(commands.NewInitProjectCmd(loader))
 		root.AddCommand(commands.NewScanCmd(loader))
 		root.AddCommand(commands.NewProcessCmd(loader))
+		root.AddCommand(commands.NewPatchCmd(loader))
 		root.AddCommand(commands.NewRevalidateCmd(loader))
 		root.AddCommand(commands.NewTriageCmd(loader))
 		root.AddCommand(commands.NewEnrichCmd(loader))

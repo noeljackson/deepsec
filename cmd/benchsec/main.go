@@ -24,10 +24,10 @@ func main() {
 	var explosion float64
 	var reviewSlug, reviewCommit string
 	var reviewEdit, reviewEmitFPs, reviewEmitFNs, reviewRescore bool
-	var agentSlug, agentHeldOut, agentMockPatch, agentProvider, agentModel string
+	var agentSlug, agentHeldOut, agentMockPatch, agentMockNewMatcher, agentProvider, agentModel, agentMode string
 	var agentApply bool
 	var agentMaxIterations, agentMaxRejections int
-	var agentMaxCost, agentCandidateBudget float64
+	var agentMaxCost, agentCandidateBudget, agentMinPrecision float64
 	root := &cobra.Command{Use: "benchsec", Short: "deepsec benchmark harness"}
 	score := &cobra.Command{
 		Use:   "score [task-id...]",
@@ -169,36 +169,75 @@ func main() {
 
 	agent := &cobra.Command{
 		Use:   "agent",
-		Short: "run the bounded matcher-patch agent",
+		Short: "run the bounded matcher-patch agent (precision or recall mode)",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts := bench.AgentOptions{
-				Slug:                  agentSlug,
-				TasksDir:              tasksDir,
-				OutDir:                outDir,
-				Apply:                 agentApply,
-				MaxIterations:         agentMaxIterations,
-				MaxRejections:         agentMaxRejections,
-				MaxCostUSD:            agentMaxCost,
-				CandidateGrowthBudget: agentCandidateBudget,
-				HeldOut:               splitCSV(agentHeldOut),
-				RunTests:              agentApply,
-				RequireClean:          agentApply,
-				Out:                   os.Stdout,
+			mode := strings.TrimSpace(agentMode)
+			if mode == "" {
+				mode = "precision"
 			}
-			if agentMockPatch != "" {
-				p, err := processor.ParsePatch(agentMockPatch)
-				if err != nil {
-					return err
+			switch mode {
+			case "precision":
+				opts := bench.AgentOptions{
+					Slug:                  agentSlug,
+					TasksDir:              tasksDir,
+					OutDir:                outDir,
+					Apply:                 agentApply,
+					MaxIterations:         agentMaxIterations,
+					MaxRejections:         agentMaxRejections,
+					MaxCostUSD:            agentMaxCost,
+					CandidateGrowthBudget: agentCandidateBudget,
+					HeldOut:               splitCSV(agentHeldOut),
+					RunTests:              agentApply,
+					RequireClean:          agentApply,
+					Out:                   os.Stdout,
 				}
-				opts.MockPatch = &p
-			} else {
-				backend, err := newAgentBackend(agentProvider, agentModel)
-				if err != nil {
-					return err
+				if agentMockPatch != "" {
+					p, err := processor.ParsePatch(agentMockPatch)
+					if err != nil {
+						return err
+					}
+					opts.MockPatch = &p
+				} else {
+					backend, err := newAgentBackend(agentProvider, agentModel)
+					if err != nil {
+						return err
+					}
+					opts.Backend = backend
 				}
-				opts.Backend = backend
+				return bench.RunAgent(context.Background(), opts)
+			case "recall":
+				opts := bench.RecallAgentOptions{
+					Slug:                  agentSlug,
+					TasksDir:              tasksDir,
+					OutDir:                outDir,
+					Apply:                 agentApply,
+					MaxIterations:         agentMaxIterations,
+					MaxRejections:         agentMaxRejections,
+					MaxCostUSD:            agentMaxCost,
+					CandidateGrowthBudget: agentCandidateBudget,
+					MinPrecision:          agentMinPrecision,
+					HeldOut:               splitCSV(agentHeldOut),
+					RunTests:              agentApply,
+					RequireClean:          agentApply,
+					Out:                   os.Stdout,
+				}
+				if agentMockNewMatcher != "" {
+					p, err := processor.ParseNewMatcher(agentMockNewMatcher)
+					if err != nil {
+						return err
+					}
+					opts.MockProposal = &p
+				} else {
+					backend, err := newAgentBackend(agentProvider, agentModel)
+					if err != nil {
+						return err
+					}
+					opts.Backend = backend
+				}
+				return bench.RunRecallAgent(context.Background(), opts)
+			default:
+				return fmt.Errorf("unsupported --mode %q (want precision|recall)", mode)
 			}
-			return bench.RunAgent(context.Background(), opts)
 		},
 	}
 	agent.Flags().StringVar(&agentSlug, "slug", "", "matcher slug to improve; defaults to worst precision slug with >1 FP")
@@ -210,7 +249,10 @@ func main() {
 	agent.Flags().StringVar(&agentHeldOut, "held-out", "", "comma-separated task IDs excluded from gate/context and scored separately")
 	agent.Flags().StringVar(&agentProvider, "provider", "zai-coding", "provider profile for the proposer")
 	agent.Flags().StringVar(&agentModel, "model", "", "override proposer model")
-	agent.Flags().StringVar(&agentMockPatch, "mock-patch", "", "strict JSON patch used instead of calling an LLM")
+	agent.Flags().StringVar(&agentMockPatch, "mock-patch", "", "strict JSON patch used instead of calling an LLM (precision mode)")
+	agent.Flags().StringVar(&agentMockNewMatcher, "mock-proposal", "", "strict JSON new-matcher proposal used instead of calling an LLM (recall mode)")
+	agent.Flags().StringVar(&agentMode, "mode", "precision", "agent mode: precision (narrow existing matchers) or recall (propose new matchers)")
+	agent.Flags().Float64Var(&agentMinPrecision, "min-precision", 0.25, "minimum precision required of a recall-mode proposal's new slug")
 	agent.Flags().StringVar(&tasksDir, "tasks", "bench/tasks", "benchmark task directory")
 	agent.Flags().StringVar(&outDir, "out", "bench/out-agent", "agent report output root")
 

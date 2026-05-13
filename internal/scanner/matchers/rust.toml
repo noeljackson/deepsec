@@ -36,6 +36,19 @@ patterns = [
 ]
 snippet_after = 8
 label = "unsafe block"
+[[matcher.ast_patterns]]
+language = "rust"
+label = "unsafe block inside a function body"
+primary_capture = "@block"
+snippet_capture = "@block"
+prefilter_patterns = ["\\bunsafe\\s*\\{"]
+query = '''
+(
+  function_item
+    body: (block
+      (unsafe_block) @block)
+) @fn
+'''
 
 [[matcher]]
 slug = "rust-cmd-injection"

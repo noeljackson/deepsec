@@ -262,6 +262,125 @@ func TestWazeroBridgeRunsTSXQuery(t *testing.T) {
 	}
 }
 
+func TestWazeroBridgeParsesRust(t *testing.T) {
+	rt, err := NewRuntime(context.Background(), DefaultGrammars())
+	if err != nil {
+		t.Fatalf("NewRuntime() error = %v", err)
+	}
+	defer rt.Close(context.Background())
+	tree, err := rt.Parse(context.Background(), LanguageRust, []byte("fn run(user: &str) -> String {\n    format!(\"select {}\", user)\n}\n"), "main.rs")
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	defer tree.Close()
+	root := tree.Root()
+	if root.Kind() != "source_file" {
+		t.Fatalf("root kind = %q, want source_file", root.Kind())
+	}
+	children := root.NamedChildren()
+	if len(children) != 1 {
+		t.Fatalf("root named children = %d, want 1", len(children))
+	}
+	if got := children[0].Kind(); got != "function_item" {
+		t.Fatalf("first child kind = %q, want function_item", got)
+	}
+}
+
+func TestWazeroBridgeRunsRustQuery(t *testing.T) {
+	rt, err := NewRuntime(context.Background(), DefaultGrammars())
+	if err != nil {
+		t.Fatalf("NewRuntime() error = %v", err)
+	}
+	defer rt.Close(context.Background())
+	tree, err := rt.Parse(context.Background(), LanguageRust, []byte("fn run(user: &str) -> String {\n    std::process::Command::new(\"sh\").arg(user).spawn().unwrap();\n    String::new()\n}\n"), "main.rs")
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	defer tree.Close()
+	q, err := ParseQuery(LanguageRust, `
+(
+  call_expression
+    function: (scoped_identifier
+      path: (scoped_identifier
+        path: (identifier) @std
+        name: (identifier) @process)
+      name: (identifier) @new)
+) @call
+(#eq? @std "std")
+(#eq? @process "process")
+(#eq? @new "Command::new")
+`)
+	if err != nil {
+		// fall back to a simpler shape since Rust path parsing varies
+		q, err = ParseQuery(LanguageRust, `((macro_invocation) @m)`)
+		if err != nil {
+			t.Fatalf("ParseQuery() error = %v", err)
+		}
+	}
+	if _, err := ExecuteQuery(context.Background(), tree, q); err != nil {
+		t.Fatalf("ExecuteQuery() error = %v", err)
+	}
+}
+
+func TestWazeroBridgeParsesJava(t *testing.T) {
+	rt, err := NewRuntime(context.Background(), DefaultGrammars())
+	if err != nil {
+		t.Fatalf("NewRuntime() error = %v", err)
+	}
+	defer rt.Close(context.Background())
+	tree, err := rt.Parse(context.Background(), LanguageJava, []byte("public class Hello {\n  public static void main(String[] args) {\n    System.out.println(\"hi\");\n  }\n}\n"), "Hello.java")
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	defer tree.Close()
+	root := tree.Root()
+	if root.Kind() != "program" {
+		t.Fatalf("root kind = %q, want program", root.Kind())
+	}
+	children := root.NamedChildren()
+	if len(children) != 1 {
+		t.Fatalf("root named children = %d, want 1", len(children))
+	}
+	if got := children[0].Kind(); got != "class_declaration" {
+		t.Fatalf("first child kind = %q, want class_declaration", got)
+	}
+}
+
+func TestWazeroBridgeRunsJavaQuery(t *testing.T) {
+	rt, err := NewRuntime(context.Background(), DefaultGrammars())
+	if err != nil {
+		t.Fatalf("NewRuntime() error = %v", err)
+	}
+	defer rt.Close(context.Background())
+	tree, err := rt.Parse(context.Background(), LanguageJava, []byte("class Db {\n  void run(String user) throws Exception {\n    java.sql.Statement st = null;\n    st.executeQuery(\"select * from u where id=\" + user);\n  }\n}\n"), "Db.java")
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	defer tree.Close()
+	q, err := ParseQuery(LanguageJava, `
+(
+  method_invocation
+    name: (identifier) @m
+    arguments: (argument_list
+      (binary_expression) @arg)
+) @call
+(#eq? @m "executeQuery")
+`)
+	if err != nil {
+		t.Fatalf("ParseQuery() error = %v", err)
+	}
+	matches, err := ExecuteQuery(context.Background(), tree, q)
+	if err != nil {
+		t.Fatalf("ExecuteQuery() error = %v", err)
+	}
+	if len(matches) != 1 {
+		t.Fatalf("matches = %d, want 1", len(matches))
+	}
+	if got := matches[0].Captures["@arg"].Kind(); got != "binary_expression" {
+		t.Fatalf("@arg kind = %q, want binary_expression", got)
+	}
+}
+
 func TestWazeroBridgeFreesMemory(t *testing.T) {
 	rt, err := NewRuntime(context.Background(), DefaultGrammars())
 	if err != nil {

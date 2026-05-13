@@ -74,6 +74,16 @@ func EnsembleProcess(ctx context.Context, opts ProcessOptions, agents []NamedBac
 		if err != nil {
 			return nil, fmt.Errorf("ensemble: %s: %w", ab.Name, err)
 		}
+		// Process returns nil for "every batch failed but the loop
+		// completed" — the failure shows up as ErrorBatchCount > 0
+		// and AnalysisCount == 0 in the outcome and as phase=error in
+		// the on-disk RunMeta. Treat that as a fatal ensemble failure
+		// so we don't silently roll a broken agent's zero findings
+		// into the merge (#74).
+		if oc.ErrorBatchCount > 0 && oc.AnalysisCount == 0 {
+			return nil, fmt.Errorf("ensemble: %s produced 0 findings across %d failed batches — check provider auth, model availability, and rate limits",
+				ab.Name, oc.ErrorBatchCount)
+		}
 		out.Outcomes = append(out.Outcomes, oc)
 		out.RunIDs = append(out.RunIDs, oc.RunID)
 		out.AgentByRunID[oc.RunID] = ab.Name

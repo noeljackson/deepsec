@@ -15,6 +15,22 @@ dist/
 /.tmp/
 /bench/out/
 /bench/out-processor/
+/bench/out-agent/
+
+# Bake-off ephemera. Each codex session writes its brief here and a
+# `*-RESULTS.md` report at the repo root summarising what it built;
+# both are session-local and should never land on main.
+/.*-brief.md
+/AGENT-RESULTS.md
+/BENCH-RESULTS.md
+/EXTERN-RESULTS.md
+/PROC-RESULTS.md
+/REPEAT-RESULTS.md
+/REVIEW-RESULTS.md
+
+# Agent decisions log is per-machine (records local autonomous
+# matcher patches). Production audit logs of the agent run elsewhere.
+/AGENT_DECISIONS.md
 
 # Secrets and local env
 .env*.local

@@ -39,6 +39,7 @@ Verify it loaded: `deepsec list-matchers | grep internal-magic-cookie`.
 | `patterns`             | string[]        | yes      |         | Go regex patterns. Any match produces a candidate. |
 | `suppress_patterns`    | string[]        | no       | `[]`    | If any matches the snippet window, the hit is dropped. |
 | `require_content`      | string[]        | no       | `[]`    | ALL must match somewhere in the file or the matcher is a no-op. |
+| `require_taint_within` | int             | no       | `0`     | Drop candidates that aren't within this many lines of a per-language taint source (`r.URL.Query`, `req.body`, `request.args`, `@RequestParam`, etc.). `0` disables. Per-language sources are defined in `internal/scanner/taint.go`. |
 | `exclude_path_patterns`| string[]        | no       | `[]`    | Path regexes to skip (e.g. `\\.test\\.ts$`). |
 | `snippet_before`       | int             | no       | `1`     | Lines of context BEFORE the match in `snippet`. |
 | `snippet_after`        | int             | no       | `5`     | Lines of context AFTER the match in `snippet`. |

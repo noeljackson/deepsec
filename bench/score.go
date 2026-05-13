@@ -3,8 +3,10 @@ package bench
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"math"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -25,6 +27,19 @@ type ScoreOptions struct {
 type TaskConfig struct {
 	MatcherOnly    []string `toml:"matcher_only"`
 	MatcherExclude []string `toml:"matcher_exclude"`
+	// Repo, if set, makes the task scan an external git repo instead of
+	// a vendored `source/` directory. The repo is shallow-cloned to a
+	// fresh temp dir per scoring run and removed when the run ends, so
+	// labeled fixtures can reference real-world code at a pinned SHA
+	// without copying source into the bench tree.
+	Repo *RepoSource `toml:"repo,omitempty"`
+}
+
+// RepoSource pins a remote git repo + commit. Both fields are required
+// when present; the scorer rejects a partially-specified entry.
+type RepoSource struct {
+	URL    string `toml:"url"`
+	Commit string `toml:"commit"`
 }
 
 type Summary struct {
@@ -209,7 +224,6 @@ type scoredTask struct {
 
 func scoreTask(id, tasksDir, outDir string, explosionThreshold float64, noise map[string]scanner.NoiseTier, extraMatcherPaths []string) (scoredTask, error) {
 	taskDir := filepath.Join(tasksDir, id)
-	source := filepath.Join(taskDir, "source")
 	key, err := LoadAnswerKey(filepath.Join(taskDir, "answer.yaml"))
 	if err != nil {
 		return scoredTask{}, err
@@ -218,6 +232,11 @@ func scoreTask(id, tasksDir, outDir string, explosionThreshold float64, noise ma
 	if err != nil {
 		return scoredTask{}, err
 	}
+	source, cleanup, err := materializeSource(taskDir, cfg)
+	if err != nil {
+		return scoredTask{}, err
+	}
+	defer cleanup()
 	dataDir, err := os.MkdirTemp("", "deepsec-bench-"+id+"-")
 	if err != nil {
 		return scoredTask{}, err
@@ -359,8 +378,63 @@ func loadTaskConfig(path string) (TaskConfig, error) {
 		}
 		return cfg, err
 	}
-	_, err := toml.DecodeFile(path, &cfg)
-	return cfg, err
+	if _, err := toml.DecodeFile(path, &cfg); err != nil {
+		return cfg, err
+	}
+	if cfg.Repo != nil {
+		if cfg.Repo.URL == "" || cfg.Repo.Commit == "" {
+			return cfg, fmt.Errorf("task.toml: [repo] requires both url and commit")
+		}
+	}
+	return cfg, nil
+}
+
+// materializeSource resolves the source directory for a task: either
+// the vendored `source/` subdir or a fresh shallow clone of the
+// configured repo at the pinned SHA. Returns the absolute path to scan
+// and a cleanup callback the caller must invoke (it's a no-op for
+// vendored sources, an RemoveAll for cloned ones).
+func materializeSource(taskDir string, cfg TaskConfig) (string, func(), error) {
+	if cfg.Repo == nil {
+		return filepath.Join(taskDir, "source"), func() {}, nil
+	}
+	dir, err := os.MkdirTemp("", "deepsec-bench-clone-")
+	if err != nil {
+		return "", nil, err
+	}
+	cleanup := func() { _ = os.RemoveAll(dir) }
+	// Shallow clone, fetch only the pinned SHA. The two-step "clone
+	// then fetch the SHA" pattern works on every git host we care
+	// about — github / gitlab / a bare local repo / a private mirror
+	// — and avoids pulling the entire history.
+	if err := runGitIn(dir, "init", "--quiet"); err != nil {
+		cleanup()
+		return "", nil, err
+	}
+	if err := runGitIn(dir, "remote", "add", "origin", cfg.Repo.URL); err != nil {
+		cleanup()
+		return "", nil, err
+	}
+	if err := runGitIn(dir, "fetch", "--quiet", "--depth", "1", "origin", cfg.Repo.Commit); err != nil {
+		cleanup()
+		return "", nil, fmt.Errorf("fetch %s @ %s: %w", cfg.Repo.URL, cfg.Repo.Commit, err)
+	}
+	if err := runGitIn(dir, "checkout", "--quiet", cfg.Repo.Commit); err != nil {
+		cleanup()
+		return "", nil, err
+	}
+	return dir, cleanup, nil
+}
+
+func runGitIn(dir string, args ...string) error {
+	cmd := exec.Command("git", append([]string{"-C", dir}, args...)...)
+	cmd.Stdout = io.Discard
+	stderr := &strings.Builder{}
+	cmd.Stderr = stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("git %v: %w (%s)", args, err, strings.TrimSpace(stderr.String()))
+	}
+	return nil
 }
 
 func flattenCandidates(records []*core.FileRecord) []candidateRef {

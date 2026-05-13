@@ -63,6 +63,60 @@ func (b *AnthropicBackend) applySettings(p *anthropic.MessageNewParams) {
 func (b *AnthropicBackend) Kind() providers.Kind { return providers.KindAnthropic }
 func (b *AnthropicBackend) Model() string        { return b.model }
 
+func (b *AnthropicBackend) ProposePatchJSON(ctx context.Context, system, user string, schema json.RawMessage) (string, core.Usage, float64, error) {
+	toolName := "propose_matcher_patch"
+	tool := anthropic.ToolParam{
+		Name:        toolName,
+		Description: anthropic.String("Return one bounded matcher TOML patch decision."),
+		InputSchema: anthropic.ToolInputSchemaParam{
+			Type:       "object",
+			Properties: schemaPropertiesFor(schema),
+			Required:   []string{"decision"},
+		},
+	}
+	start := time.Now()
+	params := anthropic.MessageNewParams{
+		Model:     anthropic.Model(b.model),
+		MaxTokens: 2048,
+		System: []anthropic.TextBlockParam{{
+			Text:         system,
+			CacheControl: anthropic.CacheControlEphemeralParam{Type: "ephemeral"},
+		}},
+		Messages: []anthropic.MessageParam{
+			anthropic.NewUserMessage(anthropic.NewTextBlock(user)),
+		},
+		Tools: []anthropic.ToolUnionParam{{OfTool: &tool}},
+		ToolChoice: anthropic.ToolChoiceUnionParam{
+			OfTool: &anthropic.ToolChoiceToolParam{Name: toolName},
+		},
+	}
+	b.applySettings(&params)
+	resp, err := b.client.Messages.New(ctx, params)
+	if err != nil {
+		if isAnthropicQuotaErr(err) {
+			return "", core.Usage{}, 0, &QuotaExhaustedError{Provider: b.profile.Name, Detail: err.Error()}
+		}
+		return "", core.Usage{}, 0, fmt.Errorf("anthropic: %w", err)
+	}
+	usage := core.Usage{
+		InputTokens:              uint64(resp.Usage.InputTokens),
+		OutputTokens:             uint64(resp.Usage.OutputTokens),
+		CacheReadInputTokens:     uint64(resp.Usage.CacheReadInputTokens),
+		CacheCreationInputTokens: uint64(resp.Usage.CacheCreationInputTokens),
+	}
+	_ = start
+	for _, block := range resp.Content {
+		if tu := block.AsToolUse(); tu.Name == toolName {
+			return string(tu.Input), usage, b.profile.Cost(b.model, usage), nil
+		}
+	}
+	text := concatTextBlocks(resp.Content)
+	if body := ExtractJSON(text); body != "" {
+		return body, usage, b.profile.Cost(b.model, usage), nil
+	}
+	return "", usage, b.profile.Cost(b.model, usage), errors.New("anthropic: patch response missing tool call")
+}
+
 // Investigate sends one batch to Claude with prompt caching on the
 // system prompt and a `report_findings` tool the model invokes to
 // return structured output.

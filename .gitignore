@@ -32,6 +32,8 @@ dist/
 # Agent decisions log is per-machine (records local autonomous
 # matcher patches). Production audit logs of the agent run elsewhere.
 /AGENT_DECISIONS.md
+/PATCH_DECISIONS.md
+/PATCH-RESULTS.md
 
 # Secrets and local env
 .env*.local

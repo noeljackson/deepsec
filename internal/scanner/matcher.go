@@ -3,6 +3,7 @@
 package scanner
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"sort"
@@ -189,10 +190,50 @@ func (m *Matcher) EligibleASTPatterns(content, filePath string, lang scannerast.
 }
 
 func (m *Matcher) MatchAST(tree scannerast.Tree, filePath string, patterns []compiledASTPattern) []core.CandidateMatch {
-	// Tree-sitter query execution is deliberately not faked. Until grammar
-	// WASM plus the parser ABI adapter are committed, AST patterns compile and
-	// route correctly but do not emit candidates.
-	return nil
+	lines := strings.Split(tree.Content(), "\n")
+	out := make([]core.CandidateMatch, 0)
+	seen := map[string]bool{}
+	for _, pat := range patterns {
+		matches, err := scannerast.ExecuteQuery(context.Background(), tree, pat.query)
+		if err != nil {
+			continue
+		}
+		for _, match := range matches {
+			primary, ok := match.Captures[pat.primaryCapture]
+			if !ok || primary == nil {
+				continue
+			}
+			snippetNode := primary
+			if n, ok := match.Captures[pat.snippetCapture]; ok && n != nil {
+				snippetNode = n
+			}
+			rng := primary.Range()
+			lineNum := rng.StartLine
+			snippetRange := snippetNode.Range()
+			snippet := buildSnippet(lines, snippetRange.StartLine, m.snippetBefore, m.snippetAfter)
+			if anyMatch(m.suppress, snippet) {
+				continue
+			}
+			key := fmt.Sprintf("%s|%s|%d", m.Def.Slug, pat.label, lineNum)
+			if seen[key] {
+				continue
+			}
+			seen[key] = true
+			out = append(out, core.CandidateMatch{
+				VulnSlug:       m.Def.Slug,
+				LineNumbers:    []int{lineNum},
+				Snippet:        snippet,
+				MatchedPattern: pat.label,
+			})
+		}
+	}
+	sort.SliceStable(out, func(i, j int) bool {
+		if out[i].LineNumbers[0] != out[j].LineNumbers[0] {
+			return out[i].LineNumbers[0] < out[j].LineNumbers[0]
+		}
+		return out[i].MatchedPattern < out[j].MatchedPattern
+	})
+	return out
 }
 
 func anyMatch(rs []*regexp.Regexp, s string) bool {

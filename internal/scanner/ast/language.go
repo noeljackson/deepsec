@@ -70,15 +70,21 @@ type Range struct {
 }
 
 type Node interface {
+	Kind() string
 	Range() Range
+	NamedChildren() []Node
+	NamedChildByFieldName(name string) (Node, bool)
 	Text() string
 }
 
 type Tree interface {
+	Root() Node
 	Language() Language
 	FilePath() string
 	Content() string
+	Source() []byte
 	RootRange() Range
+	Close()
 }
 
 type SourceTree struct {
@@ -94,6 +100,11 @@ func NewSourceTree(lang Language, filePath, content string) *SourceTree {
 func (t *SourceTree) Language() Language { return t.lang }
 func (t *SourceTree) FilePath() string   { return t.filePath }
 func (t *SourceTree) Content() string    { return t.content }
+func (t *SourceTree) Source() []byte     { return []byte(t.content) }
+func (t *SourceTree) Close()             {}
+func (t *SourceTree) Root() Node {
+	return NewSourceNode(t, t.RootRange(), "source_file")
+}
 func (t *SourceTree) RootRange() Range {
 	return Range{
 		StartByte: 0,
@@ -114,6 +125,13 @@ func NewSourceNode(tree *SourceTree, rng Range, label string) SourceNode {
 }
 
 func (n SourceNode) Range() Range { return n.rng }
+func (n SourceNode) Kind() string { return n.label }
+func (n SourceNode) NamedChildren() []Node {
+	return nil
+}
+func (n SourceNode) NamedChildByFieldName(name string) (Node, bool) {
+	return nil, false
+}
 func (n SourceNode) Text() string {
 	if n.tree == nil {
 		return ""

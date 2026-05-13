@@ -23,6 +23,7 @@ type Runtime struct {
 	rt       wazero.Runtime
 	grammars map[Language]Grammar
 	compiled map[Language]wazero.CompiledModule
+	wasm     *wasmRuntime
 }
 
 func NewRuntime(ctx context.Context, grammars []Grammar) (*Runtime, error) {
@@ -97,11 +98,13 @@ func (r *Runtime) Parse(ctx context.Context, lang Language, content []byte, file
 	if !IsSupported(lang) {
 		return nil, fmt.Errorf("unsupported AST language %q", lang)
 	}
-	if err := r.ensureCompiled(ctx, lang); err != nil {
+	g, ok := r.grammars[lang]
+	if !ok || len(g.WASM) == 0 {
+		return nil, fmt.Errorf("%w: %s", ErrLanguageUnavailable, lang)
+	}
+	wasm, err := r.ensureWASM(ctx)
+	if err != nil {
 		return nil, err
 	}
-	// The scanner-side runtime and module cache are in place, but this
-	// repository does not yet contain the tree-sitter parser ABI adapter
-	// needed to turn grammar exports into concrete parse trees.
-	return nil, fmt.Errorf("%w: %s", ErrParserAdapterUnavailable, lang)
+	return wasm.parse(ctx, r.rt, g, content, filePath)
 }

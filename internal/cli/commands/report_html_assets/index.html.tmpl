@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>deepsec report — {{.ProjectID}}</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>deepsec report</h1>
+  <div class="meta">project <code>{{.ProjectID}}</code> · {{.TotalFindings}} findings</div>
+  <div class="summary">
+    {{range .Counts}}<span class="sev-{{.Severity | printf "%s" | js}}"><span class="dot"></span>{{.Severity}}: {{.Count}}</span>{{end}}
+  </div>
+</header>
+<main>
+  <div class="filters">
+    <label>filter</label>
+    <input id="q" type="search" placeholder="path, slug, title…">
+    <label>severity</label>
+    <select id="sev">
+      <option value="">all</option>
+      <option value="CRITICAL">CRITICAL</option>
+      <option value="HIGH">HIGH</option>
+      <option value="MEDIUM">MEDIUM</option>
+      <option value="LOW">LOW</option>
+    </select>
+    <label>verdict</label>
+    <select id="verdict">
+      <option value="">all</option>
+      <option value="true-positive">true-positive</option>
+      <option value="false-positive">false-positive</option>
+      <option value="fixed">fixed</option>
+      <option value="uncertain">uncertain</option>
+      <option value="__none__">(no verdict)</option>
+    </select>
+  </div>
+  <table id="findings">
+    <thead><tr><th>Sev</th><th>Slug</th><th>Title</th><th>File</th><th>Lines</th><th>Verdict</th></tr></thead>
+    <tbody>
+    {{range .Entries}}
+      <tr data-severity="{{.Severity}}" data-verdict="{{.Verdict}}" data-search="{{.Path}} {{.Slug}} {{.Title}}">
+        <td class="sev {{.SeverityClass}}"><span class="badge">{{.Severity}}</span></td>
+        <td><code>{{.Slug}}</code></td>
+        <td><a href="findings/{{.ID}}.html">{{.Title}}</a></td>
+        <td><code>{{.Path}}</code></td>
+        <td>{{.Lines}}</td>
+        <td>{{if .Verdict}}<code>{{.Verdict}}</code>{{end}}</td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+</main>
+<script>
+(function() {
+  var q = document.getElementById('q');
+  var sev = document.getElementById('sev');
+  var verdict = document.getElementById('verdict');
+  var rows = document.querySelectorAll('#findings tbody tr');
+  function applyFilters() {
+    var needle = q.value.toLowerCase().trim();
+    var wantSev = sev.value;
+    var wantVerdict = verdict.value;
+    rows.forEach(function(r) {
+      var s = r.getAttribute('data-search').toLowerCase();
+      var rsev = r.getAttribute('data-severity');
+      var rverdict = r.getAttribute('data-verdict') || '';
+      var show = true;
+      if (needle && s.indexOf(needle) === -1) show = false;
+      if (wantSev && rsev !== wantSev) show = false;
+      if (wantVerdict) {
+        if (wantVerdict === '__none__') { if (rverdict !== '') show = false; }
+        else if (rverdict !== wantVerdict) show = false;
+      }
+      r.style.display = show ? '' : 'none';
+    });
+  }
+  q.addEventListener('input', applyFilters);
+  sev.addEventListener('change', applyFilters);
+  verdict.addEventListener('change', applyFilters);
+})();
+</script>
+</body>
+</html>

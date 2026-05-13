@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{.Entry.Title}} — {{.ProjectID}}</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+  <h1>deepsec finding</h1>
+  <div class="meta">project <code>{{.ProjectID}}</code></div>
+</header>
+<main class="detail">
+  <a href="../index.html" class="back">&larr; back to all findings</a>
+  <h2><span class="badge {{.Entry.SeverityClass}}" style="padding:4px 10px; font-size:12px; vertical-align:middle;">{{.Entry.Severity}}</span> {{.Entry.Title}}</h2>
+  <div class="slug-line">slug <code>{{.Entry.Slug}}</code></div>
+  <dl class="fields">
+    <dt>File</dt><dd><code>{{.Entry.Path}}</code></dd>
+    <dt>Lines</dt><dd>{{.Entry.Lines}}</dd>
+    <dt>Confidence</dt><dd>{{.Entry.Confidence}}</dd>
+    {{if .Entry.Verdict}}<dt>Verdict</dt><dd><code>{{.Entry.Verdict}}</code></dd>{{end}}
+    {{if .Entry.Priority}}<dt>Priority</dt><dd>{{.Entry.Priority}}</dd>{{end}}
+  </dl>
+  <h3>Description</h3>
+  <div class="body">{{.Entry.Description}}</div>
+  {{if .Entry.Recommendation}}
+  <h3>Recommendation</h3>
+  <div class="recommendation">{{.Entry.Recommendation}}</div>
+  {{end}}
+</main>
+</body>
+</html>

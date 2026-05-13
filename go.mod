@@ -10,7 +10,9 @@ require (
 	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
+	github.com/tetratelabs/wazero v1.11.0
 	golang.org/x/sync v0.20.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -28,5 +30,5 @@ require (
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
+	golang.org/x/sys v0.38.0 // indirect
 )

@@ -9,6 +9,32 @@ patterns = [
 ]
 snippet_after = 12
 label = "Go http handler"
+[[matcher.ast_patterns]]
+language = "go"
+label = "Go http handler with command sink"
+primary_capture = "@function"
+snippet_capture = "@function"
+prefilter_patterns = ["\\bhttp\\.Request\\b", "\\bexec\\.Command"]
+query = '''
+(
+  function_declaration
+    parameters: (parameter_list
+      (parameter_declaration
+        type: (pointer_type
+          (selector_expression
+            operand: (identifier) @http_pkg
+            field: (field_identifier) @request_type))))
+    body: (block
+      (expression_statement
+        (call_expression
+          function: (selector_expression
+            operand: (identifier) @exec_pkg
+            field: (field_identifier) @exec_method))))*) @function
+(#eq? @http_pkg "http")
+(#eq? @request_type "Request")
+(#eq? @exec_pkg "exec")
+(#match? @exec_method "^(Command|CommandContext)$")
+'''
 
 [[matcher]]
 slug = "go-gin-route"
@@ -57,6 +83,27 @@ patterns = [
   "(?i)\\bexec\\.CommandContext\\s*\\([^)]*\\+",
 ]
 label = "exec.Command with concatenated input"
+[[matcher.ast_patterns]]
+language = "go"
+label = "exec.Command dynamic argument"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["\\bexec\\.Command"]
+query = '''
+(
+  call_expression
+    function: (selector_expression
+      operand: (identifier) @pkg
+      field: (field_identifier) @method)
+    arguments: (argument_list
+      [
+        (binary_expression) @dynamic_arg
+        (identifier) @dynamic_arg
+      ])
+) @call
+(#eq? @pkg "exec")
+(#match? @method "^(Command|CommandContext)$")
+'''
 
 [[matcher]]
 slug = "go-ssrf"

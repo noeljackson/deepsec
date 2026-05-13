@@ -10,6 +10,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/noeljackson/deepsec/internal/scanner"
+	scannerast "github.com/noeljackson/deepsec/internal/scanner/ast"
 )
 
 type LintSeverity string
@@ -65,6 +66,7 @@ func LintMatchers(dir string) ([]LintFinding, error) {
 			findings = append(findings, lintRegexGroup(file, lines, m.Slug, "suppress_patterns", m.SuppressPatterns)...)
 			findings = append(findings, lintRegexGroup(file, lines, m.Slug, "require_content", m.RequireContent)...)
 			findings = append(findings, lintRegexGroup(file, lines, m.Slug, "exclude_path_patterns", m.ExcludePathPatterns)...)
+			findings = append(findings, lintASTPatterns(file, lines, m)...)
 			if m.NoiseTier == scanner.NoiseNoisy && !hasGate(m) {
 				findings = append(findings, LintFinding{Severity: LintWarning, File: file, Line: line, Slug: m.Slug, Check: "noisy-without-gate", Message: `noise_tier="noisy" matcher has no requires.* or require_content gate`})
 			}
@@ -101,6 +103,42 @@ func lintRegexGroup(file string, lines []string, slug, check string, patterns []
 		}
 		if _, err := regexp.Compile(pat); err != nil {
 			out = append(out, LintFinding{Severity: LintError, File: file, Line: line, Slug: slug, Check: check + "-invalid-regex", Message: err.Error()})
+		}
+	}
+	return out
+}
+
+func lintASTPatterns(file string, lines []string, m scanner.MatcherDef) []LintFinding {
+	var out []LintFinding
+	if len(m.Patterns) == 0 && len(m.ASTPatterns) == 0 {
+		line := lineOfSlug(lines, m.Slug)
+		out = append(out, LintFinding{Severity: LintError, File: file, Line: line, Slug: m.Slug, Check: "empty-patterns", Message: "matcher must define patterns or ast_patterns"})
+	}
+	for _, p := range m.ASTPatterns {
+		line := lineOfValue(lines, p.Query)
+		lang := scannerast.Language(p.Language)
+		if !scannerast.IsSupported(lang) {
+			out = append(out, LintFinding{Severity: LintError, File: file, Line: line, Slug: m.Slug, Check: "ast-unknown-language", Message: "unknown AST language " + p.Language})
+			continue
+		}
+		q, err := scannerast.ParseQuery(lang, p.Query)
+		if err != nil {
+			out = append(out, LintFinding{Severity: LintError, File: file, Line: line, Slug: m.Slug, Check: "ast-invalid-query", Message: err.Error()})
+			continue
+		}
+		primary := p.PrimaryCapture
+		if primary == "" {
+			primary = "@match"
+		}
+		if !strings.HasPrefix(primary, "@") {
+			primary = "@" + primary
+		}
+		if !q.HasCapture(primary) {
+			out = append(out, LintFinding{Severity: LintError, File: file, Line: line, Slug: m.Slug, Check: "ast-missing-primary-capture", Message: "query does not capture " + primary})
+		}
+		out = append(out, lintRegexGroup(file, lines, m.Slug, "ast_prefilter_patterns", p.PrefilterPatterns)...)
+		if len(p.PrefilterPatterns) == 0 && m.NoiseTier == scanner.NoiseNoisy && overbroadFilePatterns(m.FilePatterns) {
+			out = append(out, LintFinding{Severity: LintWarning, File: file, Line: line, Slug: m.Slug, Check: "ast-missing-prefilter", Message: "noisy AST matcher with broad file patterns should use prefilter_patterns"})
 		}
 	}
 	return out

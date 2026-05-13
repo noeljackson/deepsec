@@ -1636,6 +1636,22 @@ Mitigation:
 - Document dataflow boundaries in matcher docs.
 - Open a separate dataflow RFC if needed.
 
+
+### Risk 11: Grammar packaging is not yet reproducible in-tree
+The first implementation patch wires the scanner-side AST contract and
+wazero runtime cache, but does not commit real tree-sitter grammar WASM
+artifacts. The local workspace did not include `tree-sitter`, `tinygo`,
+or `wat2wasm`, so generated parser artifacts would not be reproducible
+from checked-in sources.
+Mitigation:
+- Treat Phase 1 AST matchers as experimental until pinned grammar WASM
+  artifacts are committed.
+- Prefer checked-in, revision-pinned grammar WASM files under
+  `internal/scanner/ast/grammars/` once the build pipeline is selected.
+- Commit checksums and generation instructions with the grammar files.
+- Keep regex fallback candidates active until parse benchmarks are
+  measured against §6 budgets.
+
 ## 11. Rejected Alternatives
 This section closes the main design space.
 

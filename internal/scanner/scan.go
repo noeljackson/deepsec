@@ -1,6 +1,8 @@
 package scanner
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -9,6 +11,7 @@ import (
 
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/noeljackson/deepsec/internal/core"
+	scannerast "github.com/noeljackson/deepsec/internal/scanner/ast"
 )
 
 // Options bundles the parameters every scan call needs.
@@ -76,6 +79,13 @@ func Scan(opts Options) (*Outcome, error) {
 		return nil, err
 	}
 	active, skipped := splitGated(reg, tech, opts.Root)
+	astRT, err := runtimeForActiveAST(active, reg)
+	if err != nil {
+		return nil, err
+	}
+	if astRT != nil {
+		defer astRT.Close(context.Background())
+	}
 
 	files, err := WalkProject(opts.Root)
 	if err != nil {
@@ -91,7 +101,7 @@ func Scan(opts Options) (*Outcome, error) {
 			continue
 		}
 		content := strings.ReplaceAll(string(body), "\r\n", "\n")
-		matches := runMatchers(reg, active, content, rel)
+		matches := runMatchers(reg, active, content, rel, astRT)
 		lang := langFor(rel)
 		st, ok := byLang[lang]
 		if !ok {
@@ -162,13 +172,20 @@ func ScanFiles(opts Options, files []string, source string) (*FilesOutcome, erro
 		return nil, err
 	}
 	active, skipped := splitGated(reg, tech, opts.Root)
+	astRT, err := runtimeForActiveAST(active, reg)
+	if err != nil {
+		return nil, err
+	}
+	if astRT != nil {
+		defer astRT.Close(context.Background())
+	}
 
 	candidateCount := 0
 	for _, rel := range files {
 		abs := filepath.Join(opts.Root, rel)
 		body, _ := os.ReadFile(abs)
 		content := strings.ReplaceAll(string(body), "\r\n", "\n")
-		matches := runMatchers(reg, active, content, rel)
+		matches := runMatchers(reg, active, content, rel, astRT)
 		candidateCount += len(matches)
 		if err := upsertRecord(opts.DataRoot, opts.ProjectID, rel, runID, content, matches); err != nil {
 			return nil, err
@@ -241,12 +258,34 @@ func splitGated(reg *Registry, tech DetectedTech, root string) (active, skipped 
 	return
 }
 
-func runMatchers(reg *Registry, active []string, content, rel string) []core.CandidateMatch {
+func runtimeForActiveAST(active []string, reg *Registry) (*scannerast.Runtime, error) {
+	if !reg.HasASTPatterns() {
+		return nil, nil
+	}
+	activeSet := map[string]struct{}{}
+	for _, slug := range active {
+		activeSet[slug] = struct{}{}
+	}
+	for _, m := range reg.All() {
+		if _, ok := activeSet[m.Slug()]; ok && m.HasASTPatterns() {
+			return scannerast.NewRuntime(context.Background(), nil)
+		}
+	}
+	return nil, nil
+}
+
+func runMatchers(reg *Registry, active []string, content, rel string, astRT *scannerast.Runtime) []core.CandidateMatch {
 	out := make([]core.CandidateMatch, 0)
 	activeSet := map[string]struct{}{}
 	for _, s := range active {
 		activeSet[s] = struct{}{}
 	}
+	astLang := scannerast.LanguageForPath(rel)
+	type astPlan struct {
+		matcher  *Matcher
+		patterns []compiledASTPattern
+	}
+	var astPlans []astPlan
 	for _, m := range reg.All() {
 		if _, ok := activeSet[m.Slug()]; !ok {
 			continue
@@ -255,6 +294,43 @@ func runMatchers(reg *Registry, active []string, content, rel string) []core.Can
 			continue
 		}
 		out = append(out, m.Match(content, rel)...)
+		if astRT == nil || astLang == "" || !m.HasASTPatterns() {
+			continue
+		}
+		patterns := m.EligibleASTPatterns(content, rel, astLang)
+		if len(patterns) > 0 {
+			astPlans = append(astPlans, astPlan{matcher: m, patterns: patterns})
+		}
+	}
+	if len(astPlans) == 0 {
+		return dedupeCandidates(out)
+	}
+	tree, err := astRT.Parse(context.Background(), astLang, []byte(content), rel)
+	if err != nil {
+		if errors.Is(err, scannerast.ErrLanguageUnavailable) {
+			return dedupeCandidates(out)
+		}
+		return dedupeCandidates(out)
+	}
+	for _, plan := range astPlans {
+		out = append(out, plan.matcher.MatchAST(tree, rel, plan.patterns)...)
+	}
+	return dedupeCandidates(out)
+}
+
+func dedupeCandidates(in []core.CandidateMatch) []core.CandidateMatch {
+	if len(in) < 2 {
+		return in
+	}
+	seen := map[string]struct{}{}
+	out := make([]core.CandidateMatch, 0, len(in))
+	for _, c := range in {
+		key := candidateKey(c)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		out = append(out, c)
 	}
 	return out
 }

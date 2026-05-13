@@ -53,21 +53,45 @@ manual authoring guide, and the deferred real-recording plan.
 
 ## Adding A Task
 
-Create:
+A task is either **vendored** (source files in the bench tree) or
+**externally pinned** (source fetched from a git URL + commit SHA at
+scoring time).
+
+Vendored:
 
 ```text
 bench/tasks/<task-id>/
   source/
   answer.yaml
-  task.toml
+  task.toml          # optional
 ```
 
-`task.toml` is optional. Today it supports:
+Externally pinned:
+
+```text
+bench/tasks/<task-id>/
+  answer.yaml
+  task.toml          # required, with a [repo] block
+```
+
+The runner shallow-clones the repo to a fresh temp dir per scoring
+run, scans it, and removes the clone. Source never lands in the bench
+tree, so licensing/IP concerns disappear and the bench grows without
+inflating the deepsec repo. Reproducible because the SHA is pinned.
+
+`task.toml` supports:
 
 ```toml
 matcher_only = ["ssrf"]
 matcher_exclude = ["missing-rate-limit"]
+
+# Externally pinned source — fetched per scoring run.
+[repo]
+url    = "https://github.com/tailscale/tailscale.git"
+commit = "abc123def4567890abc123def4567890abc12345"
 ```
+
+Both `url` and `commit` are required when `[repo]` is present.
 
 Keep tasks small and deliberate. Add decoys for sites that look similar
 to the vulnerability but must not be counted as true positives.

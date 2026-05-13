@@ -27,6 +27,56 @@ func TestAgentGateAcceptsCandidateReduction(t *testing.T) {
 	require.Empty(t, gate.Reasons)
 }
 
+func TestAgentGateRejectsMatcherSilencingPatch(t *testing.T) {
+	// Catches a `(?s).*` style suppress that silences the matcher
+	// entirely. Pre-#18 the gate accepted this because precision and
+	// recall both collapsed to a degenerate 1.0 with TP=FP=0.
+	before := &RunResult{
+		Summary: Summary{CandidateCountTotal: 6},
+		BySlug:  []SlugResult{{Slug: "a", TruePositive: 0, FalsePositive: 6, CandidateCount: 6}},
+	}
+	after := &RunResult{
+		Summary: Summary{CandidateCountTotal: 0},
+		BySlug:  []SlugResult{{Slug: "a", TruePositive: 0, FalsePositive: 0, CandidateCount: 0}},
+	}
+	gate := EvaluateAgentGate("a", before, after, 0.05)
+	require.False(t, gate.Accepted)
+	require.Contains(t, gate.Reasons[0], "matcher silenced")
+}
+
+func TestAgentGateRejectsNoOpPatch(t *testing.T) {
+	// Catches a decorative patch (e.g. `suppress_patterns =
+	// ["(?i)admin_required"]` when nothing in the fixtures matches
+	// that regex). Slug metrics are byte-identical pre and post.
+	before := &RunResult{
+		Summary: Summary{CandidateCountTotal: 3},
+		BySlug:  []SlugResult{{Slug: "a", TruePositive: 1, FalsePositive: 2, CandidateCount: 3}},
+	}
+	after := &RunResult{
+		Summary: Summary{CandidateCountTotal: 3},
+		BySlug:  []SlugResult{{Slug: "a", TruePositive: 1, FalsePositive: 2, CandidateCount: 3}},
+	}
+	gate := EvaluateAgentGate("a", before, after, 0.05)
+	require.False(t, gate.Accepted)
+	require.Contains(t, gate.Reasons[0], "no-op")
+}
+
+func TestAgentGateAcceptsRealNarrowing(t *testing.T) {
+	// Sanity: a patch that drops one FP without dropping the TP still
+	// passes — the new gates shouldn't make legitimate improvements
+	// look like silencing or no-ops.
+	before := &RunResult{
+		Summary: Summary{CandidateCountTotal: 3},
+		BySlug:  []SlugResult{{Slug: "a", TruePositive: 1, FalsePositive: 2, CandidateCount: 3}},
+	}
+	after := &RunResult{
+		Summary: Summary{CandidateCountTotal: 2},
+		BySlug:  []SlugResult{{Slug: "a", TruePositive: 1, FalsePositive: 1, CandidateCount: 2}},
+	}
+	gate := EvaluateAgentGate("a", before, after, 0.05)
+	require.True(t, gate.Accepted, "real narrowing must still pass: %v", gate.Reasons)
+}
+
 func TestAgentGateRejectsOtherSlugHighRecallRegression(t *testing.T) {
 	before := &RunResult{
 		Summary: Summary{CandidateCountTotal: 2},

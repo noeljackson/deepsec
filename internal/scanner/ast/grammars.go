@@ -36,6 +36,26 @@ var treeSitterTypeScriptWASM []byte
 //go:embed grammars/tree-sitter-tsx.wasm
 var treeSitterTSXWASM []byte
 
+// Tree-sitter Rust grammar procured from npm package tree-sitter-rust@0.24.0.
+//
+// To refresh:
+//
+//	npm pack tree-sitter-rust@0.24.0
+//	tar -xzf tree-sitter-rust-0.24.0.tgz package/tree-sitter-rust.wasm
+//
+//go:embed grammars/tree-sitter-rust.wasm
+var treeSitterRustWASM []byte
+
+// Tree-sitter Java grammar procured from npm package tree-sitter-java@0.23.5.
+//
+// To refresh:
+//
+//	npm pack tree-sitter-java@0.23.5
+//	tar -xzf tree-sitter-java-0.23.5.tgz package/tree-sitter-java.wasm
+//
+//go:embed grammars/tree-sitter-java.wasm
+var treeSitterJavaWASM []byte
+
 func DefaultGrammars() []Grammar {
 	return []Grammar{
 		{
@@ -69,6 +89,16 @@ func DefaultGrammars() []Grammar {
 			Version:   "tree-sitter-tsx@0.23.2",
 			WASM:      treeSitterTSXWASM,
 			EntryName: "tsx",
+		},
+		{
+			Language: LanguageRust,
+			Version:  "tree-sitter-rust@0.24.0",
+			WASM:     treeSitterRustWASM,
+		},
+		{
+			Language: LanguageJava,
+			Version:  "tree-sitter-java@0.23.5",
+			WASM:     treeSitterJavaWASM,
 		},
 	}
 }

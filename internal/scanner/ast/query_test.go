@@ -51,6 +51,8 @@ func TestLanguageForPathSplitsJSXAndTSX(t *testing.T) {
 		"component.js":  LanguageJavaScript,
 		"component.jsx": LanguageJSX,
 		"server.py":     LanguagePython,
+		"src/main.rs":   LanguageRust,
+		"Hello.java":    LanguageJava,
 	}
 	for path, want := range cases {
 		if got := LanguageForPath(path); got != want {

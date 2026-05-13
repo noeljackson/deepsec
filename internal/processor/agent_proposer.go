@@ -58,7 +58,7 @@ var PatchSchema = mustJSON(map[string]any{
 		"require_content":  map[string]any{"type": "string"},
 		"file_patterns":    map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
 		"requires_tech":    map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
-		"ast_language":     map[string]any{"type": "string", "enum": []string{"go", "typescript", "tsx", "javascript", "jsx", "python"}},
+		"ast_language":     map[string]any{"type": "string", "enum": []string{"go", "typescript", "tsx", "javascript", "jsx", "python", "rust", "java"}},
 		"ast_query":        map[string]any{"type": "string"},
 		"ast_prefilter":    map[string]any{"type": "string"},
 		"rationale":        map[string]any{"type": "string"},

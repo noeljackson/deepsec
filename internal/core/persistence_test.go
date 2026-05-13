@@ -143,11 +143,11 @@ func TestListRunsSortsNewestFirst(t *testing.T) {
 
 func TestRunIDGenerationUniqueAndWellFormed(t *testing.T) {
 	seen := map[string]bool{}
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 1000; i++ {
 		id := GenerateRunID()
-		require.Len(t, id, 14+1+4)
+		require.Len(t, id, 14+1+8)
 		require.Equal(t, byte('-'), id[14])
-		require.False(t, seen[id])
+		require.False(t, seen[id], "duplicate run id: %s", id)
 		seen[id] = true
 	}
 }

@@ -7,12 +7,17 @@ import (
 	"time"
 )
 
-// GenerateRunID returns "YYYYMMDDHHMMSS-XXXX" (UTC + 2-byte nonce).
-// Same shape the TS implementation produces; sortable lexicographically.
+// GenerateRunID returns "YYYYMMDDHHMMSS-XXXXXXXX" (UTC + 4-byte nonce).
+// The timestamp has 1-second resolution; the 8-hex-char nonce gives
+// 4.3 billion distinct values per second, so collisions in any
+// realistic concurrent-run scenario are negligible. (The original
+// 2-byte / 4-hex nonce ran a ~7% birthday-paradox collision rate at
+// 100 calls per second, which was tripping the uniqueness test on
+// CI.) IDs are still sortable lexicographically.
 func GenerateRunID() string {
 	t := time.Now().UTC()
 	stamp := t.Format("20060102150405")
-	var nonce [2]byte
+	var nonce [4]byte
 	_, _ = rand.Read(nonce[:])
 	return stamp + "-" + hex.EncodeToString(nonce[:])
 }

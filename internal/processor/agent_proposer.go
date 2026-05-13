@@ -36,6 +36,9 @@ type Patch struct {
 	RequireContent     string   `json:"require_content,omitempty"`
 	FilePatterns       []string `json:"file_patterns,omitempty"`
 	RequiresTech       []string `json:"requires_tech,omitempty"`
+	AstLanguage        string   `json:"ast_language,omitempty"`
+	AstQuery           string   `json:"ast_query,omitempty"`
+	AstPrefilter       string   `json:"ast_prefilter,omitempty"`
 	NeedsEngineFeature bool     `json:"-"`
 	Rationale          string   `json:"rationale,omitempty"`
 	Reason             string   `json:"reason,omitempty"`
@@ -50,11 +53,14 @@ var PatchSchema = mustJSON(map[string]any{
 	"additionalProperties": false,
 	"required":             []string{"decision"},
 	"properties": map[string]any{
-		"decision":         map[string]any{"type": "string", "enum": []string{"suppress_pattern", "require_content", "file_patterns", "requires_tech", "needs-engine-feature"}},
+		"decision":         map[string]any{"type": "string", "enum": []string{"suppress_pattern", "require_content", "file_patterns", "requires_tech", "ast_pattern", "needs-engine-feature"}},
 		"suppress_pattern": map[string]any{"type": "string"},
 		"require_content":  map[string]any{"type": "string"},
 		"file_patterns":    map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
 		"requires_tech":    map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
+		"ast_language":     map[string]any{"type": "string", "enum": []string{"go", "typescript", "tsx", "javascript", "jsx", "python"}},
+		"ast_query":        map[string]any{"type": "string"},
+		"ast_prefilter":    map[string]any{"type": "string"},
 		"rationale":        map[string]any{"type": "string"},
 		"reason":           map[string]any{"type": "string"},
 	},
@@ -119,25 +125,39 @@ func (p *Patch) Validate() error {
 	p.Decision = strings.TrimSpace(p.Decision)
 	p.SuppressPattern = strings.TrimSpace(p.SuppressPattern)
 	p.RequireContent = strings.TrimSpace(p.RequireContent)
+	p.AstLanguage = strings.TrimSpace(p.AstLanguage)
+	p.AstQuery = strings.TrimSpace(p.AstQuery)
+	p.AstPrefilter = strings.TrimSpace(p.AstPrefilter)
 	p.Rationale = strings.TrimSpace(p.Rationale)
 	p.Reason = strings.TrimSpace(p.Reason)
 	p.FilePatterns = trimNonEmpty(p.FilePatterns)
 	p.RequiresTech = trimNonEmpty(p.RequiresTech)
 	p.NeedsEngineFeature = p.Decision == "needs-engine-feature"
+	// A patch field that *belongs* to a different decision is a model
+	// confusion — fail loud rather than silently ignoring.
+	noAst := p.AstLanguage == "" && p.AstQuery == "" && p.AstPrefilter == ""
 	switch p.Decision {
 	case "suppress_pattern":
-		return requireOnly(p.SuppressPattern != "", len(p.FilePatterns) == 0, p.RequireContent == "", len(p.RequiresTech) == 0)
+		return requireOnly(p.SuppressPattern != "", len(p.FilePatterns) == 0, p.RequireContent == "", len(p.RequiresTech) == 0, noAst)
 	case "require_content":
-		return requireOnly(p.RequireContent != "", len(p.FilePatterns) == 0, p.SuppressPattern == "", len(p.RequiresTech) == 0)
+		return requireOnly(p.RequireContent != "", len(p.FilePatterns) == 0, p.SuppressPattern == "", len(p.RequiresTech) == 0, noAst)
 	case "file_patterns":
-		return requireOnly(len(p.FilePatterns) > 0, p.SuppressPattern == "", p.RequireContent == "", len(p.RequiresTech) == 0)
+		return requireOnly(len(p.FilePatterns) > 0, p.SuppressPattern == "", p.RequireContent == "", len(p.RequiresTech) == 0, noAst)
 	case "requires_tech":
-		return requireOnly(len(p.RequiresTech) > 0, p.SuppressPattern == "", p.RequireContent == "", len(p.FilePatterns) == 0)
+		return requireOnly(len(p.RequiresTech) > 0, p.SuppressPattern == "", p.RequireContent == "", len(p.FilePatterns) == 0, noAst)
+	case "ast_pattern":
+		if p.AstLanguage == "" {
+			return errors.New("ast_pattern requires ast_language")
+		}
+		if p.AstQuery == "" {
+			return errors.New("ast_pattern requires ast_query")
+		}
+		return requireOnly(true, p.SuppressPattern == "", p.RequireContent == "", len(p.FilePatterns) == 0, len(p.RequiresTech) == 0)
 	case "needs-engine-feature":
 		if p.Reason == "" {
 			return errors.New("needs-engine-feature requires reason")
 		}
-		return requireOnly(true, p.SuppressPattern == "", p.RequireContent == "", len(p.FilePatterns) == 0, len(p.RequiresTech) == 0)
+		return requireOnly(true, p.SuppressPattern == "", p.RequireContent == "", len(p.FilePatterns) == 0, len(p.RequiresTech) == 0, noAst)
 	default:
 		return fmt.Errorf("unsupported patch decision %q", p.Decision)
 	}
@@ -153,6 +173,8 @@ func (p Patch) Summary() string {
 		return "tightened file_patterns to " + strings.Join(p.FilePatterns, ", ")
 	case "requires_tech":
 		return "added requires.tech " + strings.Join(p.RequiresTech, ", ")
+	case "ast_pattern":
+		return "added " + p.AstLanguage + " AST pattern"
 	case "needs-engine-feature":
 		return "needs engine feature: " + p.Reason
 	}

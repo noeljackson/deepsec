@@ -255,10 +255,11 @@ type FileRecord struct {
 	FilePath  string `json:"filePath"`
 	ProjectID string `json:"projectId"`
 
-	Candidates       []CandidateMatch `json:"candidates"`
-	LastScannedAt    string           `json:"lastScannedAt"`
-	LastScannedRunID string           `json:"lastScannedRunId"`
-	FileHash         string           `json:"fileHash"`
+	Candidates          []CandidateMatch `json:"candidates"`
+	LastScannedAt       string           `json:"lastScannedAt"`
+	LastScannedRunID    string           `json:"lastScannedRunId"`
+	FileHash            string           `json:"fileHash"`
+	LastMatcherPackHash string           `json:"lastMatcherPackHash,omitempty"`
 
 	Findings        []Finding       `json:"findings"`
 	AnalysisHistory []AnalysisEntry `json:"analysisHistory"`

@@ -14,6 +14,7 @@ import (
 func NewScanCmd(loader func() (*cli.Context, error)) *cobra.Command {
 	var projectID, rootOverride, matchers, skipMatchers, filesFrom, diff string
 	var files []string
+	var forceRescan bool
 	cmd := &cobra.Command{
 		Use:   "scan",
 		Short: "Run the regex scanner over a project",
@@ -51,6 +52,7 @@ func NewScanCmd(loader func() (*cli.Context, error)) *cobra.Command {
 				MatcherExclude:    exclude,
 				ExtraMatcherPaths: extras,
 				GithubURL:         proj.Decl.GithubURL,
+				ForceRescan:       forceRescan,
 			}
 
 			resolved, err := cli.ResolveFiles(cli.FileSourceArgs{
@@ -66,8 +68,8 @@ func NewScanCmd(loader func() (*cli.Context, error)) *cobra.Command {
 				if err != nil {
 					return err
 				}
-				fmt.Printf("scan run=%s mode=files source=%s files=%d candidates=%d\n",
-					out.RunID, resolved.Source, out.FilesScanned, out.CandidateCount)
+				fmt.Printf("scan run=%s mode=files source=%s files=%d candidates=%d cache_hits=%d\n",
+					out.RunID, resolved.Source, out.FilesScanned, out.CandidateCount, out.CacheHits)
 				fmt.Printf("  tech tags: %s\n", strings.Join(out.Detected.Tags, ", "))
 				fmt.Printf("  matchers active=%d skipped=%d\n", len(out.ActiveMatchers), len(out.SkippedMatchers))
 				return nil
@@ -77,8 +79,8 @@ func NewScanCmd(loader func() (*cli.Context, error)) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			fmt.Printf("scan run=%s files=%d candidates=%d\n",
-				out.RunID, out.FilesScanned, out.CandidateCount)
+			fmt.Printf("scan run=%s files=%d candidates=%d cache_hits=%d\n",
+				out.RunID, out.FilesScanned, out.CandidateCount, out.CacheHits)
 			fmt.Printf("  tech tags: %s\n", strings.Join(out.Detected.Tags, ", "))
 			fmt.Printf("  matchers active=%d skipped=%d\n", len(out.ActiveMatchers), len(out.SkippedMatchers))
 			if len(out.LanguageStats) > 0 {
@@ -99,6 +101,7 @@ func NewScanCmd(loader func() (*cli.Context, error)) *cobra.Command {
 	cmd.Flags().StringSliceVar(&files, "files", nil, "Explicit file list (csv or repeated)")
 	cmd.Flags().StringVar(&filesFrom, "files-from", "", `Read file paths from this file ("-" reads stdin)`)
 	cmd.Flags().StringVar(&diff, "diff", "", "Scan only files changed vs this git ref")
+	cmd.Flags().BoolVar(&forceRescan, "force-rescan", false, "Bypass the file-hash cache and re-evaluate every file")
 	return cmd
 }
 

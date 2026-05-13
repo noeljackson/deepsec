@@ -1,11 +1,15 @@
 package scanner
 
 import (
+	"crypto/sha256"
 	"embed"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -127,6 +131,31 @@ func (r *Registry) All() []*Matcher {
 // Slugs returns the registered slugs in registration order.
 func (r *Registry) Slugs() []string {
 	return append([]string(nil), r.order...)
+}
+
+// PackHash returns a stable digest of the loaded matcher pack (every
+// matcher's compiled definition, sorted by slug). Used by the scanner
+// cache to invalidate per-file results when a matcher edit lands.
+// Stable across processes: same slugs + same defs → same hex.
+func (r *Registry) PackHash() string {
+	slugs := append([]string(nil), r.order...)
+	sort.Strings(slugs)
+	h := sha256.New()
+	for _, slug := range slugs {
+		m := r.matchers[slug]
+		if m == nil {
+			continue
+		}
+		body, err := json.Marshal(m.Def)
+		if err != nil {
+			fmt.Fprintf(h, "ERR:%s\n", slug)
+			continue
+		}
+		fmt.Fprintf(h, "%s\n", slug)
+		h.Write(body)
+		h.Write([]byte{0})
+	}
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 // NoiseTier returns the tier for the given slug, defaulting to Normal.

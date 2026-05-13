@@ -268,7 +268,7 @@ func runtimeForActiveAST(active []string, reg *Registry) (*scannerast.Runtime, e
 	}
 	for _, m := range reg.All() {
 		if _, ok := activeSet[m.Slug()]; ok && m.HasASTPatterns() {
-			return scannerast.NewRuntime(context.Background(), nil)
+			return scannerast.NewRuntime(context.Background(), scannerast.DefaultGrammars())
 		}
 	}
 	return nil, nil
@@ -312,6 +312,7 @@ func runMatchers(reg *Registry, active []string, content, rel string, astRT *sca
 		}
 		return dedupeCandidates(out)
 	}
+	defer tree.Close()
 	for _, plan := range astPlans {
 		out = append(out, plan.matcher.MatchAST(tree, rel, plan.patterns)...)
 	}

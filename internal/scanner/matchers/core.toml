@@ -29,6 +29,63 @@ patterns = [
   "(?i)\"\\s*SELECT[^\"]*\"\\s*%\\s*\\(",
 ]
 label = "SQL query built from interpolated/concatenated user input"
+[[matcher.ast_patterns]]
+language = "typescript"
+label = "SQL query built from interpolated/concatenated user input"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["\\b(?:query|execute|raw)\\s*\\("]
+query = '''
+(
+  call_expression
+    function: (member_expression
+      property: (property_identifier) @method)
+    arguments: (arguments
+      [
+        (template_string) @dynamic_sql
+        (binary_expression) @dynamic_sql
+      ])
+) @call
+(#match? @method "^(query|execute|raw)$")
+'''
+[[matcher.ast_patterns]]
+language = "tsx"
+label = "SQL query built from interpolated/concatenated user input"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["\\b(?:query|execute|raw)\\s*\\("]
+query = '''
+(
+  call_expression
+    function: (member_expression
+      property: (property_identifier) @method)
+    arguments: (arguments
+      [
+        (template_string) @dynamic_sql
+        (binary_expression) @dynamic_sql
+      ])
+) @call
+(#match? @method "^(query|execute|raw)$")
+'''
+[[matcher.ast_patterns]]
+language = "python"
+label = "SQL query built from interpolated/concatenated user input"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["\\.execute\\s*\\("]
+query = '''
+(
+  call
+    function: (attribute
+      attribute: (identifier) @method)
+    arguments: (argument_list
+      [
+        (string (interpolation) @interpolation)
+        (binary_operator) @concat
+      ])
+) @call
+(#eq? @method "execute")
+'''
 
 [[matcher]]
 slug = "command-injection"
@@ -97,6 +154,44 @@ patterns = [
   "(?i)@@\\{",
 ]
 label = "untrusted HTML injection into DOM"
+[[matcher.ast_patterns]]
+language = "tsx"
+label = "React dangerouslySetInnerHTML"
+primary_capture = "@attribute"
+snippet_capture = "@attribute"
+prefilter_patterns = ["dangerouslySetInnerHTML"]
+query = '''
+(
+  jsx_attribute
+    name: (property_identifier) @attr
+    value: (jsx_expression
+      (object
+        (pair
+          key: (property_identifier) @html_key
+          value: (_) @html_value)))
+) @attribute
+(#eq? @attr "dangerouslySetInnerHTML")
+(#eq? @html_key "__html")
+'''
+[[matcher.ast_patterns]]
+language = "jsx"
+label = "React dangerouslySetInnerHTML"
+primary_capture = "@attribute"
+snippet_capture = "@attribute"
+prefilter_patterns = ["dangerouslySetInnerHTML"]
+query = '''
+(
+  jsx_attribute
+    name: (property_identifier) @attr
+    value: (jsx_expression
+      (object
+        (pair
+          key: (property_identifier) @html_key
+          value: (_) @html_value)))
+) @attribute
+(#eq? @attr "dangerouslySetInnerHTML")
+(#eq? @html_key "__html")
+'''
 
 [[matcher]]
 slug = "cors-wildcard"

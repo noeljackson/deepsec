@@ -105,7 +105,7 @@ const (
 	PhaseRevalidate AnalysisPhase = "revalidate"
 )
 
-// CandidateMatch is a single regex hit from the scanner.
+// CandidateMatch is a single scanner hit from a regex or AST matcher.
 type CandidateMatch struct {
 	VulnSlug       string `json:"vulnSlug"`
 	LineNumbers    []int  `json:"lineNumbers"`

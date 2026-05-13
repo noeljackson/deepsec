@@ -225,6 +225,8 @@ reports:
 - duplicate `slug` declarations,
 - unsupported RE2 syntax: lookaround and `\1`-style backreferences,
 - invalid Go regular expressions,
+- invalid `[[matcher.ast_patterns]]` language names, queries, captures,
+  and `prefilter_patterns`,
 - `noise_tier = "noisy"` matchers with no `requires.*` or
   `require_content` gate,
 - empty or overbroad `file_patterns` such as `**/*` with no other gate.

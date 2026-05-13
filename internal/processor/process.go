@@ -37,6 +37,7 @@ type ProcessOptions struct {
 	MaxCostUSD        float64
 	ToolsEnabled      bool
 	MaxTurns          int
+	SkepticEnabled    bool
 	Detected          *scanner.DetectedTech
 	// ModelSettings captures the pinned inference knobs (temperature,
 	// top-p, seed) for this run. Persisted in
@@ -202,6 +203,14 @@ func Process(ctx context.Context, opts ProcessOptions) (*ProcessOutcome, error) 
 			// cancelled before dispatch; release back to pending
 			releaseLocks(opts.DataRoot, opts.ProjectID, r.paths, core.StatusPending)
 		default:
+			if opts.SkepticEnabled {
+				if cost, err := applySkeptic(ctx, opts, r.out); err == nil {
+					outcome.TotalCostUSD += cost
+					if opts.MaxCostUSD > 0 && outcome.TotalCostUSD >= opts.MaxCostUSD {
+						outcome.BudgetExhausted = true
+					}
+				}
+			}
 			applied := applyBatch(opts, runID, r.paths, r.out)
 			outcome.AnalysisCount += applied.analyzed
 			outcome.FindingCount += applied.findings

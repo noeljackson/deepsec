@@ -188,6 +188,12 @@ type Finding struct {
 	Triage          *Triage       `json:"triage,omitempty"`
 	Revalidation    *Revalidation `json:"revalidation,omitempty"`
 	ProducedByRunID string        `json:"producedByRunId,omitempty"`
+	// AgreeingAgents lists every provider that flagged this same
+	// finding when `process --agents <csv>` was used to run an
+	// ensemble. Empty for single-agent runs. Findings with len() ≥ 2
+	// are HIGH-confidence consensus; len() == 1 with disagreement
+	// among ensemble members goes to human-review queues.
+	AgreeingAgents []string `json:"agreeingAgents,omitempty"`
 }
 
 // OwnershipContributor — one row of the ownership oracle's contributors[].

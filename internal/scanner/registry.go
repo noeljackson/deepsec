@@ -14,6 +14,12 @@ import (
 //go:embed matchers/*.toml
 var bundledMatchers embed.FS
 
+// BundledMatcherFS returns the embedded filesystem rooted at the
+// bundled matcher pack. Exposed so callers outside the scanner —
+// notably the compliance reporter — can hash the bundled pack
+// without owning a duplicate copy of the files.
+func BundledMatcherFS() fs.FS { return bundledMatchers }
+
 // MatcherFile is the on-disk TOML container. One file may declare any
 // number of `[[matcher]]` entries.
 type MatcherFile struct {

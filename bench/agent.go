@@ -341,6 +341,23 @@ func splitHeldOutTasks(tasksDir string, held []string) ([]string, []string, erro
 
 func EvaluateAgentGate(slug string, before, after *RunResult, candidateBudget float64) GateReport {
 	g := GateReport{Accepted: true, Before: summarizeSlug(slug, before), After: summarizeSlug(slug, after)}
+	// Liveness: refuse patches that silence the matcher entirely on the
+	// bench (it was producing candidates before, now fires zero times).
+	// Precision becomes degenerate 1.0 when both TP and FP are zero, so
+	// the precision/recall gates below pass vacuously; without this
+	// guard, a `suppress_patterns = ["(?s).*"]` patch would be accepted
+	// as an "improvement." See #18.
+	if g.Before.Metrics.CandidateCount > 0 && g.After.Metrics.CandidateCount == 0 {
+		g.Reasons = append(g.Reasons, fmt.Sprintf("matcher silenced: candidate count %d -> 0", g.Before.Metrics.CandidateCount))
+	}
+	// No-op detection: if the patch produced no observable change to
+	// the bench *anywhere* (target slug unchanged AND total candidate
+	// count unchanged AND every other slug's metrics unchanged), the
+	// patch is decorative and should be rejected so the agent doesn't
+	// claim an "improvement" it didn't actually make. See #18.
+	if isBenchNoOp(before, after) {
+		g.Reasons = append(g.Reasons, "no-op: patch produced no change in bench metrics")
+	}
 	if g.After.Metrics.Precision+1e-9 < g.Before.Metrics.Precision {
 		g.Reasons = append(g.Reasons, fmt.Sprintf("target precision dropped %.2f -> %.2f", g.Before.Metrics.Precision, g.After.Metrics.Precision))
 	}
@@ -382,6 +399,45 @@ func EvaluateAgentGate(slug string, before, after *RunResult, candidateBudget fl
 	}
 	g.Accepted = len(g.Reasons) == 0
 	return g
+}
+
+// isBenchNoOp reports whether the bench observed no observable change
+// between before and after. Used by the gate to reject decorative
+// patches (#18). A no-op is conservatively defined: the total candidate
+// count is identical, and every slug present in either run has the same
+// TP / FP / FN / CandidateCount counts.
+func isBenchNoOp(before, after *RunResult) bool {
+	if before.Summary.CandidateCountTotal != after.Summary.CandidateCountTotal {
+		return false
+	}
+	idx := func(r *RunResult) map[string]SlugResult {
+		out := map[string]SlugResult{}
+		for _, row := range r.BySlug {
+			cur := out[row.Slug]
+			cur.Slug = row.Slug
+			cur.TruePositive += row.TruePositive
+			cur.FalsePositive += row.FalsePositive
+			cur.FalseNegative += row.FalseNegative
+			cur.CandidateCount += row.CandidateCount
+			out[row.Slug] = cur
+		}
+		return out
+	}
+	b, a := idx(before), idx(after)
+	if len(b) != len(a) {
+		return false
+	}
+	for slug, br := range b {
+		ar, ok := a[slug]
+		if !ok {
+			return false
+		}
+		if br.TruePositive != ar.TruePositive || br.FalsePositive != ar.FalsePositive ||
+			br.FalseNegative != ar.FalseNegative || br.CandidateCount != ar.CandidateCount {
+			return false
+		}
+	}
+	return true
 }
 
 func precisionBySlug(r *RunResult) map[string]float64 {

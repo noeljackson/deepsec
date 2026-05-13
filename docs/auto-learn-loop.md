@@ -54,6 +54,12 @@ toward realistic-scale corpora (kubernetes, tailscale, etc.) where the
 agent's matcher-narrowing has signal. See [`../bench/README.md`](../bench/README.md)
 for the worked example and cross-model labeling layout.
 
+AST matcher development follows the same fixture rule. Every structural
+query needs a checked-in or git-pinned fixture that demonstrates both
+the true positive and the false positive it is meant to silence. Do not
+rely on local repositories or unpinned grammar behavior when proposing
+AST changes.
+
 ### 1. The harness measures what's currently there
 
 - **Scanner eval** ([`bench/README.md`](../bench/README.md)): runs the

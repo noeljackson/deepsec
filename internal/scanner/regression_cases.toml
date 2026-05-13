@@ -1,0 +1,8 @@
+[[case]]
+slug = "ssrf"
+expectation = "must_fire"
+content = "fetch(req.query.target);\n"
+file_path = "src/lib/fetch-proxy.ts"
+reason = "user-controlled URL flowing into fetch()"
+source_ref = "ts-ssrf-001"
+added_at = "2026-05-13"

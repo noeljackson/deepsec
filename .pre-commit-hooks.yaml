@@ -1,0 +1,27 @@
+# Hooks consumable via https://pre-commit.com.
+# Add to your repo's .pre-commit-config.yaml:
+#
+#   repos:
+#     - repo: https://github.com/noeljackson/deepsec
+#       rev: <commit-or-tag>
+#       hooks:
+#         - id: deepsec-scan-staged
+#
+- id: deepsec-scan-staged
+  name: deepsec — scan staged changes
+  description: Run the deepsec regex+AST scanner over files staged in this commit.
+  entry: deepsec scan --project-id "${DEEPSEC_PROJECT_ID:-default}" --diff HEAD
+  language: system
+  pass_filenames: false
+  stages: [commit, manual]
+
+- id: deepsec-process-diff
+  name: deepsec — investigate staged changes with an AI backend
+  description: |
+    Investigate just the candidates produced by the staged diff. Requires an
+    API key for the configured agent (e.g. ZAI_API_KEY for the cheap
+    zai-coding subscription).
+  entry: deepsec process --project-id "${DEEPSEC_PROJECT_ID:-default}" --diff HEAD
+  language: system
+  pass_filenames: false
+  stages: [manual]

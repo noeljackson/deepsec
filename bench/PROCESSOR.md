@@ -69,6 +69,71 @@ Reports are written to `bench/out-processor/<timestamp>/`:
 - `false_negatives.json`
 - `severity_mismatches.json`
 
+## Statistical Scoring
+
+Single-run replay scoring is still the default and is the right mode for
+deterministic fixtures. It answers "what did this exact recorded
+processor response score?" and writes the reports listed above.
+
+Repeated scoring is enabled with `--repeat N --seed K`:
+
+```bash
+go run ./cmd/benchsec process-score --repeat 10 --seed 1
+```
+
+The runner executes the same fixture set serially `N` times. Repeat `i`
+uses seed `K+i`, so deterministic replay fixtures produce identical
+samples while stochastic replay fixtures can intentionally vary. The
+aggregated report is written to:
+
+```text
+bench/out-processor/<timestamp>/summary-repeated.json
+```
+
+Each repeated metric contains:
+
+- `mean`
+- `stddev`
+- `median`
+- `ci_low` / `ci_high`
+- `samples`
+
+The interval is a seeded 95% bootstrap percentile interval over the
+per-repeat metric values. The bootstrap uses 1000 resamples by default,
+runs without parallelism, and is deterministic for the same input and
+seed. `samples` is capped at 100 values in JSON to keep reports compact.
+
+The repeated summary includes the scalar processor metrics from
+`summary.json`, including precision, recall, severity accuracy, refusal
+rate, false-positive count, false-negative count, and per-slug
+precision/recall metrics named like `per_slug_precision:ssrf`.
+
+Stochastic replay fixtures use the same dispatch-order JSONL shape but
+replace `output` with weighted `alternatives`:
+
+```json
+{"batchPaths":["src/fetch.ts"],"alternatives":[{"weight":0.7,"output":{"results":[]}},{"weight":0.3,"output":{"results":[...]}}]}
+```
+
+`batchPaths` must still match the next processor batch exactly. The mock
+backend chooses one alternative per `Investigate` call with the seeded
+RNG.
+
+To compare two repeated runs:
+
+```bash
+go run ./cmd/benchsec process-compare bench/out-processor/base bench/out-processor/candidate
+```
+
+The comparison writes `process-compare.tsv` and
+`process-compare.json` into the candidate directory and also prints the
+TSV. The reported difference is `candidate - baseline`. Metrics where a
+lower value is better (`refusal_rate`, `false_positive_count`, and
+`false_negative_count`) are tagged as improved when the confidence
+interval is entirely below zero; other metrics are improved when the
+interval is entirely above zero. Use `--threshold` to require a minimum
+effect size before tagging a change as improved or regressed.
+
 ## Adding A Fixture Manually
 
 Create a small source tree under `source/`, then add one pending

@@ -55,3 +55,20 @@ func TestReplayErrorsOnMalformedJSONL(t *testing.T) {
 	_, err := New(path)
 	require.ErrorContains(t, err, "malformed response JSONL")
 }
+
+func TestStochasticReplayIsSeeded(t *testing.T) {
+	body := `{"batchPaths":["src/a.ts"],"alternatives":[{"weight":0.5,"output":{"results":[{"filePath":"src/a.ts","findings":[{"severity":"HIGH","vulnSlug":"ssrf","title":"a","lineNumbers":[1],"confidence":"high"}]}]}},{"weight":0.5,"output":{"results":[{"filePath":"src/a.ts","findings":[]}]} }]}`
+	path := writeResponses(t, body+"\n")
+
+	first, err := NewSeeded(path, 7)
+	require.NoError(t, err)
+	second, err := NewSeeded(path, 7)
+	require.NoError(t, err)
+
+	batch := &processor.InvestigateBatch{Files: []processor.InvestigateFile{{Path: "src/a.ts"}}}
+	outA, err := first.Investigate(context.Background(), batch)
+	require.NoError(t, err)
+	outB, err := second.Investigate(context.Background(), batch)
+	require.NoError(t, err)
+	require.Equal(t, outA, outB)
+}

@@ -1,0 +1,1 @@
+{"batchPaths":["src/static.ts"],"output":{"results":[],"usage":{"inputTokens":0,"outputTokens":0},"durationMs":0,"numTurns":1,"costUsd":0,"refusal":{"refused":true,"reason":"the URL is hardcoded, not user-controlled"}}}

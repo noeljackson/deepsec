@@ -1,0 +1,9 @@
+[provenance]
+source     = "handcraft"
+added_at   = "2026-05-14"
+reviewer   = "@noeljackson"
+review_due = "2027-05-14"
+notes      = "Under-covered Phase-3 language fixture per CLAUDE.md project invariant. C strcpy/sprintf without bounds + printf with non-literal format string."
+
+[labels]
+change_rule = "freeze"

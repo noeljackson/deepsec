@@ -1,0 +1,24 @@
+issues:
+  - id: rust-sqlx-format-001
+    file: src/main.rs
+    severity: HIGH
+    cwe: CWE-89
+    vulnSlugs: [rust-sqlx-query, sql-injection]
+    location: { startLine: 13, endLine: 13, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+  - id: rust-command-from-input-001
+    file: src/main.rs
+    severity: HIGH
+    cwe: CWE-78
+    vulnSlugs: [rust-process-command-from-input, command-injection]
+    location: { startLine: 31, endLine: 31, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: rust-sqlx-bind-decoy
+    file: src/main.rs
+    line: 22
+    forbiddenSlugs: [rust-sqlx-query, sql-injection]
+  - id: rust-command-literal-decoy
+    file: src/main.rs
+    line: 35
+    forbiddenSlugs: [rust-process-command-from-input, command-injection]

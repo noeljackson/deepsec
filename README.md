@@ -36,26 +36,38 @@ Swift / C / C++ as funded Phase 3 — not "someday".
 
 ## Install
 
-Pre-built binaries for linux / darwin / windows × amd64 / arm64 are
-published per-release. Or build from source:
-
 ```bash
+# macOS / Linux — Homebrew tap
+brew install noeljackson/deepsec/deepsec
+
+# Windows — Scoop bucket
+scoop bucket add deepsec https://github.com/noeljackson/scoop-deepsec
+scoop install deepsec
+
+# Docker / OCI (linux/amd64 + linux/arm64)
+docker pull ghcr.io/noeljackson/deepsec:latest
+
+# Go install (always builds main; no version pinning beyond commit)
 go install github.com/noeljackson/deepsec/cmd/deepsec@latest
+
+# Pre-built tarballs / Debian / RPM / APK packages
+# https://github.com/noeljackson/deepsec/releases/latest
 ```
 
-…or clone and build:
+Running in a container:
+
+```bash
+docker run --rm -v $PWD:/work -w /work \
+  -e ANTHROPIC_API_KEY \
+  ghcr.io/noeljackson/deepsec:latest scan --project-id myproj
+```
+
+Or build locally:
 
 ```bash
 git clone https://github.com/noeljackson/deepsec
 cd deepsec
 go build -o bin/deepsec ./cmd/deepsec
-```
-
-A `Dockerfile` (distroless static, ~20 MB) is also available:
-
-```bash
-docker build -t deepsec .
-docker run --rm -v $PWD:/work -w /work -e ANTHROPIC_API_KEY deepsec scan --project-id myproj
 ```
 
 ## Quick start

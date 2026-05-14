@@ -46,3 +46,4 @@ dist/
 linear-*
 plans/
 .cache/
+docs/scans/*-site/

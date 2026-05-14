@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/noeljackson/deepsec/bench"
 	"github.com/noeljackson/deepsec/internal/processor"
@@ -256,7 +257,30 @@ func main() {
 	agent.Flags().StringVar(&tasksDir, "tasks", "bench/tasks", "benchmark task directory")
 	agent.Flags().StringVar(&outDir, "out", "bench/out-agent", "agent report output root")
 
-	root.AddCommand(score, processScore, processCompare, lint, review, agent)
+	var staleTasksDir string
+	stale := &cobra.Command{
+		Use:   "stale",
+		Short: "list bench tasks whose answer-key review_due has passed",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			rows, err := bench.StaleTasks(staleTasksDir, time.Now().UTC())
+			if err != nil {
+				return err
+			}
+			if len(rows) == 0 {
+				fmt.Println("no stale tasks")
+				return nil
+			}
+			fmt.Printf("%-40s %-20s %-12s %s\n", "task", "reviewer", "due", "overdue")
+			for _, r := range rows {
+				days := int(r.OverdueBy.Hours() / 24)
+				fmt.Printf("%-40s %-20s %-12s %dd\n", r.TaskID, r.Reviewer, r.ReviewDue, days)
+			}
+			return fmt.Errorf("%d task(s) past review_due", len(rows))
+		},
+	}
+	stale.Flags().StringVar(&staleTasksDir, "tasks", "bench/tasks", "benchmark task directory")
+
+	root.AddCommand(score, processScore, processCompare, lint, review, agent, stale)
 	if err := root.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

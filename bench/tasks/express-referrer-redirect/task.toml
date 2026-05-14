@@ -1,0 +1,12 @@
+[provenance]
+source         = "external-scan"
+source_url     = "https://github.com/noeljackson/deepsec/blob/main/docs/scans/2026-05-14-first-batch.md"
+upstream_commit = "f873ac23124ffcff8c040b4bd257b32c29828d53"
+upstream_repo  = "expressjs/express"
+added_at       = "2026-05-14"
+reviewer       = "@noeljackson"
+review_due     = "2026-08-14"
+notes          = "Express Referer-redirect anti-pattern. Vulnerable in examples/auth/index.js:119 and examples/route-separation/user.js:46 on upstream f873ac23."
+
+[labels]
+change_rule = "freeze"

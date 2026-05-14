@@ -1,0 +1,12 @@
+[provenance]
+source         = "external-scan"
+source_url     = "https://github.com/noeljackson/deepsec/blob/main/docs/scans/2026-05-14-first-batch.md"
+upstream_commit = "9fcd34c9"
+upstream_repo  = "pallets/flask"
+added_at       = "2026-05-14"
+reviewer       = "@noeljackson"
+review_due     = "2026-11-14"
+notes          = "Negative-corpus fixture distilled from the Flask 9fcd34c9 scan, which produced 0 findings after skeptic. Each decoy line is a real-looking pattern that the scanner has correctly *not* flagged. Locks in precision."
+
+[labels]
+change_rule = "freeze"

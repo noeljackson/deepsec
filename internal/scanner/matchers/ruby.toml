@@ -1,0 +1,12 @@
+[[matcher]]
+slug = "ruby-yaml-unsafe-load"
+description = "YAML.unsafe_load / YAML.load / Marshal.load — CVE-2013-0156 RCE-deserialization family"
+noise_tier = "normal"
+file_patterns = ["**/*.rb"]
+patterns = [
+  "(?i)\\bYAML\\.(?:unsafe_load|load_documents|load_stream|unsafe_load_file)\\b",
+  "(?i)\\bYAML\\.load\\s*\\(",
+  "(?i)\\bMarshal\\.(?:load|restore)\\s*\\(",
+]
+requires = { tech = ["ruby"] }
+label = "Ruby YAML/Marshal unsafe deserialization"

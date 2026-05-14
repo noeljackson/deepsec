@@ -16,7 +16,7 @@ import (
 
 func main() {
 	var tasksDir, outDir string
-	var processTasksDir, processOutDir string
+	var processTasksDir, processOutDir, processCorePrompt string
 	var processRepeat, processBootstrap int
 	var processSeed uint64
 	var compareThreshold float64
@@ -57,6 +57,7 @@ func main() {
 			opts := bench.ProcessScoreOptions{
 				TasksDir: processTasksDir, OutDir: processOutDir,
 				Repeat: processRepeat, Seed: processSeed, BootstrapSamples: processBootstrap,
+				CorePromptPath: processCorePrompt,
 			}
 			if processRepeat > 1 {
 				result, err := bench.ProcessScoreRepeated(args, opts)
@@ -87,6 +88,7 @@ func main() {
 	processScore.Flags().IntVar(&processRepeat, "repeat", 1, "number of serial processor scoring repeats")
 	processScore.Flags().Uint64Var(&processSeed, "seed", 1, "base seed for repeat and stochastic replay")
 	processScore.Flags().IntVar(&processBootstrap, "bootstrap-samples", 1000, "bootstrap resamples for repeated scoring intervals")
+	processScore.Flags().StringVar(&processCorePrompt, "core-prompt", "", "path to a candidate core.md prompt to evaluate (default: bundled prompt)")
 
 	processCompare := &cobra.Command{
 		Use:   "process-compare <a-dir> <b-dir>",

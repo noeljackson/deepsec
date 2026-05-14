@@ -18,7 +18,11 @@ var CorePrompt = promptdata.CorePrompt()
 // caching); the user prompt is per-batch.
 func AssemblePrompt(b *InvestigateBatch) (system, user string) {
 	var sys strings.Builder
-	sys.WriteString(CorePrompt)
+	if b.CorePromptOverride != "" {
+		sys.WriteString(b.CorePromptOverride)
+	} else {
+		sys.WriteString(CorePrompt)
+	}
 
 	highlights := make([]string, 0, len(b.TechTags))
 	for _, t := range b.TechTags {

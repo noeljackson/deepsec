@@ -1,0 +1,41 @@
+{
+  "generated_at": "20260514T125254Z",
+  "task_count": 4,
+  "scanner_recall": 0.9375,
+  "recall_critical": 1,
+  "recall_high": 1,
+  "recall_medium": 0.75,
+  "recall_low": 0,
+  "scanner_precision": 1,
+  "candidate_count_total": 17,
+  "candidate_count_noisy": 7,
+  "false_positive_decoy_rate": 0,
+  "candidate_density": 54.140127388535035,
+  "recall_by_severity": {
+    "CRITICAL": 1,
+    "HIGH": 1,
+    "LOW": 0,
+    "MEDIUM": 0.75
+  },
+  "scanner_precision_by_slug": {
+    "auth-oauth-manifest-callback-unauth": 1,
+    "command-injection": 1,
+    "go-command-injection": 1,
+    "go-http-handler": 1,
+    "go-ssrf": 1,
+    "insecure-crypto": 1,
+    "open-redirect": 1,
+    "open-redirect-assign-from-query": 1,
+    "path-traversal": 1,
+    "python-eval-exec": 1,
+    "sql-injection-string-concat": 1,
+    "ssrf": 1
+  },
+  "false_positive_by_slug": {},
+  "false_negative_by_slug": {
+    "crypto-random-insecure": 1
+  },
+  "scanner_uncovered_issues": 1,
+  "output_dir": "bench/out-agent/20260514T125254Z",
+  "candidate_explosion_threshold": 100
+}

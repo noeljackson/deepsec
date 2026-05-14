@@ -1,0 +1,9 @@
+[provenance]
+source     = "handcraft"
+added_at   = "2026-05-14"
+reviewer   = "@noeljackson"
+review_due = "2027-05-14"
+notes      = "Under-covered Phase-3 language fixture per CLAUDE.md project invariant. Swift Process() command-injection with argv built from input. The companion String(format:) tainted-format matcher landed in a separate fixture because the noise_tier=noisy matcher fires too broadly."
+
+[labels]
+change_rule = "freeze"

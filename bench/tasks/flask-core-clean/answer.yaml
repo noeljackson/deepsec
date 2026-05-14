@@ -1,0 +1,18 @@
+issues: []
+decoys:
+  - id: flask-debug-flag-getter-decoy
+    file: helpers.py
+    line: 11
+    forbiddenSlugs: [python-eval-exec, command-injection, ssrf, sql-injection-string-concat]
+  - id: flask-run-host-port-decoy
+    file: app.py
+    line: 53
+    forbiddenSlugs: [command-injection, ssrf]
+  - id: flask-debug-flag-attr-decoy
+    file: app.py
+    line: 25
+    forbiddenSlugs: [hardcoded-debug-flag]
+  - id: flask-import-name-decoy
+    file: helpers.py
+    line: 27
+    forbiddenSlugs: [python-eval-exec]

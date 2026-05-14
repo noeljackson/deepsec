@@ -1,0 +1,22 @@
+issues: []
+decoys:
+  - id: jwt-go-test-secret-decoy-1
+    file: parser_test.go
+    line: 9
+    forbiddenSlugs: [hardcoded-secret, secret-plaintext, hardcoded-hmac-secret]
+  - id: jwt-go-test-secret-decoy-2
+    file: parser_test.go
+    line: 23
+    forbiddenSlugs: [hardcoded-secret, secret-plaintext, hardcoded-hmac-secret]
+  - id: jwt-go-base64-decode-decoy
+    file: parser.go
+    line: 41
+    forbiddenSlugs: [unsafe-deserialization, rce-deserialization]
+  - id: jwt-go-json-unmarshal-decoy
+    file: parser.go
+    line: 45
+    forbiddenSlugs: [rce-deserialization]
+  - id: jwt-go-keyfunc-callback-decoy
+    file: parser.go
+    line: 67
+    forbiddenSlugs: [auth-bypass]

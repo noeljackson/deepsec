@@ -1,0 +1,9 @@
+[provenance]
+source     = "handcraft"
+added_at   = "2026-05-14"
+reviewer   = "@noeljackson"
+review_due = "2027-05-14"
+notes      = "Under-covered Phase-2 language fixture per CLAUDE.md project invariant. Java JWT alg=none + native ObjectInputStream.readObject deserialization."
+
+[labels]
+change_rule = "freeze"

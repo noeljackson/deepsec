@@ -1,0 +1,13 @@
+issues:
+  - id: swift-ats-arbitrary-loads-001
+    file: Info.plist
+    severity: MEDIUM
+    cwe: CWE-757
+    vulnSlugs: [swift-allow-arbitrary-loads]
+    location: { startLine: 9, endLine: 10, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: swift-ats-no-bypass-decoy
+    file: InfoSafe.plist
+    line: 6
+    forbiddenSlugs: [swift-allow-arbitrary-loads]

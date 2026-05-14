@@ -31,6 +31,10 @@ type InvestigateBatch struct {
 	ToolsEnabled bool
 	MaxTurns     int
 	MaxCostUSD   float64
+	// CorePromptOverride, when non-empty, replaces the bundled CorePrompt
+	// for this batch. Used by the prompt-evolution harness (#86) to A/B
+	// candidate prompts against the bundled baseline.
+	CorePromptOverride string
 }
 
 // ProducedFinding is the model's output for one candidate site.

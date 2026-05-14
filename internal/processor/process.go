@@ -44,6 +44,10 @@ type ProcessOptions struct {
 	// ProcessorConfig.ModelConfig and replayed on each AnalysisEntry so
 	// processor evaluations are reproducible.
 	ModelSettings ModelSettings
+	// CorePromptOverride, when non-empty, replaces the bundled core
+	// system prompt for each InvestigateBatch this Process produces.
+	// Used by the prompt-evolution harness (#86).
+	CorePromptOverride string
 }
 
 // ProcessOutcome summarizes one Process run.
@@ -145,6 +149,7 @@ func Process(ctx context.Context, opts ProcessOptions) (*ProcessOutcome, error) 
 		ibatch.ToolsEnabled = opts.ToolsEnabled
 		ibatch.MaxTurns = opts.MaxTurns
 		ibatch.MaxCostUSD = opts.MaxCostUSD
+		ibatch.CorePromptOverride = opts.CorePromptOverride
 		g.Go(func() error {
 			if err := sem.Acquire(ggCtx, 1); err != nil {
 				// Context cancelled before we got a permit — treat as

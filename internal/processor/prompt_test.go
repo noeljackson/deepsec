@@ -36,6 +36,14 @@ func TestAssemblePromptIncludesCoreAndFilePath(t *testing.T) {
 	require.Contains(t, user, "let x = q")
 }
 
+func TestAssemblePromptCorePromptOverride(t *testing.T) {
+	b := batchFor("a.ts", "s", "x\n")
+	b.CorePromptOverride = "EVOLVED-PROMPT-MARKER"
+	sys, _ := AssemblePrompt(b)
+	require.Contains(t, sys, "EVOLVED-PROMPT-MARKER")
+	require.NotContains(t, sys, CorePrompt)
+}
+
 func TestAssemblePromptLineNumbersSource(t *testing.T) {
 	b := batchFor("a.ts", "s", "alpha\nbeta\ngamma\n")
 	_, user := AssemblePrompt(b)

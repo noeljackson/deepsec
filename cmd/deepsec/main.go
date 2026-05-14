@@ -30,6 +30,7 @@ func main() {
 		root.AddCommand(commands.NewListMatchersCmd())
 		root.AddCommand(commands.NewListProvidersCmd(loader))
 		root.AddCommand(commands.NewDoctorCmd(loader))
+		root.AddCommand(commands.NewSpendCmd(loader))
 	})
 	if err := root.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)

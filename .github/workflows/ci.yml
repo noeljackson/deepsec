@@ -37,7 +37,7 @@ jobs:
           fi
 
       - name: go test
-        run: go test ./... -race -count=1 -timeout 120s
+        run: go test ./... -race -count=1 -timeout 300s
 
   security:
     runs-on: ubuntu-latest

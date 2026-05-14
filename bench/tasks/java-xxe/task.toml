@@ -1,0 +1,9 @@
+[provenance]
+source     = "handcraft"
+added_at   = "2026-05-14"
+reviewer   = "@noeljackson"
+review_due = "2027-05-14"
+notes      = "Under-covered Phase-2 language fixture. Java XXE: DocumentBuilderFactory.newInstance without external-entity hardening."
+
+[labels]
+change_rule = "freeze"

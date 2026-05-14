@@ -1,0 +1,13 @@
+issues:
+  - id: rust-axum-no-auth-001
+    file: src/main.rs
+    severity: MEDIUM
+    cwe: CWE-862
+    vulnSlugs: [rust-axum-no-auth-extractor]
+    location: { startLine: 18, endLine: 18, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: rust-helper-no-route-decoy
+    file: src/main.rs
+    line: 13
+    forbiddenSlugs: [rust-axum-no-auth-extractor]

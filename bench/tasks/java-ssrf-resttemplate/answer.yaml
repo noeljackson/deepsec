@@ -1,0 +1,20 @@
+issues:
+  - id: java-ssrf-resttemplate-001
+    file: ProxyService.java
+    severity: HIGH
+    cwe: CWE-918
+    vulnSlugs: [java-ssrf-resttemplate, ssrf]
+    location: { startLine: 9, endLine: 9, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+  - id: java-ssrf-webclient-001
+    file: ProxyService.java
+    severity: HIGH
+    cwe: CWE-918
+    vulnSlugs: [java-ssrf-resttemplate, ssrf]
+    location: { startLine: 13, endLine: 13, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: java-non-http-decoy
+    file: ProxyService.java
+    line: 20
+    forbiddenSlugs: [java-ssrf-resttemplate]

@@ -1,0 +1,9 @@
+[provenance]
+source     = "handcraft"
+added_at   = "2026-05-14"
+reviewer   = "@noeljackson"
+review_due = "2027-05-14"
+notes      = "Rust mem::transmute call — manual unsoundness review warranted."
+
+[labels]
+change_rule = "freeze"

@@ -1,0 +1,11 @@
+[provenance]
+source     = "cve"
+source_url = "https://nvd.nist.gov/vuln/detail/CVE-2013-0156"
+cve        = "CVE-2013-0156"
+added_at   = "2026-05-14"
+reviewer   = "@noeljackson"
+review_due = "2027-05-14"
+notes      = "Derived from the Rails YAML/Marshal RCE family flagged in PR #100's rails scan."
+
+[labels]
+change_rule = "freeze"

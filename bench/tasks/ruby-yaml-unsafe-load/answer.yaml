@@ -1,0 +1,31 @@
+issues:
+  - id: rb-yaml-unsafe-001
+    file: app.rb
+    severity: HIGH
+    cwe: CWE-502
+    vulnSlugs: [ruby-yaml-unsafe-load, rce-deserialization]
+    location: { startLine: 5, endLine: 5, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+  - id: rb-marshal-load-001
+    file: app.rb
+    severity: HIGH
+    cwe: CWE-502
+    vulnSlugs: [ruby-yaml-unsafe-load, rce-deserialization]
+    location: { startLine: 10, endLine: 10, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+  - id: rb-yaml-load-001
+    file: app.rb
+    severity: HIGH
+    cwe: CWE-502
+    vulnSlugs: [ruby-yaml-unsafe-load, rce-deserialization]
+    location: { startLine: 14, endLine: 14, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: rb-yaml-safe-load-decoy
+    file: app.rb
+    line: 18
+    forbiddenSlugs: [ruby-yaml-unsafe-load]
+  - id: rb-marshal-dump-decoy
+    file: app.rb
+    line: 22
+    forbiddenSlugs: [ruby-yaml-unsafe-load]

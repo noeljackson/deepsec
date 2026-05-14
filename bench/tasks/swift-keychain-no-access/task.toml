@@ -1,0 +1,9 @@
+[provenance]
+source     = "handcraft"
+added_at   = "2026-05-14"
+reviewer   = "@noeljackson"
+review_due = "2027-05-14"
+notes      = "Under-covered Phase-3 language fixture. Swift SecItemAdd keychain insertion without kSecAttrAccessControl — item readable without auth prompt."
+
+[labels]
+change_rule = "freeze"

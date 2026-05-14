@@ -1,0 +1,44 @@
+# Answer key derived from real Codex Cyber findings on codewiresh/platform.
+# Patterns are reduced to minimal repros so the bench task is
+# self-contained and reviewable.
+#
+# Sources:
+#   - "Unauthenticated GitHub OAuth app takeover in relay" (CRITICAL)
+#     codewiresh/platform commit 99c245da9e — apps/cli/internal/oauth/manifest.go
+#   - "Dev dashboard exposes unsafe post-login redirect" (HIGH)
+#     codewiresh/platform commit c4d4dd62316a — apps/dashboard/src/routes/login.tsx
+#
+# These are deepsec recall gaps as of v0.1.0 (no bundled matcher
+# catches either pattern). The expected matcher slugs below are
+# proposed — once a real matcher ships with one of these slugs the
+# bench will score TP and recall improves; until then this task
+# represents the gap.
+
+issues:
+  - id: oauth-manifest-unauth-callback
+    file: manifest.go
+    severity: CRITICAL
+    cwe: CWE-306
+    vulnSlugs: [auth-oauth-manifest-callback-unauth, auth-flow, oauth-takeover]
+    location: { startLine: 22, endLine: 56, tolerance: 4 }
+    scanner:
+      mustEmitCandidate: true
+
+  - id: open-redirect-return-to
+    file: login.tsx
+    severity: HIGH
+    cwe: CWE-601
+    vulnSlugs: [open-redirect-assign-from-query, open-redirect]
+    location: { startLine: 21, endLine: 26, tolerance: 4 }
+    scanner:
+      mustEmitCandidate: true
+
+decoys:
+  - id: oauth-manifest-safe-variant
+    file: manifest.go
+    line: 64
+    forbiddenSlugs: [auth-oauth-manifest-callback-unauth, auth-flow, oauth-takeover]
+  - id: open-redirect-safe-variant
+    file: login.tsx
+    line: 30
+    forbiddenSlugs: [open-redirect-assign-from-query, open-redirect]

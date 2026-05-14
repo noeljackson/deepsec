@@ -1,0 +1,24 @@
+issues:
+  - id: java-jdbc-sqli-001
+    file: UserController.java
+    severity: HIGH
+    cwe: CWE-89
+    vulnSlugs: [java-jdbc-sqli, sql-injection-string-concat, sql-injection]
+    location: { startLine: 19, endLine: 19, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+  - id: java-runtime-exec-001
+    file: UserController.java
+    severity: HIGH
+    cwe: CWE-78
+    vulnSlugs: [java-runtime-exec, command-injection]
+    location: { startLine: 30, endLine: 30, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: java-prepared-statement-decoy
+    file: UserController.java
+    line: 24
+    forbiddenSlugs: [java-jdbc-sqli]
+  - id: java-processbuilder-list-decoy
+    file: UserController.java
+    line: 35
+    forbiddenSlugs: [java-runtime-exec, command-injection]

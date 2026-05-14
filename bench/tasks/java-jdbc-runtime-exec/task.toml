@@ -1,0 +1,11 @@
+matcher_exclude = ["sql-injection-string-concat"]
+
+[provenance]
+source     = "handcraft"
+added_at   = "2026-05-14"
+reviewer   = "@noeljackson"
+review_due = "2027-05-14"
+notes      = "Under-covered Phase-2 language fixture per CLAUDE.md project invariant. Java JDBC SQLi + Runtime.exec on the same handler."
+
+[labels]
+change_rule = "freeze"

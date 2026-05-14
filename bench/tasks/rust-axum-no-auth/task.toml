@@ -1,0 +1,11 @@
+matcher_exclude = ["axum-handler", "auth-bypass"]
+
+[provenance]
+source     = "handcraft"
+added_at   = "2026-05-14"
+reviewer   = "@noeljackson"
+review_due = "2027-05-14"
+notes      = "Under-covered Phase-2 language fixture per CLAUDE.md project invariant. Axum state-changing POST route without an auth extractor in the handler signature."
+
+[labels]
+change_rule = "freeze"

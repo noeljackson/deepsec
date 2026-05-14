@@ -1,0 +1,13 @@
+issues:
+  - id: swift-keychain-no-access-001
+    file: Keychain.swift
+    severity: MEDIUM
+    cwe: CWE-200
+    vulnSlugs: [swift-keychain-no-access-control]
+    location: { startLine: 10, endLine: 10, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: swift-non-keychain-decoy
+    file: Keychain.swift
+    line: 14
+    forbiddenSlugs: [swift-keychain-no-access-control]

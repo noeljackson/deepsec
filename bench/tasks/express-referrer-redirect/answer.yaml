@@ -1,0 +1,20 @@
+issues:
+  - id: express-referer-redirect-001
+    file: login.js
+    severity: MEDIUM
+    cwe: CWE-601
+    vulnSlugs: [open-redirect-from-referrer, open-redirect]
+    location: { startLine: 2, endLine: 2, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+  - id: express-referer-redirect-002
+    file: login.js
+    severity: MEDIUM
+    cwe: CWE-601
+    vulnSlugs: [open-redirect-from-referrer, open-redirect]
+    location: { startLine: 6, endLine: 6, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: express-referer-allowlisted-decoy
+    file: login.js
+    line: 14
+    forbiddenSlugs: [open-redirect-from-referrer]

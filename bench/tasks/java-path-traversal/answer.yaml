@@ -1,0 +1,16 @@
+issues:
+  - id: java-path-traversal-newfile-001
+    file: FileService.java
+    severity: HIGH
+    cwe: CWE-22
+    vulnSlugs: [java-path-traversal-newfile, path-traversal]
+    location: { startLine: 10, endLine: 10, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+  - id: java-path-traversal-paths-001
+    file: FileService.java
+    severity: HIGH
+    cwe: CWE-22
+    vulnSlugs: [java-path-traversal-newfile, path-traversal]
+    location: { startLine: 15, endLine: 15, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys: []

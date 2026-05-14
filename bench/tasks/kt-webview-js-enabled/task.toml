@@ -1,0 +1,9 @@
+[provenance]
+source     = "handcraft"
+added_at   = "2026-05-14"
+reviewer   = "@noeljackson"
+review_due = "2027-05-14"
+notes      = "Android WebView with JavaScript enabled."
+
+[labels]
+change_rule = "freeze"

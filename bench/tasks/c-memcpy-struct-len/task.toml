@@ -1,0 +1,9 @@
+[provenance]
+source     = "handcraft"
+added_at   = "2026-05-14"
+reviewer   = "@noeljackson"
+review_due = "2027-05-14"
+notes      = "C memcpy with struct-derived length field — possible heap overflow if length is attacker-controlled."
+
+[labels]
+change_rule = "freeze"

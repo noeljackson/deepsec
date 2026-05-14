@@ -1,0 +1,20 @@
+issues:
+  - id: rust-serde-from-str-001
+    file: src/lib.rs
+    severity: MEDIUM
+    cwe: CWE-502
+    vulnSlugs: [rust-deserialize-from-str-untrusted, rust-panic-on-untrusted]
+    location: { startLine: 9, endLine: 9, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+  - id: rust-bincode-deserialize-001
+    file: src/lib.rs
+    severity: MEDIUM
+    cwe: CWE-502
+    vulnSlugs: [rust-deserialize-from-str-untrusted, rust-panic-on-untrusted]
+    location: { startLine: 13, endLine: 13, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: rust-non-deserializer-builder-decoy
+    file: src/lib.rs
+    line: 17
+    forbiddenSlugs: [rust-deserialize-from-str-untrusted]

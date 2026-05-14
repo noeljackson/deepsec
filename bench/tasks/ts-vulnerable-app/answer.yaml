@@ -5,8 +5,8 @@ issues:
   - { id: ts-cmd-001, file: src/utils/exec-helper.ts, severity: CRITICAL, cwe: CWE-78, vulnSlugs: [command-injection], location: { startLine: 4, endLine: 4, tolerance: 2 }, scanner: { mustEmitCandidate: true } }
   - { id: ts-crypto-001, file: src/lib/crypto.ts, severity: MEDIUM, cwe: CWE-327, vulnSlugs: [insecure-crypto], location: { startLine: 4, endLine: 4, tolerance: 2 }, scanner: { mustEmitCandidate: true } }
   - { id: ts-random-001, file: src/lib/crypto.ts, severity: MEDIUM, cwe: CWE-338, vulnSlugs: [crypto-random-insecure], location: { startLine: 8, endLine: 8, tolerance: 2 }, scanner: { mustEmitCandidate: true } }
-  - { id: ts-redirect-001, file: src/utils/redirect.ts, severity: MEDIUM, cwe: CWE-601, vulnSlugs: [open-redirect], location: { startLine: 2, endLine: 2, tolerance: 2 }, scanner: { mustEmitCandidate: true } }
+  - { id: ts-redirect-001, file: src/utils/redirect.ts, severity: MEDIUM, cwe: CWE-601, vulnSlugs: [open-redirect, open-redirect-assign-from-query], location: { startLine: 2, endLine: 2, tolerance: 2 }, scanner: { mustEmitCandidate: true } }
 decoys:
   - { id: ts-ssrf-decoy-static-url, file: src/lib/fetch-proxy.ts, line: 8, forbiddenSlugs: [ssrf] }
   - { id: ts-cmd-decoy-execfile-constant, file: src/utils/exec-helper.ts, line: 8, forbiddenSlugs: [command-injection] }
-  - { id: ts-redirect-decoy-local-path, file: src/utils/redirect.ts, line: 6, forbiddenSlugs: [open-redirect] }
+  - { id: ts-redirect-decoy-local-path, file: src/utils/redirect.ts, line: 6, forbiddenSlugs: [open-redirect, open-redirect-assign-from-query] }

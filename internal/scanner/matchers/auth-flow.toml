@@ -1,0 +1,58 @@
+# auth-flow.toml — matchers for OAuth/OIDC/JWT flow correctness and
+# session/redirect handling. These shipped as a result of the
+# external-comparison evidence collected in PR #79 (Codex Cyber found
+# 30 auth-flow findings on codewiresh/platform while deepsec had zero
+# matchers for the category).
+#
+# The patterns are language-light (regex hits in any source file) and
+# narrowed via `require_content` / `suppress_patterns` so the safe
+# variants of the same flow don't trip them.
+
+[[matcher]]
+slug = "auth-oauth-manifest-callback-unauth"
+description = "Public OAuth/GitHub-App manifest callback handler that exchanges a manifest code for credentials without admin auth, state/nonce, or idempotency"
+noise_tier = "normal"
+file_patterns = ["**/*.go", "**/*.ts", "**/*.tsx", "**/*.js", "**/*.py", "**/*.rb"]
+patterns = [
+  "(?i)app-manifests/[^\"' ]*/conversions",
+]
+require_content = ["app-manifests"]
+suppress_patterns = [
+  # Safe variants short-circuit before the conversion. Drop the hit
+  # if the snippet shows the canonical mitigations as actual code
+  # (not a prose comment about their absence). Anchored on `if` /
+  # `return` / `http.Error` to require statement form.
+  "(?i)if\\s+!?\\s*admin\\s*\\(",
+  "(?i)if\\s+!?\\s*validState\\s*\\(",
+  "(?i)if\\s+\\w*\\.GitHubAppExists\\s*\\(",
+  "(?i)func\\s+\\w*ManifestCallback\\w*Safe\\b",
+]
+snippet_before = 30
+snippet_after = 8
+label = "OAuth manifest callback without auth/state/idempotency"
+
+[[matcher]]
+slug = "open-redirect-assign-from-query"
+description = "Direct assignment of a query-string / URL-parameter to window.location or an HTTP redirect — classic open-redirect shape"
+noise_tier = "normal"
+file_patterns = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.go", "**/*.py", "**/*.rb"]
+patterns = [
+  # JS/TS: window.location.href = search.foo / params.foo / req.query.foo
+  "(?i)window\\.location(?:\\.href|\\.assign\\s*\\()\\s*=?\\s*[^;\\n]*\\b(?:search|params|query|req\\.query|searchParams)\\.",
+  # Go: http.Redirect with r.URL.Query() input
+  "(?i)http\\.Redirect\\s*\\([^,]*,\\s*[^,]*,\\s*r\\.URL\\.Query\\(\\)",
+  # Express-style: res.redirect(req.query.…)
+  "(?i)res\\.redirect\\s*\\(\\s*req\\.(?:query|body|params)\\.",
+  # Python flask: redirect(request.args.get(...))
+  "(?i)redirect\\s*\\(\\s*request\\.(?:args|values)\\.",
+]
+suppress_patterns = [
+  # Safe variants test the value against an allowlist regex / URL
+  # parse / startsWith check before assigning.
+  "(?i)\\.test\\s*\\(\\s*(?:candidate|target|next|return_to)\\s*\\)",
+  "(?i)startsWith\\s*\\(\\s*['\"]/",
+  "(?i)new\\s+URL\\s*\\(",
+]
+snippet_before = 2
+snippet_after = 4
+label = "open redirect via user-controlled URL parameter"

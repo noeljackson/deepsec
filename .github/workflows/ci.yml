@@ -68,3 +68,72 @@ jobs:
         run: |
           go install github.com/securego/gosec/v2/cmd/gosec@v2.21.4
           gosec -quiet -exclude-dir=fixtures ./...
+
+  # Advisory only — does not block merge. Surfaces bench-score regressions
+  # (recall, precision, decoy-FP rate) against the baseline checked in on
+  # main. Codex's critique (PR #89, docs/bench-corpus-critique.md)
+  # sequenced this gate ahead of corpus growth: ship plumbing first with
+  # the tiny corpus, then grow the corpus under this gate's pressure.
+  # Flip continue-on-error to false once flake rate is known to be low.
+  bench:
+    name: bench (advisory)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+        with:
+          go-version: '1.25.10'
+          cache: true
+
+      - name: build benchsec
+        run: CGO_ENABLED=0 go build -o bin/benchsec ./cmd/benchsec
+
+      - name: score current branch
+        run: ./bin/benchsec score > /tmp/pr-score.json
+
+      - name: read main baseline
+        id: baseline
+        run: |
+          if [ ! -f bench/baseline.json ]; then
+            echo "no bench/baseline.json on this ref — first run; skipping diff"
+            echo "have_baseline=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          cp bench/baseline.json /tmp/baseline.json
+          echo "have_baseline=true" >> "$GITHUB_OUTPUT"
+
+      - name: bench delta
+        if: steps.baseline.outputs.have_baseline == 'true'
+        run: |
+          jq -n --slurpfile p /tmp/pr-score.json --slurpfile b /tmp/baseline.json '
+            ($p[0] // {}) as $pr | ($b[0] // {}) as $base |
+            {
+              recall:     { base: $base.scanner_recall,    pr: $pr.scanner_recall,    delta: (($pr.scanner_recall // 0)    - ($base.scanner_recall // 0)) },
+              precision:  { base: $base.scanner_precision, pr: $pr.scanner_precision, delta: (($pr.scanner_precision // 0) - ($base.scanner_precision // 0)) },
+              candidates: { base: $base.candidate_count_total, pr: $pr.candidate_count_total },
+              decoy_fp:   { base: $base.false_positive_decoy_rate, pr: $pr.false_positive_decoy_rate },
+              new_fns:    (
+                ($pr.false_negative_by_slug // {}) | to_entries
+                | map(select(($base.false_negative_by_slug[.key] // 0) < .value))
+              ),
+              new_fps:    (
+                ($pr.false_positive_by_slug // {}) | to_entries
+                | map(select(($base.false_positive_by_slug[.key] // 0) < .value))
+              )
+            }
+          ' | tee /tmp/delta.json
+          # Soft "fail" — non-zero exit only when recall/precision regress.
+          # Advisory job (continue-on-error) catches anyway; this just
+          # makes the step show ❌ visibly.
+          jq -e '.recall.delta >= -0.005 and .precision.delta >= -0.005 and (.new_fns | length) == 0' /tmp/delta.json \
+            || { echo "::warning::bench regressed — see jq output above"; exit 1; }
+
+      - name: label-debt report
+        continue-on-error: true
+        run: |
+          ./bin/benchsec stale || echo "::warning::label-debt: see above"

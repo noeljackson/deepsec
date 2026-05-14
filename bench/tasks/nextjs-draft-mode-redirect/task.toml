@@ -1,0 +1,12 @@
+[provenance]
+source         = "external-scan"
+source_url     = "https://github.com/noeljackson/deepsec/blob/main/docs/scans/2026-05-14-first-batch.md"
+upstream_commit = "2e90936d"
+upstream_repo  = "vercel/next.js"
+added_at       = "2026-05-14"
+reviewer       = "@noeljackson"
+review_due     = "2026-08-14"
+notes          = "Next.js draft-mode-redirect anti-pattern. Surfaced by PR #100 scan as the open-redirect-draft-mode slug; this matcher gives it a regex hook."
+
+[labels]
+change_rule = "freeze"

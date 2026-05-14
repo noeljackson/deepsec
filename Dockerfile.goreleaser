@@ -1,0 +1,3 @@
+FROM gcr.io/distroless/static-debian12:nonroot
+COPY deepsec /usr/local/bin/deepsec
+ENTRYPOINT ["/usr/local/bin/deepsec"]

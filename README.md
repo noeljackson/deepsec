@@ -64,6 +64,9 @@ docker run --rm -v $PWD:/work -w /work -e ANTHROPIC_API_KEY deepsec scan --proje
 # in the repo you want to scan
 deepsec init --project-id myproj --root .
 
+# sanity-check the setup (config, providers, matchers, AST grammars)
+deepsec doctor
+
 # run the scanner (regex + AST matchers, gated on detected tech)
 deepsec scan --project-id myproj
 
@@ -77,6 +80,13 @@ deepsec process --project-id myproj --agent anthropic --tools --max-turns 8
 # render a human-readable report
 deepsec report --project-id myproj
 ```
+
+If anything looks wrong — empty candidate set, "providers: 0 with
+keys", an AST grammar that didn't load — run `deepsec doctor
+--verbose` first. The output maps directly to entries in
+[`docs/troubleshooting.md`](docs/troubleshooting.md).
+
+Full docs map: [`docs/index.md`](docs/index.md).
 
 ## What's special about deepsec
 

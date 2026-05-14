@@ -1,0 +1,13 @@
+issues:
+  - id: swift-system-call-001
+    file: Tool.swift
+    severity: HIGH
+    cwe: CWE-78
+    vulnSlugs: [swift-eval-injection, command-injection]
+    location: { startLine: 4, endLine: 4, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: swift-system-literal-decoy
+    file: Tool.swift
+    line: 8
+    forbiddenSlugs: [swift-eval-injection]

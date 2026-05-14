@@ -46,3 +46,5 @@ dist/
 linear-*
 plans/
 .cache/
+data/codex-recall-proposals/
+.tmp/

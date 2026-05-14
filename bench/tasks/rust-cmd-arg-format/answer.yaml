@@ -1,0 +1,13 @@
+issues:
+  - id: rust-cmd-arg-format-001
+    file: src/lib.rs
+    severity: HIGH
+    cwe: CWE-78
+    vulnSlugs: [rust-cmd-injection, command-injection]
+    location: { startLine: 6, endLine: 6, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: rust-cmd-literal-arg-decoy
+    file: src/lib.rs
+    line: 10
+    forbiddenSlugs: [rust-cmd-injection]

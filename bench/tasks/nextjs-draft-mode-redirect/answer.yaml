@@ -1,0 +1,13 @@
+issues:
+  - id: nextjs-draft-mode-redirect-001
+    file: pages/api/draft-mode.ts
+    severity: MEDIUM
+    cwe: CWE-601
+    vulnSlugs: [nextjs-draft-mode-redirect, open-redirect]
+    location: { startLine: 8, endLine: 10, tolerance: 3 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: nextjs-draft-mode-redirect-allowlist-decoy
+    file: pages/api/draft-mode-safe.ts
+    line: 14
+    forbiddenSlugs: [nextjs-draft-mode-redirect]

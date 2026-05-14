@@ -56,3 +56,21 @@ suppress_patterns = [
 snippet_before = 2
 snippet_after = 4
 label = "open redirect via user-controlled URL parameter"
+
+[[matcher]]
+slug = "open-redirect-from-referrer"
+description = "HTTP redirect that takes the Referer/Referrer header as the target — attacker-controllable just like a query param"
+noise_tier = "normal"
+file_patterns = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"]
+patterns = [
+  "(?i)\\bres\\.redirect\\s*\\(\\s*req\\.(?:get|header)\\s*\\(\\s*['\"]referr?er['\"]",
+  "(?i)\\bres\\.redirect\\s*\\(\\s*req\\.headers\\s*\\[\\s*['\"]referr?er['\"]",
+]
+suppress_patterns = [
+  "(?i)\\.test\\s*\\(\\s*(?:candidate|target|next|return_to)\\s*\\)",
+  "(?i)startsWith\\s*\\(\\s*['\"]/",
+  "(?i)new\\s+URL\\s*\\(",
+]
+snippet_before = 2
+snippet_after = 4
+label = "open redirect via Referer header"

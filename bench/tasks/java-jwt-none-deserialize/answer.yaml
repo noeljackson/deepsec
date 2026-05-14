@@ -1,0 +1,24 @@
+issues:
+  - id: java-deserialize-objectinputstream-001
+    file: AuthService.java
+    severity: HIGH
+    cwe: CWE-502
+    vulnSlugs: [java-deserialize-objectinputstream, rce-deserialization]
+    location: { startLine: 9, endLine: 10, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+  - id: java-jwt-none-001
+    file: AuthService.java
+    severity: HIGH
+    cwe: CWE-347
+    vulnSlugs: [java-jwt-none]
+    location: { startLine: 18, endLine: 18, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: java-json-parse-decoy
+    file: AuthService.java
+    line: 14
+    forbiddenSlugs: [java-deserialize-objectinputstream, rce-deserialization]
+  - id: java-jwt-hmac256-decoy
+    file: AuthService.java
+    line: 22
+    forbiddenSlugs: [java-jwt-none]

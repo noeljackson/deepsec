@@ -1,0 +1,20 @@
+issues:
+  - id: kt-jdbc-sqli-001
+    file: UserDao.kt
+    severity: HIGH
+    cwe: CWE-89
+    vulnSlugs: [kt-jdbc-string-template-sqli, sql-injection]
+    location: { startLine: 12, endLine: 12, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+  - id: kt-runtime-exec-001
+    file: UserDao.kt
+    severity: HIGH
+    cwe: CWE-78
+    vulnSlugs: [kt-runtime-exec-template, command-injection]
+    location: { startLine: 17, endLine: 17, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: kt-processbuilder-list-decoy
+    file: UserDao.kt
+    line: 22
+    forbiddenSlugs: [kt-runtime-exec-template, command-injection]

@@ -1,0 +1,13 @@
+issues:
+  - id: c-rand-token-001
+    file: token.c
+    severity: MEDIUM
+    cwe: CWE-338
+    vulnSlugs: [c-rand-for-security]
+    location: { startLine: 10, endLine: 12, tolerance: 3 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: c-rand-no-security-context-decoy
+    file: dice.c
+    line: 5
+    forbiddenSlugs: [c-rand-for-security]

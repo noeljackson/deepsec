@@ -1,0 +1,9 @@
+[provenance]
+source     = "handcraft"
+added_at   = "2026-05-14"
+reviewer   = "@noeljackson"
+review_due = "2027-05-14"
+notes      = "C rand() / srand(time()) in security-flavoured context (token, session, csrf)."
+
+[labels]
+change_rule = "freeze"

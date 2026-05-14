@@ -20,6 +20,32 @@ patterns = [
 ]
 snippet_after = 4
 label = "unbounded string copy"
+[[matcher.ast_patterns]]
+language = "c"
+label = "unbounded strcpy/strcat/gets/sprintf call"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["\\b(strcpy|strcat|gets|sprintf)\\s*\\("]
+query = '''
+(
+  call_expression
+    function: (identifier) @func
+) @call
+(#match? @func "^(strcpy|strcat|gets|sprintf)$")
+'''
+[[matcher.ast_patterns]]
+language = "cpp"
+label = "unbounded strcpy/strcat/gets/sprintf call (cpp)"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["\\b(strcpy|strcat|gets|sprintf)\\s*\\("]
+query = '''
+(
+  call_expression
+    function: (identifier) @func
+) @call
+(#match? @func "^(strcpy|strcat|gets|sprintf)$")
+'''
 
 [[matcher]]
 slug = "c-format-string-non-literal"
@@ -32,6 +58,34 @@ patterns = [
 ]
 snippet_after = 4
 label = "format string from variable"
+[[matcher.ast_patterns]]
+language = "c"
+label = "printf-family call with identifier as first arg"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["\\b(printf|fprintf|syslog|warn|err)\\s*\\("]
+query = '''
+(
+  call_expression
+    function: (identifier) @func
+    arguments: (argument_list . (identifier) @arg)
+) @call
+(#match? @func "^(printf|fprintf|syslog|warn|err)$")
+'''
+[[matcher.ast_patterns]]
+language = "cpp"
+label = "printf-family call with identifier as first arg (cpp)"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["\\b(printf|fprintf|syslog|warn|err)\\s*\\("]
+query = '''
+(
+  call_expression
+    function: (identifier) @func
+    arguments: (argument_list . (identifier) @arg)
+) @call
+(#match? @func "^(printf|fprintf|syslog|warn|err)$")
+'''
 
 [[matcher]]
 slug = "c-system-non-constant"
@@ -82,6 +136,34 @@ patterns = [
 ]
 snippet_after = 6
 label = "memcpy with structure-derived length"
+[[matcher.ast_patterns]]
+language = "c"
+label = "memcpy/memmove with field-expression length"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["\\b(memcpy|memmove|bcopy)\\s*\\("]
+query = '''
+(
+  call_expression
+    function: (identifier) @func
+    arguments: (argument_list (_) (_) (field_expression) @len)
+) @call
+(#match? @func "^(memcpy|memmove|bcopy)$")
+'''
+[[matcher.ast_patterns]]
+language = "cpp"
+label = "memcpy/memmove with field-expression length (cpp)"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["\\b(memcpy|memmove|bcopy)\\s*\\("]
+query = '''
+(
+  call_expression
+    function: (identifier) @func
+    arguments: (argument_list (_) (_) (field_expression) @len)
+) @call
+(#match? @func "^(memcpy|memmove|bcopy)$")
+'''
 
 # C++ specific
 
@@ -108,6 +190,20 @@ patterns = [
 require_content = ["unique_ptr"]
 snippet_after = 4
 label = "raw pointer extracted from unique_ptr"
+[[matcher.ast_patterns]]
+language = "cpp"
+label = "field call .get() or .release()"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["\\.(get|release)\\s*\\("]
+query = '''
+(
+  call_expression
+    function: (field_expression
+      field: (field_identifier) @method)
+) @call
+(#match? @method "^(get|release)$")
+'''
 
 [[matcher]]
 slug = "cpp-deserialize-boost"
@@ -133,3 +229,17 @@ patterns = [
 ]
 snippet_after = 4
 label = "dynamic_cast<>"
+[[matcher.ast_patterns]]
+language = "cpp"
+label = "dynamic_cast call expression"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["dynamic_cast\\s*<"]
+query = '''
+(
+  call_expression
+    function: (template_function
+      name: (identifier) @cast)
+) @call
+(#eq? @cast "dynamic_cast")
+'''

@@ -1,0 +1,31 @@
+issues:
+  - id: c-strcpy-unbounded-001
+    file: log.c
+    severity: HIGH
+    cwe: CWE-120
+    vulnSlugs: [c-unbounded-strcpy]
+    location: { startLine: 7, endLine: 7, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+  - id: c-printf-non-literal-001
+    file: log.c
+    severity: HIGH
+    cwe: CWE-134
+    vulnSlugs: [c-format-string-non-literal]
+    location: { startLine: 20, endLine: 20, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+  - id: c-sprintf-unbounded-001
+    file: log.c
+    severity: HIGH
+    cwe: CWE-120
+    vulnSlugs: [c-unbounded-strcpy]
+    location: { startLine: 29, endLine: 29, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: c-strncpy-bounded-decoy
+    file: log.c
+    line: 13
+    forbiddenSlugs: [c-unbounded-strcpy]
+  - id: c-printf-literal-format-decoy
+    file: log.c
+    line: 24
+    forbiddenSlugs: [c-format-string-non-literal]

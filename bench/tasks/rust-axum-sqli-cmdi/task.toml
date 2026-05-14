@@ -1,0 +1,11 @@
+matcher_exclude = ["axum-handler"]
+
+[provenance]
+source     = "handcraft"
+added_at   = "2026-05-14"
+reviewer   = "@noeljackson"
+review_due = "2027-05-14"
+notes      = "Under-covered Phase-2 language fixture per CLAUDE.md project invariant. Rust sqlx format!() injection + Command::new with variable arg on an axum handler. The noisy axum-handler matcher is opted out — separate slug for handler enumeration."
+
+[labels]
+change_rule = "freeze"

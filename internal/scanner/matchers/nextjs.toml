@@ -33,6 +33,24 @@ requires = { tech = ["nextjs"] }
 label = "Next.js catch-all dynamic route"
 
 [[matcher]]
+slug = "nextjs-draft-mode-redirect"
+description = "Draft-mode handler enables draft mode in a file that also performs a redirect — attacker may pivot the draft-mode capability to an arbitrary destination unless the target is allowlisted"
+noise_tier = "normal"
+file_patterns = ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs"]
+patterns = [
+  "(?i)\\bdraftMode\\s*\\(\\s*\\)\\s*\\.\\s*enable\\s*\\(",
+]
+suppress_patterns = [
+  "(?i)\\b(?:ALLOWED|ALLOWLIST|allowed|valid)\\w*\\.test\\s*\\(",
+  "(?i)startsWith\\s*\\(\\s*['\"]/",
+  "(?i)\\bnew\\s+URL\\s*\\([^,)]+,",
+]
+requires = { tech = ["nextjs"] }
+snippet_before = 8
+snippet_after = 12
+label = "Next.js draft-mode redirect without allowlist validation"
+
+[[matcher]]
 slug = "nextjs-middleware-bypass"
 description = "Next.js middleware that exits early on a request property without verification"
 noise_tier = "normal"

@@ -1,0 +1,20 @@
+issues:
+  - id: rust-mem-transmute-001
+    file: src/lib.rs
+    severity: MEDIUM
+    cwe: CWE-704
+    vulnSlugs: [rust-mem-transmute]
+    location: { startLine: 4, endLine: 4, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+  - id: rust-mem-transmute-002
+    file: src/lib.rs
+    severity: MEDIUM
+    cwe: CWE-704
+    vulnSlugs: [rust-mem-transmute]
+    location: { startLine: 8, endLine: 8, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: rust-from-bits-safe-decoy
+    file: src/lib.rs
+    line: 12
+    forbiddenSlugs: [rust-mem-transmute]

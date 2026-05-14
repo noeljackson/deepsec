@@ -1,10 +1,11 @@
 # kotlin.toml — Kotlin matchers (Android + JVM server).
-# Phase 3 of the universal-scanner roadmap. Regex-only for now;
-# tree-sitter-kotlin WASM requires emscripten compilation (issue #36).
 #
 # Many Kotlin matchers overlap with java.* matchers in jvm.toml but use
 # Kotlin-specific syntax (string templates, lambdas) that don't hit the
 # Java patterns reliably.
+#
+# AST patterns use the tree-sitter-kotlin@0.3.8 grammar shipped via
+# PR #75. The regex layer stays as a fast pre-filter; AST narrows.
 
 [[matcher]]
 slug = "kt-webview-javascript-enabled"
@@ -18,6 +19,22 @@ patterns = [
 require_content = ["WebView"]
 snippet_after = 6
 label = "Android WebView with JS enabled"
+[[matcher.ast_patterns]]
+language = "kotlin"
+label = "javaScriptEnabled assigned to literal true"
+primary_capture = "@assignment"
+snippet_capture = "@assignment"
+prefilter_patterns = ["javaScriptEnabled\\s*="]
+query = '''
+(
+  assignment
+    (directly_assignable_expression
+      (navigation_suffix (simple_identifier) @prop))
+    (boolean_literal) @val
+) @assignment
+(#eq? @prop "javaScriptEnabled")
+(#eq? @val "true")
+'''
 
 [[matcher]]
 slug = "kt-android-exported-component"
@@ -38,9 +55,26 @@ file_patterns = ["**/*.kt"]
 patterns = [
   "(?i)\\.(executeQuery|executeUpdate|execute|prepareStatement)\\s*\\(\\s*\"[^\"]*\\$",
 ]
-require_content = ["java.sql", "javax.sql", "Statement"]
+# require_content uses AND semantics; only one of these is needed to
+# indicate JDBC usage in Kotlin, so we list the strict superset: the
+# Statement type appears in any meaningful JDBC sink.
+require_content = ["Statement"]
 snippet_after = 6
 label = "JDBC SQL built from Kotlin template"
+[[matcher.ast_patterns]]
+language = "kotlin"
+label = "JDBC executeQuery call"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["\\b(executeQuery|executeUpdate|execute|prepareStatement)\\s*\\("]
+query = '''
+(
+  call_expression
+    (navigation_expression
+      (navigation_suffix (simple_identifier) @method))
+) @call
+(#match? @method "^(executeQuery|executeUpdate|execute|prepareStatement)$")
+'''
 
 [[matcher]]
 slug = "kt-runtime-exec-template"
@@ -53,6 +87,20 @@ patterns = [
 ]
 snippet_after = 6
 label = "shell command from Kotlin template"
+[[matcher.ast_patterns]]
+language = "kotlin"
+label = "Runtime.exec / ProcessBuilder call"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["\\.exec\\s*\\(|ProcessBuilder"]
+query = '''
+(
+  call_expression
+    (navigation_expression
+      (navigation_suffix (simple_identifier) @method))
+) @call
+(#eq? @method "exec")
+'''
 
 [[matcher]]
 slug = "kt-insecure-trust-manager"
@@ -77,6 +125,22 @@ patterns = [
 ]
 snippet_after = 4
 label = "GlobalScope coroutine — prefer structured concurrency"
+[[matcher.ast_patterns]]
+language = "kotlin"
+label = "GlobalScope.launch / async"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["GlobalScope"]
+query = '''
+(
+  call_expression
+    (navigation_expression
+      (simple_identifier) @scope
+      (navigation_suffix (simple_identifier) @method))
+) @call
+(#eq? @scope "GlobalScope")
+(#match? @method "^(launch|async)$")
+'''
 
 [[matcher]]
 slug = "kt-shared-prefs-secret"

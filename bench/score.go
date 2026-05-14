@@ -33,6 +33,12 @@ type TaskConfig struct {
 	// labeled fixtures can reference real-world code at a pinned SHA
 	// without copying source into the bench tree.
 	Repo *RepoSource `toml:"repo,omitempty"`
+	// Provenance + Labels are required for every checked-in task.
+	// Validation is loud: a task without them is rejected at score time
+	// so unreviewed fixtures can't quietly enter the corpus. See
+	// docs/bench-task-format.md and issue #90 for the rationale.
+	Provenance *TaskProvenance `toml:"provenance,omitempty"`
+	Labels     *TaskLabels     `toml:"labels,omitempty"`
 }
 
 // RepoSource pins a remote git repo + commit. Both fields are required
@@ -40,6 +46,41 @@ type TaskConfig struct {
 type RepoSource struct {
 	URL    string `toml:"url"`
 	Commit string `toml:"commit"`
+}
+
+// TaskProvenance is per-task answer-key provenance. Required for every
+// task in the bench. Captures where the labels came from so external
+// scanner disagreements can be adjudicated against the source.
+type TaskProvenance struct {
+	// Source bucket. Free-form for forward compatibility; canonical
+	// values: handcraft, juice-shop, ghsa, codex-cyber, cve-bench-pilot.
+	Source string `toml:"source"`
+	// SourceURL is the upstream finding / advisory / challenge link.
+	// Optional; required if Source is anything except handcraft.
+	SourceURL string `toml:"source_url,omitempty"`
+	// UpstreamCommit is the SHA the repro is derived from when Source
+	// is a real-world repo. Optional otherwise.
+	UpstreamCommit string `toml:"upstream_commit,omitempty"`
+	// AddedAt is the YYYY-MM-DD the task was first checked in.
+	AddedAt string `toml:"added_at"`
+	// Reviewer is the GitHub handle owning the label truth. Disagreement
+	// from an external scanner reassigns to this person.
+	Reviewer string `toml:"reviewer"`
+	// ReviewDue is the YYYY-MM-DD by which the label needs revalidation.
+	// Default cadence is +3 months from AddedAt; tasks past their due
+	// date show up in the label-debt report.
+	ReviewDue string `toml:"review_due"`
+}
+
+// TaskLabels describes how answer.yaml changes are governed.
+type TaskLabels struct {
+	// ChangeRule is one of:
+	//   external-disagreement-opens-issue  — default; conflict opens a
+	//     review issue, no auto-update
+	//   auto-update                         — labels mutate without review
+	//   freeze                              — no changes accepted (used
+	//     for canonical known-vuln tasks like Juice Shop challenges)
+	ChangeRule string `toml:"change_rule"`
 }
 
 type Summary struct {
@@ -386,7 +427,100 @@ func loadTaskConfig(path string) (TaskConfig, error) {
 			return cfg, fmt.Errorf("task.toml: [repo] requires both url and commit")
 		}
 	}
+	if err := validateProvenance(path, cfg.Provenance); err != nil {
+		return cfg, err
+	}
+	if err := validateLabels(path, cfg.Labels); err != nil {
+		return cfg, err
+	}
 	return cfg, nil
+}
+
+func validateProvenance(path string, p *TaskProvenance) error {
+	if p == nil {
+		return nil // legacy tasks without task.toml pass; checkProvenanceRequired enforces presence elsewhere
+	}
+	if p.Source == "" {
+		return fmt.Errorf("%s: [provenance].source is required", path)
+	}
+	if p.AddedAt == "" {
+		return fmt.Errorf("%s: [provenance].added_at is required (YYYY-MM-DD)", path)
+	}
+	if p.Reviewer == "" {
+		return fmt.Errorf("%s: [provenance].reviewer is required", path)
+	}
+	if p.ReviewDue == "" {
+		return fmt.Errorf("%s: [provenance].review_due is required (YYYY-MM-DD)", path)
+	}
+	if p.Source != "handcraft" && p.SourceURL == "" {
+		return fmt.Errorf("%s: [provenance].source_url is required when source=%q", path, p.Source)
+	}
+	for _, field := range []struct {
+		name, val string
+	}{
+		{"added_at", p.AddedAt},
+		{"review_due", p.ReviewDue},
+	} {
+		if _, err := time.Parse("2006-01-02", field.val); err != nil {
+			return fmt.Errorf("%s: [provenance].%s must be YYYY-MM-DD, got %q", path, field.name, field.val)
+		}
+	}
+	return nil
+}
+
+func validateLabels(path string, l *TaskLabels) error {
+	if l == nil {
+		return nil
+	}
+	switch l.ChangeRule {
+	case "", "external-disagreement-opens-issue", "auto-update", "freeze":
+		return nil
+	}
+	return fmt.Errorf("%s: [labels].change_rule must be one of "+
+		"external-disagreement-opens-issue | auto-update | freeze, got %q", path, l.ChangeRule)
+}
+
+// StaleTasks returns the task IDs whose review_due is on or before
+// `today` and the duration each is overdue. Empty list = no debt.
+// Tasks without provenance are ignored here — RequireProvenance is the
+// gate for those.
+func StaleTasks(tasksDir string, today time.Time) ([]StaleTask, error) {
+	ids, err := discoverTasks(tasksDir)
+	if err != nil {
+		return nil, err
+	}
+	var out []StaleTask
+	for _, id := range ids {
+		cfg, err := loadTaskConfig(filepath.Join(tasksDir, id, "task.toml"))
+		if err != nil {
+			return nil, err
+		}
+		if cfg.Provenance == nil || cfg.Provenance.ReviewDue == "" {
+			continue
+		}
+		due, err := time.Parse("2006-01-02", cfg.Provenance.ReviewDue)
+		if err != nil {
+			continue
+		}
+		if !today.After(due) {
+			continue
+		}
+		out = append(out, StaleTask{
+			TaskID:    id,
+			Reviewer:  cfg.Provenance.Reviewer,
+			ReviewDue: cfg.Provenance.ReviewDue,
+			OverdueBy: today.Sub(due),
+		})
+	}
+	return out, nil
+}
+
+// StaleTask is one entry in the label-debt report.
+type StaleTask struct {
+	TaskID    string
+	Reviewer  string
+	ReviewDue string
+	OverdueBy time.Duration
 }
 
 // materializeSource resolves the source directory for a task: either

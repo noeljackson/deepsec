@@ -1,6 +1,3 @@
-# goreleaser config — cross-compiled binaries for each release tag.
-# Triggered by `release.yml`; run manually with `goreleaser release --snapshot --clean`.
-
 version: 2
 
 before:
@@ -49,6 +46,91 @@ checksum:
 snapshot:
   version_template: '{{.Tag}}-next'
 
+dockers:
+  - image_templates:
+      - 'ghcr.io/noeljackson/deepsec:{{ .Version }}-amd64'
+      - 'ghcr.io/noeljackson/deepsec:latest-amd64'
+    dockerfile: Dockerfile.goreleaser
+    use: buildx
+    goarch: amd64
+    build_flag_templates:
+      - '--platform=linux/amd64'
+      - '--label=org.opencontainers.image.title=deepsec'
+      - '--label=org.opencontainers.image.description=AI-powered security scanner'
+      - '--label=org.opencontainers.image.url=https://github.com/noeljackson/deepsec'
+      - '--label=org.opencontainers.image.source=https://github.com/noeljackson/deepsec'
+      - '--label=org.opencontainers.image.version={{ .Version }}'
+      - '--label=org.opencontainers.image.revision={{ .FullCommit }}'
+      - '--label=org.opencontainers.image.licenses=Apache-2.0'
+  - image_templates:
+      - 'ghcr.io/noeljackson/deepsec:{{ .Version }}-arm64'
+      - 'ghcr.io/noeljackson/deepsec:latest-arm64'
+    dockerfile: Dockerfile.goreleaser
+    use: buildx
+    goarch: arm64
+    build_flag_templates:
+      - '--platform=linux/arm64'
+      - '--label=org.opencontainers.image.title=deepsec'
+      - '--label=org.opencontainers.image.description=AI-powered security scanner'
+      - '--label=org.opencontainers.image.url=https://github.com/noeljackson/deepsec'
+      - '--label=org.opencontainers.image.source=https://github.com/noeljackson/deepsec'
+      - '--label=org.opencontainers.image.version={{ .Version }}'
+      - '--label=org.opencontainers.image.revision={{ .FullCommit }}'
+      - '--label=org.opencontainers.image.licenses=Apache-2.0'
+
+docker_manifests:
+  - name_template: 'ghcr.io/noeljackson/deepsec:{{ .Version }}'
+    image_templates:
+      - 'ghcr.io/noeljackson/deepsec:{{ .Version }}-amd64'
+      - 'ghcr.io/noeljackson/deepsec:{{ .Version }}-arm64'
+  - name_template: 'ghcr.io/noeljackson/deepsec:latest'
+    image_templates:
+      - 'ghcr.io/noeljackson/deepsec:latest-amd64'
+      - 'ghcr.io/noeljackson/deepsec:latest-arm64'
+
+brews:
+  - name: deepsec
+    repository:
+      owner: noeljackson
+      name: homebrew-deepsec
+      token: '{{ .Env.HOMEBREW_TAP_TOKEN }}'
+    homepage: 'https://github.com/noeljackson/deepsec'
+    description: 'AI-powered security scanner — multi-language matchers + AST + AI investigation'
+    license: 'Apache-2.0'
+    commit_author:
+      name: deepsec-release-bot
+      email: release-bot@noeljackson.com
+    install: |
+      bin.install "deepsec"
+    test: |
+      system "#{bin}/deepsec", "--version"
+
+scoops:
+  - name: deepsec
+    repository:
+      owner: noeljackson
+      name: scoop-deepsec
+      token: '{{ .Env.SCOOP_TAP_TOKEN }}'
+    homepage: 'https://github.com/noeljackson/deepsec'
+    description: 'AI-powered security scanner'
+    license: 'Apache-2.0'
+    commit_author:
+      name: deepsec-release-bot
+      email: release-bot@noeljackson.com
+
+nfpms:
+  - id: deepsec
+    package_name: deepsec
+    vendor: 'noeljackson'
+    homepage: 'https://github.com/noeljackson/deepsec'
+    maintainer: 'Noel Jackson <release-bot@noeljackson.com>'
+    description: 'AI-powered security scanner'
+    license: 'Apache-2.0'
+    formats:
+      - deb
+      - rpm
+      - apk
+
 changelog:
   use: github
   sort: asc
@@ -66,3 +148,10 @@ changelog:
       - '^docs:'
       - '^test:'
       - '^chore:'
+
+release:
+  github:
+    owner: noeljackson
+    name: deepsec
+  draft: false
+  prerelease: auto

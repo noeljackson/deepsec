@@ -1,0 +1,27 @@
+issues:
+  - id: c-system-var-001
+    file: exec.c
+    severity: HIGH
+    cwe: CWE-78
+    vulnSlugs: [c-system-non-constant, command-injection]
+    location: { startLine: 4, endLine: 4, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+  - id: c-system-concat-001
+    file: exec.c
+    severity: HIGH
+    cwe: CWE-78
+    vulnSlugs: [c-system-non-constant, command-injection]
+    location: { startLine: 9, endLine: 9, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+  - id: c-system-var-002
+    file: exec.c
+    severity: HIGH
+    cwe: CWE-78
+    vulnSlugs: [c-system-non-constant, command-injection]
+    location: { startLine: 11, endLine: 11, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: c-system-literal-decoy
+    file: exec.c
+    line: 15
+    forbiddenSlugs: [c-system-non-constant]

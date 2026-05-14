@@ -29,6 +29,7 @@ func main() {
 		root.AddCommand(commands.NewPreflightCmd(loader))
 		root.AddCommand(commands.NewListMatchersCmd())
 		root.AddCommand(commands.NewListProvidersCmd(loader))
+		root.AddCommand(commands.NewDoctorCmd(loader))
 	})
 	if err := root.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)

@@ -1,6 +1,7 @@
 # swift.toml — Swift matchers (iOS / macOS / SwiftUI / Vapor).
-# Phase 3 of the universal-scanner roadmap. Regex-only for now;
-# tree-sitter-swift WASM requires emscripten compilation (issue #36).
+#
+# AST patterns use the tree-sitter-swift@0.7.1 grammar shipped via
+# PR #75. The regex layer stays as a fast pre-filter; AST narrows.
 
 [[matcher]]
 slug = "swift-wkwebview-javascript-enabled"
@@ -11,9 +12,24 @@ patterns = [
   "(?i)\\.preferences\\.javaScriptEnabled\\s*=\\s*true",
   "(?i)\\.allowsContentJavaScript\\s*=\\s*true",
 ]
-require_content = ["WKWebView", "WKWebpagePreferences"]
+require_content = ["WKWebView"]
 snippet_after = 6
 label = "WKWebView with JS enabled"
+[[matcher.ast_patterns]]
+language = "swift"
+label = "javaScriptEnabled / allowsContentJavaScript = true"
+primary_capture = "@assignment"
+snippet_capture = "@assignment"
+prefilter_patterns = ["javaScriptEnabled\\s*=|allowsContentJavaScript\\s*="]
+query = '''
+(
+  assignment
+    (directly_assignable_expression) @lhs
+    (boolean_literal) @val
+) @assignment
+(#match? @lhs "(javaScriptEnabled|allowsContentJavaScript)$")
+(#eq? @val "true")
+'''
 
 [[matcher]]
 slug = "swift-allow-arbitrary-loads"
@@ -37,6 +53,19 @@ patterns = [
 ]
 snippet_after = 4
 label = "String(format:) with variable format"
+[[matcher.ast_patterns]]
+language = "swift"
+label = "String(format: …) call"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["String\\s*\\(\\s*format:"]
+query = '''
+(
+  call_expression
+    (simple_identifier) @name
+) @call
+(#eq? @name "String")
+'''
 
 [[matcher]]
 slug = "swift-keychain-no-access-control"
@@ -49,6 +78,19 @@ patterns = [
 require_content = ["SecItemAdd"]
 snippet_after = 12
 label = "Keychain add — verify kSecAttrAccessControl"
+[[matcher.ast_patterns]]
+language = "swift"
+label = "SecItemAdd call"
+primary_capture = "@call"
+snippet_capture = "@call"
+prefilter_patterns = ["SecItemAdd\\s*\\("]
+query = '''
+(
+  call_expression
+    (simple_identifier) @name
+) @call
+(#eq? @name "SecItemAdd")
+'''
 
 [[matcher]]
 slug = "swift-insecure-trust"

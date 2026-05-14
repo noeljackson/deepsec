@@ -24,6 +24,9 @@ type ProcessScoreOptions struct {
 	Repeat           int
 	Seed             uint64
 	BootstrapSamples int
+	// CorePromptPath, when set, replaces the bundled core.md prompt for
+	// each task. Used by the prompt-evolution harness (#86).
+	CorePromptPath string
 }
 
 type ProcessorAnswerKey struct {
@@ -165,8 +168,16 @@ func processScoreOnce(taskIDs []string, opts ProcessScoreOptions, outDir string,
 	agg := processAccumulator{
 		slugTP: map[string]int{}, slugFP: map[string]int{}, slugFN: map[string]int{},
 	}
+	var corePromptOverride string
+	if opts.CorePromptPath != "" {
+		b, err := os.ReadFile(opts.CorePromptPath)
+		if err != nil {
+			return nil, fmt.Errorf("read core-prompt %q: %w", opts.CorePromptPath, err)
+		}
+		corePromptOverride = string(b)
+	}
 	for _, id := range taskIDs {
-		task, err := processScoreTask(id, opts.TasksDir, seed)
+		task, err := processScoreTask(id, opts.TasksDir, seed, corePromptOverride)
 		if err != nil {
 			return nil, err
 		}
@@ -196,7 +207,7 @@ type scoredProcessTask struct {
 	slugFN             map[string]int
 }
 
-func processScoreTask(id, tasksDir string, seed uint64) (scoredProcessTask, error) {
+func processScoreTask(id, tasksDir string, seed uint64, corePromptOverride string) (scoredProcessTask, error) {
 	taskDir := filepath.Join(tasksDir, id)
 	key, err := loadProcessorAnswerKey(filepath.Join(taskDir, "answer.yaml"))
 	if err != nil {
@@ -227,6 +238,7 @@ func processScoreTask(id, tasksDir string, seed uint64) (scoredProcessTask, erro
 	outcome, err := processor.Process(context.Background(), processor.ProcessOptions{
 		ProjectID: id, ProjectRoot: projectRoot, DataRoot: dataRoot,
 		Backend: backend, ProviderName: "mock-replay", BatchSize: 1, Concurrency: 1,
+		CorePromptOverride: corePromptOverride,
 	})
 	if err != nil {
 		return scoredProcessTask{}, err

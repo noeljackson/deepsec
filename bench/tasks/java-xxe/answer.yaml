@@ -1,0 +1,13 @@
+issues:
+  - id: java-xxe-001
+    file: XmlService.java
+    severity: HIGH
+    cwe: CWE-611
+    vulnSlugs: [java-xxe, xxe, xxe-xml-parser]
+    location: { startLine: 11, endLine: 11, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: java-non-xml-greet-decoy
+    file: XmlService.java
+    line: 17
+    forbiddenSlugs: [java-xxe]

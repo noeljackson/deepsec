@@ -1,0 +1,10 @@
+[provenance]
+source          = "codex-cyber"
+source_url      = "https://chatgpt.com/codex/cloud/security/findings/76c63a4e8fc48191b4416cc4d504c2e5"
+upstream_commit = "99c245da9e1904cd6ac014058d861195fb4747e7"
+added_at        = "2026-05-13"
+reviewer        = "@noeljackson"
+review_due      = "2026-08-13"
+
+[labels]
+change_rule = "external-disagreement-opens-issue"

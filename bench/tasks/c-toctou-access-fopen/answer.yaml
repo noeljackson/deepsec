@@ -1,0 +1,13 @@
+issues:
+  - id: c-toctou-001
+    file: io.c
+    severity: MEDIUM
+    cwe: CWE-367
+    vulnSlugs: [c-toctou-access-then-open]
+    location: { startLine: 5, endLine: 8, tolerance: 3 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: c-no-toctou-pair-decoy
+    file: safe.c
+    line: 5
+    forbiddenSlugs: [c-toctou-access-then-open]

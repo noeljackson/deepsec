@@ -1,0 +1,9 @@
+[provenance]
+source     = "handcraft"
+added_at   = "2026-05-14"
+reviewer   = "@noeljackson"
+review_due = "2027-05-14"
+notes      = "C access()-then-fopen() TOCTOU race pattern."
+
+[labels]
+change_rule = "freeze"

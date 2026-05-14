@@ -1,0 +1,13 @@
+issues:
+  - id: kt-webview-js-001
+    file: Browser.kt
+    severity: MEDIUM
+    cwe: CWE-79
+    vulnSlugs: [kt-webview-javascript-enabled]
+    location: { startLine: 6, endLine: 6, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: kt-webview-js-disabled-decoy
+    file: Browser.kt
+    line: 10
+    forbiddenSlugs: [kt-webview-javascript-enabled]

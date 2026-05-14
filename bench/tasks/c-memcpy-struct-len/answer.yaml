@@ -1,0 +1,13 @@
+issues:
+  - id: c-memcpy-struct-len-001
+    file: packet.c
+    severity: HIGH
+    cwe: CWE-120
+    vulnSlugs: [c-memcpy-untrusted-length]
+    location: { startLine: 10, endLine: 10, tolerance: 2 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: c-memcpy-bounded-decoy
+    file: packet.c
+    line: 15
+    forbiddenSlugs: [c-memcpy-untrusted-length]

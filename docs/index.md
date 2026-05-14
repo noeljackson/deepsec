@@ -7,6 +7,7 @@ Start here. Everything is one click away.
 - [`getting-started.md`](getting-started.md) — install + first scan
 - [`configuration.md`](configuration.md) — `deepsec.config.toml` reference
 - [`troubleshooting.md`](troubleshooting.md) — "doctor reports X, what does it mean?"
+- [`operational.md`](operational.md) — `deepsec doctor` + `deepsec spend` reference
 - [`faq.md`](faq.md) — quick answers
 
 Run `deepsec doctor` first if anything looks wrong. Its output maps

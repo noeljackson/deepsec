@@ -1,0 +1,12 @@
+[provenance]
+source         = "external-scan"
+source_url     = "https://github.com/noeljackson/deepsec/blob/main/docs/scans/2026-05-14-first-batch.md"
+upstream_commit = "1d7bc3f7"
+upstream_repo  = "golang-jwt/jwt"
+added_at       = "2026-05-14"
+reviewer       = "@noeljackson"
+review_due     = "2026-11-14"
+notes          = "Negative-corpus fixture distilled from the golang-jwt/jwt 1d7bc3f7 scan, which produced 0 production findings — 17 secret-plaintext patterns in *_test.go were correctly demoted. This task pins that demotion."
+
+[labels]
+change_rule = "freeze"

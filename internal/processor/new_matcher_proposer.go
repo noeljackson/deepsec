@@ -25,11 +25,12 @@ type NewMatcher struct {
 	NeedsEngineFeature bool   `json:"-"`
 }
 
-// NewMatcherJSONBackend is the strict-output extension for the recall
-// proposer. Reuses an Anthropic/OpenAI structured-output entry point.
-type NewMatcherJSONBackend interface {
-	ProposeNewMatcherJSON(ctx context.Context, system, user string, schema json.RawMessage) (string, error)
-}
+// The recall proposer uses the same strict-JSON backend method as the
+// matcher patcher (ProposePatchJSON on PatchJSONBackend) — both want
+// "send this system + user prompt, get back JSON conforming to the
+// given schema." The method name predates the recall mode but the
+// behaviour is generic. Anthropic and OpenAI-compatible backends both
+// implement it.
 
 var NewMatcherSchema = mustJSON(map[string]any{
 	"type":                 "object",
@@ -62,8 +63,8 @@ func ProposeNewMatcher(ctx context.Context, backend AgentBackend, cluster Recall
 	if err != nil {
 		return NewMatcher{}, err
 	}
-	if raw, ok := backend.(NewMatcherJSONBackend); ok {
-		body, err := raw.ProposeNewMatcherJSON(ctx, system, user, NewMatcherSchema)
+	if raw, ok := backend.(PatchJSONBackend); ok {
+		body, _, _, err := raw.ProposePatchJSON(ctx, system, user, NewMatcherSchema)
 		if err != nil {
 			return NewMatcher{}, err
 		}

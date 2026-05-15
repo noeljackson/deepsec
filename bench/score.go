@@ -1,6 +1,7 @@
 package bench
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,6 +16,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/noeljackson/deepsec/internal/core"
 	"github.com/noeljackson/deepsec/internal/scanner"
+	scannerast "github.com/noeljackson/deepsec/internal/scanner/ast"
 )
 
 type ScoreOptions struct {
@@ -224,12 +226,22 @@ func Score(taskIDs []string, opts ScoreOptions) (*RunResult, error) {
 		noise[m.Slug()] = m.NoiseTier()
 	}
 
+	// Build one wazero runtime up front and reuse it across every
+	// scoreTask. Wazevo's WASM compile is ~10s per task with all 12
+	// grammars; without sharing, a 30-task corpus blows past CI's
+	// 5-minute test timeout.
+	astRT, err := scannerast.NewRuntime(context.Background(), scannerast.DefaultGrammars())
+	if err != nil {
+		return nil, fmt.Errorf("init shared AST runtime: %w", err)
+	}
+	defer astRT.Close(context.Background())
+
 	now := time.Now().UTC().Format("20060102T150405Z")
 	outDir := filepath.Join(opts.OutDir, now)
 	result := &RunResult{}
 	agg := accumulator{}
 	for _, id := range taskIDs {
-		tr, err := scoreTask(id, opts.TasksDir, outDir, opts.CandidateExplosion, noise, opts.ExtraMatcherPaths)
+		tr, err := scoreTask(id, opts.TasksDir, outDir, opts.CandidateExplosion, noise, opts.ExtraMatcherPaths, astRT)
 		if err != nil {
 			return nil, err
 		}
@@ -263,7 +275,7 @@ type scoredTask struct {
 	slugNoisy           map[string]int
 }
 
-func scoreTask(id, tasksDir, outDir string, explosionThreshold float64, noise map[string]scanner.NoiseTier, extraMatcherPaths []string) (scoredTask, error) {
+func scoreTask(id, tasksDir, outDir string, explosionThreshold float64, noise map[string]scanner.NoiseTier, extraMatcherPaths []string, astRT *scannerast.Runtime) (scoredTask, error) {
 	taskDir := filepath.Join(tasksDir, id)
 	key, err := LoadAnswerKey(filepath.Join(taskDir, "answer.yaml"))
 	if err != nil {
@@ -291,6 +303,7 @@ func scoreTask(id, tasksDir, outDir string, explosionThreshold float64, noise ma
 		MatcherOnly:       cfg.MatcherOnly,
 		MatcherExclude:    cfg.MatcherExclude,
 		ExtraMatcherPaths: extraMatcherPaths,
+		SharedASTRuntime:  astRT,
 	})
 	if err != nil {
 		return scoredTask{}, err

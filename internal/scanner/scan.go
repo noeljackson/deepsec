@@ -30,6 +30,11 @@ type Options struct {
 	// re-evaluated even when both its content and the matcher pack are
 	// unchanged since the last scan.
 	ForceRescan bool
+	// SharedASTRuntime lets a caller hoist the wazero runtime across
+	// many Scan calls — bench.scoreTask reuses one runtime across all
+	// fixtures instead of paying the ~10s wazevo compile per task. When
+	// nil, Scan constructs a per-call runtime as before.
+	SharedASTRuntime *scannerast.Runtime
 }
 
 // LanguageStat is one row of the per-language scan summary.
@@ -85,12 +90,16 @@ func Scan(opts Options) (*Outcome, error) {
 		return nil, err
 	}
 	active, skipped := splitGated(reg, tech, opts.Root)
-	astRT, err := runtimeForActiveAST(active, reg)
-	if err != nil {
-		return nil, err
-	}
-	if astRT != nil {
-		defer astRT.Close(context.Background())
+	astRT := opts.SharedASTRuntime
+	if astRT == nil {
+		built, err := runtimeForActiveAST(active, reg)
+		if err != nil {
+			return nil, err
+		}
+		if built != nil {
+			defer built.Close(context.Background())
+		}
+		astRT = built
 	}
 
 	files, err := WalkProject(opts.Root)
@@ -198,12 +207,16 @@ func ScanFiles(opts Options, files []string, source string) (*FilesOutcome, erro
 		return nil, err
 	}
 	active, skipped := splitGated(reg, tech, opts.Root)
-	astRT, err := runtimeForActiveAST(active, reg)
-	if err != nil {
-		return nil, err
-	}
-	if astRT != nil {
-		defer astRT.Close(context.Background())
+	astRT := opts.SharedASTRuntime
+	if astRT == nil {
+		built, err := runtimeForActiveAST(active, reg)
+		if err != nil {
+			return nil, err
+		}
+		if built != nil {
+			defer built.Close(context.Background())
+		}
+		astRT = built
 	}
 
 	packHash := reg.PackHash()

@@ -38,11 +38,7 @@ Swift / C / C++ as funded Phase 3 — not "someday".
 
 ```bash
 # macOS / Linux — Homebrew tap
-brew install noeljackson/deepsec/deepsec
-
-# Windows — Scoop bucket
-scoop bucket add deepsec https://github.com/noeljackson/scoop-deepsec
-scoop install deepsec
+brew install noeljackson/tap/deepsec
 
 # Docker / OCI (linux/amd64 + linux/arm64)
 docker pull ghcr.io/noeljackson/deepsec:latest

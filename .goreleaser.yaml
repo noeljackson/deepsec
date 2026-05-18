@@ -92,8 +92,9 @@ brews:
   - name: deepsec
     repository:
       owner: noeljackson
-      name: homebrew-deepsec
+      name: homebrew-tap
       token: '{{ .Env.HOMEBREW_TAP_TOKEN }}'
+    directory: Formula
     homepage: 'https://github.com/noeljackson/deepsec'
     description: 'AI-powered security scanner — multi-language matchers + AST + AI investigation'
     license: 'Apache-2.0'
@@ -104,19 +105,6 @@ brews:
       bin.install "deepsec"
     test: |
       system "#{bin}/deepsec", "--version"
-
-scoops:
-  - name: deepsec
-    repository:
-      owner: noeljackson
-      name: scoop-deepsec
-      token: '{{ .Env.SCOOP_TAP_TOKEN }}'
-    homepage: 'https://github.com/noeljackson/deepsec'
-    description: 'AI-powered security scanner'
-    license: 'Apache-2.0'
-    commit_author:
-      name: deepsec-release-bot
-      email: release-bot@noeljackson.com
 
 nfpms:
   - id: deepsec

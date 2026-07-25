@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -14,15 +15,19 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/bmatcuk/doublestar/v4"
+	"github.com/noeljackson/deepsec/internal/core"
 	"github.com/noeljackson/deepsec/internal/scanner"
 )
 
 const (
 	MaxReadBytes    = 16 * 1024
 	MaxResultLines  = 100
-	MaxFilesScanned = 2000
+	MaxFilesScanned = 256
+	MaxGrepBytes    = 8 * 1024 * 1024
+	toolTimeout     = 5 * time.Second
 )
 
 // Tool is a repo-scoped read-only function the investigator model can call.
@@ -82,11 +87,11 @@ func (t readFileTool) Run(ctx context.Context, args json.RawMessage) (string, er
 	if err != nil {
 		return "", err
 	}
-	body, err := os.ReadFile(abs)
+	body, truncated, err := readBoundedFile(abs, MaxReadBytes)
 	if err != nil {
 		return "", err
 	}
-	return formatLineSlice(rel, body, in.StartLine, in.EndLine, MaxReadBytes), nil
+	return formatLineSlice(rel, body, in.StartLine, in.EndLine, MaxReadBytes, truncated), nil
 }
 
 type grepTool struct{ root string }
@@ -185,11 +190,11 @@ func (t readNeighborsTool) Run(ctx context.Context, args json.RawMessage) (strin
 	if err != nil {
 		return "", err
 	}
-	body, err := os.ReadFile(abs)
+	body, truncated, err := readBoundedFile(abs, MaxReadBytes)
 	if err != nil {
 		return "", err
 	}
-	return formatLineSlice(rel, body, in.Line-in.Radius, in.Line+in.Radius, MaxReadBytes), nil
+	return formatLineSlice(rel, body, in.Line-in.Radius, in.Line+in.Radius, MaxReadBytes, truncated), nil
 }
 
 type gitBlameTool struct{ root string }
@@ -222,7 +227,9 @@ func (t gitBlameTool) Run(ctx context.Context, args json.RawMessage) (string, er
 		return "", err
 	}
 	line := strconv.Itoa(in.Line)
-	cmd := exec.CommandContext(ctx, "git", "-C", t.root, "blame", "--line-porcelain", "-L", line+","+line, "--", rel)
+	timeoutCtx, cancel := context.WithTimeout(ctx, toolTimeout)
+	defer cancel()
+	cmd := exec.CommandContext(timeoutCtx, "git", "-C", t.root, "blame", "--line-porcelain", "-L", line+","+line, "--", rel)
 	body, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("git blame unavailable for %s:%d", rel, in.Line)
@@ -245,6 +252,7 @@ func grepProject(ctx context.Context, root, pattern, glob string, maxResults, ma
 	sort.Strings(files)
 	var out bytes.Buffer
 	results, scanned := 0, 0
+	scannedBytes := int64(0)
 	truncated := false
 	for _, rel := range files {
 		if err := ctx.Err(); err != nil {
@@ -256,12 +264,22 @@ func grepProject(ctx context.Context, root, pattern, glob string, maxResults, ma
 				continue
 			}
 		}
+		abs := filepath.Join(root, filepath.FromSlash(rel))
+		info, err := os.Stat(abs)
+		if err != nil {
+			continue
+		}
+		if scannedBytes+info.Size() > MaxGrepBytes {
+			truncated = true
+			break
+		}
+		scannedBytes += info.Size()
 		scanned++
 		if scanned > MaxFilesScanned {
 			truncated = true
 			break
 		}
-		hit, err := grepFile(filepath.Join(root, filepath.FromSlash(rel)), rel, re, &out, &results, maxResults, maxBytes)
+		hit, err := grepFile(abs, rel, re, &out, &results, maxResults, maxBytes)
 		if err != nil {
 			continue
 		}
@@ -292,7 +310,7 @@ func grepFile(abs, rel string, re *regexp.Regexp, out *bytes.Buffer, results *in
 		if !re.MatchString(text) {
 			continue
 		}
-		fmt.Fprintf(out, "%s:%d:%s\n", rel, line, strings.TrimSpace(text))
+		fmt.Fprintf(out, "%s:%d:%s\n", rel, line, core.RedactSecrets(strings.TrimSpace(text)))
 		*results = *results + 1
 		if *results >= maxResults || out.Len() >= maxBytes {
 			return true, nil
@@ -313,18 +331,42 @@ func safePath(root, requested string) (abs string, rel string, err error) {
 	if err != nil {
 		return "", "", err
 	}
+	rootResolved, err := filepath.EvalSymlinks(rootAbs)
+	if err != nil {
+		return "", "", fmt.Errorf("resolve project root: %w", err)
+	}
 	abs = filepath.Join(rootAbs, clean)
-	relToRoot, err := filepath.Rel(rootAbs, abs)
+	resolved, err := filepath.EvalSymlinks(abs)
+	if err != nil {
+		return "", "", fmt.Errorf("resolve requested path: %w", err)
+	}
+	relToRoot, err := filepath.Rel(rootResolved, resolved)
 	if err != nil {
 		return "", "", err
 	}
 	if relToRoot == ".." || strings.HasPrefix(relToRoot, ".."+string(filepath.Separator)) {
 		return "", "", fmt.Errorf("path escapes project root: %s", requested)
 	}
-	return abs, filepath.ToSlash(relToRoot), nil
+	return resolved, filepath.ToSlash(relToRoot), nil
 }
 
-func formatLineSlice(rel string, body []byte, start, end, maxBytes int) string {
+func readBoundedFile(path string, maxBytes int) ([]byte, bool, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, false, err
+	}
+	defer f.Close()
+	body, err := io.ReadAll(io.LimitReader(f, int64(maxBytes)+1))
+	if err != nil {
+		return nil, false, err
+	}
+	if len(body) > maxBytes {
+		return body[:maxBytes], true, nil
+	}
+	return body, false, nil
+}
+
+func formatLineSlice(rel string, body []byte, start, end, maxBytes int, sourceTruncated bool) string {
 	lines := strings.Split(string(body), "\n")
 	if len(lines) > 0 && lines[len(lines)-1] == "" {
 		lines = lines[:len(lines)-1]
@@ -341,11 +383,14 @@ func formatLineSlice(rel string, body []byte, start, end, maxBytes int) string {
 	var out bytes.Buffer
 	fmt.Fprintf(&out, "%s:%d-%d\n", rel, start, end)
 	for i := start; i <= end; i++ {
-		fmt.Fprintf(&out, "%6d  %s\n", i, lines[i-1])
+		fmt.Fprintf(&out, "%6d  %s\n", i, core.RedactSecrets(lines[i-1]))
 		if out.Len() >= maxBytes {
 			out.WriteString("results truncated - refine your query\n")
 			break
 		}
+	}
+	if sourceTruncated {
+		out.WriteString("source truncated at tool byte limit\n")
 	}
 	return out.String()
 }

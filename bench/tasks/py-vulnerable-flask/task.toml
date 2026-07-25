@@ -4,5 +4,11 @@ added_at   = "2026-03-01"
 reviewer   = "@noeljackson"
 review_due = "2027-03-01"
 
+# This is deliberately a source-only benchmark fixture: its Flask imports
+# exercise source rules, not dependency resolution. Keeping a manifest here
+# causes external SCA resolvers to fetch a synthetic graph and makes the
+# strict suite depend on that resolver's availability.
+dependency_manifest = "none (reviewed source-only fixture)"
+
 [labels]
 change_rule = "freeze"

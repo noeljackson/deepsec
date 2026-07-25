@@ -1,0 +1,11 @@
+matcher_only = ["rust-reqwest-ssrf"]
+
+[provenance]
+source     = "handcraft"
+added_at   = "2026-07-25"
+reviewer   = "@noeljackson"
+review_due = "2026-10-25"
+notes      = "Synthetic Rust/Reqwest direct request URL vulnerable and configured-origin safe twin."
+
+[labels]
+change_rule = "freeze"

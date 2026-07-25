@@ -2,8 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"sort"
 	"strings"
 
@@ -72,10 +70,7 @@ func NewPrCommentCmd(loader func() (*cli.Context, error)) *cobra.Command {
 				fmt.Println(body)
 				return nil
 			}
-			if err := os.MkdirAll(filepath.Dir(output), 0o755); err != nil {
-				return err
-			}
-			return os.WriteFile(output, []byte(body), 0o644)
+			return writePrivateFile(output, []byte(body))
 		},
 	}
 	cmd.Flags().StringVar(&projectID, "project-id", "", "Project id (required)")

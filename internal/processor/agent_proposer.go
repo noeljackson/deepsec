@@ -75,7 +75,7 @@ func ProposePatch(ctx context.Context, backend AgentBackend, slug string, fps []
 		return Patch{}, err
 	}
 	if raw, ok := backend.(PatchJSONBackend); ok {
-		body, _, _, err := raw.ProposePatchJSON(ctx, system, user, PatchSchema)
+		body, _, _, err := raw.ProposePatchJSON(ctx, system, core.RedactSecrets(user), PatchSchema)
 		if err != nil {
 			return Patch{}, err
 		}
@@ -85,10 +85,10 @@ func ProposePatch(ctx context.Context, backend AgentBackend, slug string, fps []
 		ProjectRoot: ".",
 		Files: []InvestigateFile{{
 			Path:    "matcher.toml",
-			Content: currentMatcher,
+			Content: core.RedactSecrets(currentMatcher),
 		}},
 		ProjectInfo:  "bounded matcher-patch proposal",
-		PromptAppend: system + "\n\n" + user,
+		PromptAppend: system + "\n\n" + core.RedactSecrets(user),
 		SlugNotes:    []string{slug},
 	})
 	if err != nil {

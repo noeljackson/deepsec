@@ -1,0 +1,13 @@
+issues:
+  - id: rust-child-env-inheritance-001
+    file: src/vulnerable.rs
+    severity: HIGH
+    cwe: CWE-200
+    vulnSlugs: [rust-child-process-inherits-credentials]
+    location: { startLine: 5, endLine: 7, tolerance: 1 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: rust-child-env-credentials-cleared-safe-twin
+    file: src/safe.rs
+    line: 5
+    forbiddenSlugs: [rust-child-process-inherits-credentials]

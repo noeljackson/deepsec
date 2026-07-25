@@ -1,0 +1,13 @@
+issues:
+  - id: rust-secret-log-001
+    file: src/vulnerable.rs
+    severity: HIGH
+    cwe: CWE-532
+    vulnSlugs: [rust-secret-log]
+    location: { startLine: 2, endLine: 2, tolerance: 1 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: rust-secret-log-safe-twin
+    file: src/safe.rs
+    line: 2
+    forbiddenSlugs: [rust-secret-log]

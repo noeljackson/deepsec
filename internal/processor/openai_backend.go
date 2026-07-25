@@ -145,7 +145,10 @@ func (b *OpenAICompatibleBackend) Investigate(ctx context.Context, batch *Invest
 			DurationMs: dur,
 		}, nil
 	}
-	out := buildInvestigateOutput(batch, env, usage, dur)
+	out, err := buildInvestigateOutput(batch, env, usage, dur)
+	if err != nil {
+		return nil, fmt.Errorf("%s: invalid finding envelope: %w", b.profile.Name, err)
+	}
 	out.CostUSD = b.profile.Cost(b.model, usage)
 	return out, nil
 }

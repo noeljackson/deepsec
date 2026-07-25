@@ -2,7 +2,7 @@
 
 export const config = {
   stripe: {
-    secretKey: "sk-live-51H3bK2eZvKYlo2C0asdf1234567890abcdefgh",
+    secretKey: "sk-live-51H3bK2eZvKYlo2C0asdf1234567890abcdefgh", // gitleaks:allow -- synthetic planted-vulnerability fixture, not a valid credential
     publishableKey: "pk_live_example",
   },
   database: {

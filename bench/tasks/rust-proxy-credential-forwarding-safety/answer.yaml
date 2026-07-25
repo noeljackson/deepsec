@@ -1,0 +1,13 @@
+issues:
+  - id: rust-proxy-client-authorization-001
+    file: src/vulnerable.rs
+    severity: HIGH
+    cwe: CWE-200
+    vulnSlugs: [rust-proxy-forwards-client-authorization]
+    location: { startLine: 7, endLine: 7, tolerance: 1 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: rust-proxy-server-credential-safe-twin
+    file: src/safe.rs
+    line: 7
+    forbiddenSlugs: [rust-proxy-forwards-client-authorization]

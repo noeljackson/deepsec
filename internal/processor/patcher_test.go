@@ -54,6 +54,35 @@ func TestRunPatchAppliesValidatesAndWritesProvenance(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, string(body), `"finding_id": "`+finding.ID+`"`)
 	require.Contains(t, string(body), `"validation_command": "grep -q good app.go"`)
+	info, err := os.Stat(res.PatchPath)
+	require.NoError(t, err)
+	require.Equal(t, os.FileMode(0o600), info.Mode().Perm())
+}
+
+func TestRunPatchRedactsAndRejectsSymlinkedProvenance(t *testing.T) {
+	root := patchFixtureRepo(t)
+	data := core.DataRootFromPath(filepath.Join(t.TempDir(), "data"))
+	finding := patchFixtureFinding(root)
+	secret := "sk-test-abcdefghijklmnopqrstuvwxyz"
+	backend := &sourcePatchMockBackend{body: patchJSON(t, sourcePatchDiff("bad", "good", "app.go"), []string{"app.go"})}
+	opts := patchTestOptions(root, data, backend, nil)
+	opts.ValidateCommand = "SECRET=" + secret + " grep -q good app.go"
+
+	res, err := RunPatch(context.Background(), opts, finding)
+	require.NoError(t, err)
+	body, err := os.ReadFile(res.PatchPath)
+	require.NoError(t, err)
+	require.NotContains(t, string(body), secret)
+
+	linkFinding := patchFixtureFinding(root)
+	linkFinding.ID = linkFinding.ID + "-link"
+	path, err := data.PatchJSONPath("p1", linkFinding.ID)
+	require.NoError(t, err)
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o700))
+	require.NoError(t, os.Symlink(filepath.Join(t.TempDir(), "target"), path))
+	_, err = RunPatch(context.Background(), opts, linkFinding)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "symlinked patch provenance")
 }
 
 func TestRunPatchMalformedDiffFailsGracefully(t *testing.T) {

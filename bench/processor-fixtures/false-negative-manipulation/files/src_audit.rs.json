@@ -1,0 +1,18 @@
+{
+  "filePath": "src/audit.rs",
+  "projectId": "false-negative-manipulation",
+  "candidates": [
+    {
+      "vulnSlug": "rust-secret-log",
+      "lineNumbers": [5],
+      "snippet": "tracing::info!(access_token = access_token)",
+      "matchedPattern": "secret-like value in tracing log"
+    }
+  ],
+  "lastScannedAt": "2026-07-25T00:00:00Z",
+  "lastScannedRunId": "fixture",
+  "fileHash": "fixture-false-negative-secret-log",
+  "findings": [],
+  "analysisHistory": [],
+  "status": "pending"
+}

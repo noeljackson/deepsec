@@ -174,7 +174,7 @@ func (m *Matcher) Match(content, filePath string) []core.CandidateMatch {
 			out = append(out, core.CandidateMatch{
 				VulnSlug:       m.Def.Slug,
 				LineNumbers:    []int{lineNum},
-				Snippet:        snippet,
+				Snippet:        core.RedactSecrets(snippet),
 				MatchedPattern: label,
 			})
 		}
@@ -259,7 +259,7 @@ func (m *Matcher) MatchAST(tree scannerast.Tree, filePath string, patterns []com
 			out = append(out, core.CandidateMatch{
 				VulnSlug:       m.Def.Slug,
 				LineNumbers:    []int{lineNum},
-				Snippet:        snippet,
+				Snippet:        core.RedactSecrets(snippet),
 				MatchedPattern: pat.label,
 			})
 		}

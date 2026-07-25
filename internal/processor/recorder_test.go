@@ -2,6 +2,7 @@ package processor_test
 
 import (
 	"context"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -34,7 +35,7 @@ func (scriptedBackend) Investigate(ctx context.Context, batch *processor.Investi
 				Severity:       core.SeverityHigh,
 				VulnSlug:       "scripted-finding",
 				Title:          "scripted",
-				Description:    "deterministic finding for " + f.Path,
+				Description:    "deterministic finding for " + f.Path + "; api_key=sk-test-abcdefghijklmnopqrstuvwxyz",
 				LineNumbers:    []int{1},
 				Recommendation: "no-op",
 				Confidence:     core.ConfidenceHigh,
@@ -90,6 +91,24 @@ func TestRecordingBackendRoundTripsThroughReplay(t *testing.T) {
 		}
 	}
 	require.Equal(t, 2, replay.Consumed())
+}
+
+func TestRecordingBackendRedactsModelEchoes(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "responses.jsonl")
+	rec, err := processor.NewRecordingBackend(scriptedBackend{}, path)
+	require.NoError(t, err)
+	_, err = rec.Investigate(context.Background(), &processor.InvestigateBatch{Files: []processor.InvestigateFile{{Path: "src/a.ts"}}})
+	require.NoError(t, err)
+	require.NoError(t, rec.Close())
+
+	info, err := os.Stat(path)
+	require.NoError(t, err)
+	require.Equal(t, os.FileMode(0o600), info.Mode().Perm())
+	body, err := os.ReadFile(path)
+	require.NoError(t, err)
+	require.NotContains(t, string(body), "sk-test-abcdefghijklmnopqrstuvwxyz")
+	require.Contains(t, string(body), "[REDACTED]")
 }
 
 func TestRecordingBackendSkipsFailedBatches(t *testing.T) {

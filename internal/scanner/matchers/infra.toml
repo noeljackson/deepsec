@@ -65,3 +65,16 @@ patterns = [
 ]
 require_content = ["kind: (?:Pod|Deployment|StatefulSet|DaemonSet)"]
 label = "Kubernetes privileged container"
+
+[[matcher]]
+slug = "helm-workload-security-boundary"
+description = "Helm workload manifest; inspect pod security context, service account, capability, volume, and ingress boundaries"
+noise_tier = "normal"
+file_patterns = ["**/*.yaml", "**/*.yml"]
+patterns = [
+  "(?im)^kind:\\s*(?:Deployment|StatefulSet|DaemonSet|Pod)\\b",
+]
+require_content = ["(?im)^apiVersion:"]
+requires = { tech = ["helm"] }
+snippet_after = 24
+label = "Helm workload security boundary"

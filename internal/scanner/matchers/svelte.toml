@@ -1,0 +1,76 @@
+[[matcher]]
+slug = "svelte-raw-html"
+description = "Svelte {@html} renders untrusted HTML unless it is sanitised"
+noise_tier = "normal"
+file_patterns = ["**/*.svelte", "*.svelte"]
+patterns = [
+  "\\{@html\\s+[^}]+\\}",
+]
+snippet_after = 4
+label = "Svelte raw HTML rendering"
+requires = { tech = ["svelte", "sveltekit"] }
+
+[[matcher]]
+slug = "svelte-client-secret-storage"
+description = "Browser storage of a token or credential is exposed to XSS"
+noise_tier = "normal"
+file_patterns = ["**/*.svelte", "*.svelte"]
+patterns = [
+  "(?i)(?:localStorage|sessionStorage)\\.(?:setItem|getItem)\\s*\\(\\s*[\"'][^\"']*(?:token|secret|credential|password)[^\"']*[\"']",
+]
+snippet_after = 3
+label = "credential-like value in browser storage"
+requires = { tech = ["svelte", "sveltekit"] }
+
+[[matcher]]
+slug = "svelte-dynamic-fetch-url"
+description = "Svelte script fetches a non-literal URL; verify SSRF/open redirect boundary"
+noise_tier = "noisy"
+file_patterns = ["**/*.svelte", "*.svelte"]
+patterns = [
+  "\\bfetch\\s*\\(\\s*(?:(?:[A-Za-z_][A-Za-z0-9_]*\\.)?(?:url|uri|target|endpoint|tokenEndpoint|request_url|requestUrl))\\b",
+]
+snippet_after = 4
+label = "dynamic fetch URL"
+requires = { tech = ["svelte", "sveltekit"] }
+
+[[matcher]]
+slug = "svelte-oidc-token-exchange-boundary"
+description = "Browser exchanges an OAuth/OIDC authorization code; inspect PKCE, redirect URI, state, and token handling"
+noise_tier = "normal"
+file_patterns = ["**/*.svelte", "*.svelte"]
+patterns = [
+  "(?i)grant_type\\s*:\\s*[\"']authorization_code[\"']",
+]
+snippet_before = 16
+snippet_after = 12
+label = "browser authorization-code token exchange"
+requires = { tech = ["svelte", "sveltekit"] }
+
+[[matcher]]
+slug = "svelte-basic-auth-boundary"
+description = "Browser constructs a Basic authorization header; inspect transport, origin, and credential lifetime"
+noise_tier = "normal"
+file_patterns = ["**/*.svelte", "*.svelte"]
+patterns = [
+  "(?i)[\"']Basic\\s+\\$?\\{?[^\\n]*(?:btoa|base64)",
+]
+snippet_before = 8
+snippet_after = 8
+label = "browser Basic authorization construction"
+requires = { tech = ["svelte", "sveltekit"] }
+
+[[matcher]]
+slug = "svelte-target-blank-noopener"
+description = "target=_blank link without rel=noopener can retain opener access"
+noise_tier = "normal"
+file_patterns = ["**/*.svelte", "*.svelte"]
+patterns = [
+  "(?i)<a\\b[^>]*\\btarget\\s*=\\s*[\"']_blank[\"']",
+]
+suppress_patterns = [
+  "(?i)\\brel\\s*=\\s*[\"'][^\"']*\\bnoopener\\b",
+]
+snippet_after = 2
+label = "target=_blank without noopener"
+requires = { tech = ["svelte", "sveltekit"] }

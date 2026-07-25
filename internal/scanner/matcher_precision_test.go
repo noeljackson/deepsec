@@ -184,6 +184,10 @@ func TestDockerfileMutableTagSkipsPinned(t *testing.T) {
 		"Dockerfile")
 }
 
+func TestHelmWorkloadSecurityBoundaryDetectsWorkload(t *testing.T) {
+	assertHits(t, "helm-workload-security-boundary", "apiVersion: apps/v1\nkind: Deployment\nspec:\n  template: {}\n", "chart/templates/deployment.yaml")
+}
+
 func TestRegistryApplyFilterOnly(t *testing.T) {
 	r := registry(t)
 	r.ApplyFilter([]string{"auth-bypass"}, nil)

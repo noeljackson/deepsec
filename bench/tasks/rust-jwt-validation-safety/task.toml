@@ -1,0 +1,11 @@
+matcher_only = ["rust-jwt-validation-disabled", "rust-jwt-untrusted-algorithm"]
+
+[provenance]
+source     = "handcraft"
+added_at   = "2026-07-25"
+reviewer   = "@noeljackson"
+review_due = "2026-10-25"
+notes      = "Synthetic Rust/jsonwebtoken vulnerable and safe twins for disabled validation and unsigned algorithm acceptance."
+
+[labels]
+change_rule = "freeze"

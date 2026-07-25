@@ -102,11 +102,60 @@ func TestRunAgenticInvestigationCostCap(t *testing.T) {
 	require.Contains(t, out.Refusal.Reason, "cost cap")
 }
 
+func TestRunAgenticInvestigationPerTurnToolCallCap(t *testing.T) {
+	root := t.TempDir()
+	writeAgenticSource(t, root, "src/app.ts", "const id = req.params.id;\n")
+	calls := make([]toolLoopCall, maxToolCallsPerTurn+1)
+	for i := range calls {
+		calls[i] = toolLoopCall{ID: "call", Name: "grep", Args: mustRaw(map[string]any{"pattern": "id"})}
+	}
+	client := &scriptedToolLoopClient{responses: []toolLoopResponse{{Calls: calls}}}
+	out, err := runAgenticInvestigation(context.Background(), agenticBatch(root), client, toolLoopOptions{MaxTurns: 8, MaxCostUSD: 1})
+	require.NoError(t, err)
+	require.NotNil(t, out.Refusal)
+	require.Contains(t, out.Refusal.Reason, "tool call cap")
+	require.Len(t, client.turns, 1)
+}
+
+func TestRunAgenticInvestigationRedactsToolArgumentsBeforeNextProviderTurn(t *testing.T) {
+	root := t.TempDir()
+	writeAgenticSource(t, root, "src/app.ts", "const id = req.params.id;\n")
+	secret := "sk-test-abcdefghijklmnopqrstuvwxyz"
+	client := &scriptedToolLoopClient{responses: []toolLoopResponse{
+		{Calls: []toolLoopCall{{ID: "call_1", Name: "grep", Args: mustRaw(map[string]any{"pattern": secret})}}},
+		{Text: "done"},
+	}}
+	out, err := runAgenticInvestigation(context.Background(), agenticBatch(root), client, toolLoopOptions{MaxTurns: 8, MaxCostUSD: 1})
+	require.NoError(t, err)
+	require.NotNil(t, out.Refusal)
+	require.Len(t, client.turns, 2)
+	require.NotContains(t, string(client.turns[1][0].Calls[0].Args), secret)
+	require.Contains(t, string(client.turns[1][0].Calls[0].Args), "[REDACTED]")
+}
+
+func TestRunAgenticInvestigationRejectsFindingWithoutValidEvidence(t *testing.T) {
+	root := t.TempDir()
+	writeAgenticSource(t, root, "src/app.ts", "const id = req.params.id;\n")
+	report, err := json.Marshal(FindingsEnvelope{Findings: []EnvelopeFinding{{
+		FilePath: "outside.ts", Severity: "HIGH", VulnSlug: "ssrf", Title: "bad", Description: "bad", LineNumbers: []int{1}, Recommendation: "fix", Confidence: "high",
+	}}})
+	require.NoError(t, err)
+	client := &scriptedToolLoopClient{responses: []toolLoopResponse{{Report: report}}}
+	_, err = runAgenticInvestigation(context.Background(), agenticBatch(root), client, toolLoopOptions{MaxTurns: 8, MaxCostUSD: 1})
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "outside the batch")
+}
+
 func agenticBatch(root string) *InvestigateBatch {
+	body, err := os.ReadFile(filepath.Join(root, "src", "app.ts"))
+	if err != nil {
+		panic(err)
+	}
 	return &InvestigateBatch{
 		ProjectRoot: root,
 		Files: []InvestigateFile{{
-			Path: "src/app.ts",
+			Path:    "src/app.ts",
+			Content: string(body),
 			Candidates: []core.CandidateMatch{{
 				VulnSlug: "sql-injection", LineNumbers: []int{2}, Snippet: "db.query", MatchedPattern: "db.query",
 			}},

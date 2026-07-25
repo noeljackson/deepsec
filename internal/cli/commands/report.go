@@ -66,17 +66,17 @@ func NewReportCmd(loader func() (*cli.Context, error)) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if err := os.MkdirAll(filepath.Dir(mdPath), 0o755); err != nil {
+			if err := ensurePrivateDir(filepath.Dir(mdPath)); err != nil {
 				return err
 			}
-			if err := os.WriteFile(mdPath, []byte(renderMarkdown(projectID, rows)), 0o644); err != nil {
+			if err := writePrivateFile(mdPath, []byte(renderMarkdown(projectID, rows))); err != nil {
 				return err
 			}
 			body, err := renderJSON(rows)
 			if err != nil {
 				return err
 			}
-			if err := os.WriteFile(jsonPath, body, 0o644); err != nil {
+			if err := writePrivateFile(jsonPath, body); err != nil {
 				return err
 			}
 			if err := writeCSV(csvPath, rows); err != nil {
@@ -210,13 +210,8 @@ func renderJSON(rows []row) ([]byte, error) {
 }
 
 func writeCSV(path string, rows []row) error {
-	f, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	w := csv.NewWriter(f)
-	defer w.Flush()
+	var b strings.Builder
+	w := csv.NewWriter(&b)
 	_ = w.Write([]string{"file", "severity", "slug", "lines", "title", "confidence", "verdict"})
 	for _, r := range rows {
 		lines := make([]string, 0, len(r.finding.LineNumbers))
@@ -237,5 +232,9 @@ func writeCSV(path string, rows []row) error {
 			verdict,
 		})
 	}
-	return nil
+	w.Flush()
+	if err := w.Error(); err != nil {
+		return err
+	}
+	return writePrivateFile(path, []byte(b.String()))
 }

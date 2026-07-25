@@ -1,0 +1,11 @@
+matcher_only = ["rust-secret-log"]
+
+[provenance]
+source     = "handcraft"
+added_at   = "2026-07-25"
+reviewer   = "@noeljackson"
+review_due = "2026-10-25"
+notes      = "Synthetic tracing secret-log bug and metadata-only safe twin."
+
+[labels]
+change_rule = "freeze"

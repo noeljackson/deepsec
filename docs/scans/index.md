@@ -11,6 +11,7 @@ where the matcher pack drifts away from production patterns.
 
 ## Batches
 
+- [2026-07-25: AV offline credential-broker assessment](./2026-07-25-av-offline.md) — Rust/Axum, Svelte, Helm, Infisical, and OpenBao boundary review; one confirmed child-environment credential-inheritance finding.
 - [2026-05-14: first batch](./2026-05-14-first-batch.md) — Express,
   Flask, Rails, Next.js, jwt-go. Cadence baseline.
 

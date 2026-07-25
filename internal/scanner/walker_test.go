@@ -69,6 +69,16 @@ func TestWalkerHonorsGitignore(t *testing.T) {
 	require.NotContains(t, files, "secret.ts")
 }
 
+func TestWalkerSkipsSymlinks(t *testing.T) {
+	d := t.TempDir()
+	writeFile(t, d, "src/real.ts", "export const safe = true")
+	require.NoError(t, os.Symlink(filepath.Join(d, "src", "real.ts"), filepath.Join(d, "src", "linked.ts")))
+	files, err := WalkProject(d)
+	require.NoError(t, err)
+	require.Contains(t, files, "src/real.ts")
+	require.NotContains(t, files, "src/linked.ts")
+}
+
 func TestIgnoreDirsContainsExpected(t *testing.T) {
 	for _, name := range []string{"node_modules", ".git", "target", "dist"} {
 		_, ok := IgnoreDirs[name]

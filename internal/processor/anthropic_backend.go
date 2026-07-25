@@ -200,7 +200,10 @@ func (b *AnthropicBackend) Investigate(ctx context.Context, batch *InvestigateBa
 					DurationMs: durationMs,
 				}, nil
 			}
-			out := buildInvestigateOutput(batch, env, usage, durationMs)
+			out, err := buildInvestigateOutput(batch, env, usage, durationMs)
+			if err != nil {
+				return nil, fmt.Errorf("anthropic: invalid finding envelope: %w", err)
+			}
 			out.CostUSD = b.profile.Cost(b.model, usage)
 			return out, nil
 		}
@@ -218,7 +221,10 @@ func (b *AnthropicBackend) Investigate(ctx context.Context, batch *InvestigateBa
 					DurationMs: durationMs,
 				}, nil
 			}
-			out := buildInvestigateOutput(batch, env, usage, durationMs)
+			out, err := buildInvestigateOutput(batch, env, usage, durationMs)
+			if err != nil {
+				return nil, fmt.Errorf("anthropic: invalid finding envelope: %w", err)
+			}
 			out.CostUSD = b.profile.Cost(b.model, usage)
 			return out, nil
 		}
@@ -476,7 +482,10 @@ func decodeStrict(s string, v any) error {
 	return d.Decode(v)
 }
 
-func buildInvestigateOutput(batch *InvestigateBatch, env FindingsEnvelope, usage core.Usage, durationMs uint64) *InvestigateOutput {
+func buildInvestigateOutput(batch *InvestigateBatch, env FindingsEnvelope, usage core.Usage, durationMs uint64) (*InvestigateOutput, error) {
+	if err := validateFindingsEnvelope(batch, env); err != nil {
+		return nil, err
+	}
 	byFile := map[string][]ProducedFinding{}
 	for _, ef := range env.Findings {
 		f := ProducedFinding{
@@ -502,7 +511,41 @@ func buildInvestigateOutput(batch *InvestigateBatch, env FindingsEnvelope, usage
 		Usage:      usage,
 		DurationMs: durationMs,
 		NumTurns:   1,
+	}, nil
+}
+
+func validateFindingsEnvelope(batch *InvestigateBatch, env FindingsEnvelope) error {
+	files := make(map[string]int, len(batch.Files))
+	for _, file := range batch.Files {
+		files[file.Path] = len(strings.Split(file.Content, "\n"))
 	}
+	for i, finding := range env.Findings {
+		lineCount, ok := files[finding.FilePath]
+		if !ok {
+			return fmt.Errorf("finding %d references a file outside the batch: %q", i, finding.FilePath)
+		}
+		if core.Severity(finding.Severity).Rank() == 0 {
+			return fmt.Errorf("finding %d has invalid severity %q", i, finding.Severity)
+		}
+		switch core.Confidence(finding.Confidence) {
+		case core.ConfidenceHigh, core.ConfidenceMedium, core.ConfidenceLow:
+		default:
+			return fmt.Errorf("finding %d has invalid confidence %q", i, finding.Confidence)
+		}
+		if strings.TrimSpace(finding.VulnSlug) == "" || strings.TrimSpace(finding.Title) == "" ||
+			strings.TrimSpace(finding.Description) == "" || strings.TrimSpace(finding.Recommendation) == "" {
+			return fmt.Errorf("finding %d is missing evidence, title, slug, or recommendation", i)
+		}
+		if len(finding.LineNumbers) == 0 {
+			return fmt.Errorf("finding %d has no evidence line", i)
+		}
+		for _, line := range finding.LineNumbers {
+			if line < 1 || line > lineCount {
+				return fmt.Errorf("finding %d has out-of-range evidence line %d for %s", i, line, finding.FilePath)
+			}
+		}
+	}
+	return nil
 }
 
 func emptyOutput(batch *InvestigateBatch, usage core.Usage, durationMs uint64) *InvestigateOutput {

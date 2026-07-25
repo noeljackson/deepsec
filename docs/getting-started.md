@@ -2,7 +2,7 @@
 
 ## Install
 
-Requires **Go 1.23+** to build from source:
+Requires **Go 1.25+** to build from source:
 
 ```bash
 go install github.com/noeljackson/deepsec/cmd/deepsec@latest

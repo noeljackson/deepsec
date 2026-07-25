@@ -1,0 +1,35 @@
+issues:
+  - id: svelte-client-token-storage-001
+    file: src/Vulnerable.svelte
+    severity: MEDIUM
+    cwe: CWE-922
+    vulnSlugs: [svelte-client-secret-storage]
+    location: { startLine: 4, endLine: 4, tolerance: 1 }
+    scanner: { mustEmitCandidate: true }
+  - id: svelte-tabnabbing-001
+    file: src/Vulnerable.svelte
+    severity: LOW
+    cwe: CWE-1022
+    vulnSlugs: [svelte-target-blank-noopener]
+    location: { startLine: 8, endLine: 8, tolerance: 1 }
+    scanner: { mustEmitCandidate: true }
+  - id: svelte-raw-html-001
+    file: src/Vulnerable.svelte
+    severity: HIGH
+    cwe: CWE-79
+    vulnSlugs: [svelte-raw-html]
+    location: { startLine: 9, endLine: 9, tolerance: 1 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: svelte-memory-token-safe-twin
+    file: src/Safe.svelte
+    line: 4
+    forbiddenSlugs: [svelte-client-secret-storage]
+  - id: svelte-noopener-safe-twin
+    file: src/Safe.svelte
+    line: 8
+    forbiddenSlugs: [svelte-target-blank-noopener]
+  - id: svelte-escaped-html-safe-twin
+    file: src/Safe.svelte
+    line: 9
+    forbiddenSlugs: [svelte-raw-html]

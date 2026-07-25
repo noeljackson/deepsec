@@ -15,6 +15,42 @@ slug = "command-injection"
 text = """Check whether the user-controlled fragment is shell-quoted, validated against an allowlist, or constrained to a known set of arguments."""
 
 [[note]]
+slug = "rust-process-command-from-input"
+text = """Command::new passes argv directly and does not invoke a shell. Treat this as executable-selection risk only when an untrusted value chooses the program; do not report shell injection without sh -c/cmd /C/powershell."""
+
+[[note]]
+slug = "rust-shell-command-execution"
+text = """A shell interpreter changes the threat model: determine whether an untrusted value reaches the command string or command-substitution surface."""
+
+[[note]]
+slug = "axum-handler"
+text = """Follow the route target into its handler. A sensitive route is only protected when authentication and authorization occur before the privileged operation, not merely in a nearby middleware or UI gate."""
+
+[[note]]
+slug = "rust-jwt-validation-boundary"
+text = """Confirm the accepted algorithm is asymmetric and pinned, issuer and audience are checked, expiry is enforced, and authorization claims are constrained after signature validation."""
+
+[[note]]
+slug = "rust-jwks-refresh-boundary"
+text = """Check kid lookup before refresh, cooldown/cache behavior after unknown kids, issuer-bound HTTPS discovery, response limits, and key rotation handling."""
+
+[[note]]
+slug = "rust-proxy-credential-injection"
+text = """Verify caller-controlled Authorization is stripped, only configured headers/path/query/methods cross the proxy, credentials are marked sensitive, and reflected values are redacted."""
+
+[[note]]
+slug = "rust-secret-response-boundary"
+text = """A secret response may be intentional. Confirm the route authorizes the caller, limits the profile/key set, and prevents browser/proxy caching."""
+
+[[note]]
+slug = "svelte-oidc-token-exchange-boundary"
+text = """Check that the authorization response is bound to PKCE and state, the redirect URI is fixed, and access tokens are kept out of durable browser storage."""
+
+[[note]]
+slug = "svelte-basic-auth-boundary"
+text = """Basic credentials are recoverable by any script able to read the request construction path. Confirm same-origin HTTPS delivery, no persistence, and server-side rate limiting."""
+
+[[note]]
 slug = "ssrf"
 text = """Look at whether the URL is validated against an allowlist of hosts and whether the request is made server-side from a privileged network."""
 
@@ -65,3 +101,7 @@ text = """pull_request_target runs with the secrets of the target repo. Checking
 [[note]]
 slug = "k8s-privileged-pod"
 text = """Privileged + hostNetwork is effectively root on the node. Always question whether the workload truly needs it."""
+
+[[note]]
+slug = "helm-workload-security-boundary"
+text = """Trace the rendered workload's service account, pod and container security contexts, secret/config mounts, ingress exposure, and network assumptions. This is an audit boundary, not a finding by itself."""

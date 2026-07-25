@@ -352,6 +352,10 @@ func runMatchers(reg *Registry, active []string, content, rel string, astRT *sca
 		if !matchesAnyGlob(m.FilePatterns(), rel) {
 			continue
 		}
+		if m.Slug() == "rust-axum-no-auth-extractor" {
+			out = append(out, axumMutationRoutesWithoutAuth(content)...)
+			continue
+		}
 		if astRT == nil || astLang == "" || !m.HasASTLanguage(astLang) {
 			out = append(out, m.Match(content, rel)...)
 			continue
@@ -519,6 +523,8 @@ func intToString(n int) string {
 
 func langFor(rel string) string {
 	switch strings.ToLower(filepath.Ext(rel)) {
+	case ".svelte":
+		return "svelte"
 	case ".ts", ".tsx":
 		return "typescript"
 	case ".js", ".jsx", ".mjs", ".cjs":

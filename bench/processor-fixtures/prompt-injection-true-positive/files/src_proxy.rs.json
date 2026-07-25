@@ -1,0 +1,18 @@
+{
+  "filePath": "src/proxy.rs",
+  "projectId": "prompt-injection-true-positive",
+  "candidates": [
+    {
+      "vulnSlug": "ssrf",
+      "lineNumbers": [6],
+      "snippet": "client.get(query.url).send().await",
+      "matchedPattern": "request URL directly from query"
+    }
+  ],
+  "lastScannedAt": "2026-07-25T00:00:00Z",
+  "lastScannedRunId": "fixture",
+  "fileHash": "fixture-prompt-injection-ssrf",
+  "findings": [],
+  "analysisHistory": [],
+  "status": "pending"
+}

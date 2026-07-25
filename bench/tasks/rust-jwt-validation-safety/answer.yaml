@@ -1,0 +1,24 @@
+issues:
+  - id: rust-jwt-validation-disabled-001
+    file: src/vulnerable.rs
+    severity: HIGH
+    cwe: CWE-613
+    vulnSlugs: [rust-jwt-validation-disabled]
+    location: { startLine: 6, endLine: 6, tolerance: 1 }
+    scanner: { mustEmitCandidate: true }
+  - id: rust-jwt-none-algorithm-001
+    file: src/vulnerable.rs
+    severity: HIGH
+    cwe: CWE-347
+    vulnSlugs: [rust-jwt-untrusted-algorithm]
+    location: { startLine: 11, endLine: 11, tolerance: 1 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: rust-jwt-safe-validation-twin
+    file: src/safe.rs
+    line: 6
+    forbiddenSlugs: [rust-jwt-validation-disabled]
+  - id: rust-jwt-safe-algorithm-twin
+    file: src/safe.rs
+    line: 11
+    forbiddenSlugs: [rust-jwt-untrusted-algorithm]

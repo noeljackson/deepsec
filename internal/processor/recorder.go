@@ -38,7 +38,10 @@ func NewRecordingBackend(inner AgentBackend, path string) (*RecordingBackend, er
 	if path == "" {
 		return nil, fmt.Errorf("recorder: empty path")
 	}
-	if err := os.MkdirAll(dirOf(path), 0o755); err != nil {
+	if err := os.MkdirAll(dirOf(path), 0o700); err != nil {
+		return nil, err
+	}
+	if err := os.Chmod(dirOf(path), 0o700); err != nil {
 		return nil, err
 	}
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
@@ -106,7 +109,33 @@ func (r *RecordingBackend) writeRecord(batch *InvestigateBatch, out *Investigate
 	if r.f == nil {
 		return fmt.Errorf("recorder closed")
 	}
-	return r.enc.Encode(&recordedBatch{BatchPaths: paths, Output: out})
+	return r.enc.Encode(&recordedBatch{BatchPaths: paths, Output: redactInvestigateOutput(out)})
+}
+
+func redactInvestigateOutput(out *InvestigateOutput) *InvestigateOutput {
+	if out == nil {
+		return nil
+	}
+	copy := *out
+	copy.Results = make([]InvestigateResult, len(out.Results))
+	for i, result := range out.Results {
+		resultCopy := result
+		resultCopy.Findings = make([]ProducedFinding, len(result.Findings))
+		for j, finding := range result.Findings {
+			finding.Title = core.RedactSecrets(finding.Title)
+			finding.Description = core.RedactSecrets(finding.Description)
+			finding.Recommendation = core.RedactSecrets(finding.Recommendation)
+			resultCopy.Findings[j] = finding
+		}
+		copy.Results[i] = resultCopy
+	}
+	if out.Refusal != nil {
+		refusal := *out.Refusal
+		refusal.Reason = core.RedactSecrets(refusal.Reason)
+		refusal.Raw = core.RedactSecrets(refusal.Raw)
+		copy.Refusal = &refusal
+	}
+	return &copy
 }
 
 func dirOf(path string) string { return filepath.Dir(path) }

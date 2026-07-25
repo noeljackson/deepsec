@@ -1,0 +1,11 @@
+matcher_only = ["svelte-raw-html", "svelte-client-secret-storage", "svelte-target-blank-noopener"]
+
+[provenance]
+source     = "handcraft"
+added_at   = "2026-07-25"
+reviewer   = "@noeljackson"
+review_due = "2026-10-25"
+notes      = "Synthetic Svelte vulnerable and safe twins for raw HTML, browser credential storage, and opener exposure."
+
+[labels]
+change_rule = "freeze"

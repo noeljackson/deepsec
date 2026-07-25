@@ -3,6 +3,7 @@ package core
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -99,20 +100,23 @@ func (r DataRoot) WriteRunMeta(m *RunMeta) error {
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
-		return err
-	}
-	body, err := json.MarshalIndent(m, "", "  ")
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(p, body, 0o644)
+	return writeJSON(p, m)
 }
 
 func (r DataRoot) ReadRunMeta(projectID, runID string) (*RunMeta, error) {
 	p, err := r.RunMetaPath(projectID, runID)
 	if err != nil {
 		return nil, err
+	}
+	info, err := os.Lstat(p)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	if info.Mode()&fs.ModeSymlink != 0 {
+		return nil, fmt.Errorf("refusing to read symlinked run metadata: %s", p)
 	}
 	body, err := os.ReadFile(p)
 	if err != nil {
@@ -160,7 +164,7 @@ func (r DataRoot) ListRuns(projectID string) ([]*RunMeta, error) {
 	}
 	out := make([]*RunMeta, 0, len(entries))
 	for _, e := range entries {
-		if e.IsDir() || filepath.Ext(e.Name()) != ".json" {
+		if e.IsDir() || e.Type()&fs.ModeSymlink != 0 || filepath.Ext(e.Name()) != ".json" {
 			continue
 		}
 		body, err := os.ReadFile(filepath.Join(d, e.Name()))

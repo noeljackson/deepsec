@@ -1,0 +1,42 @@
+name: supplychain
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supplychain-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.0
+        with:
+          persist-credentials: false
+
+      - name: Gate source before build
+        uses: noeljackson/supplychain@ac3e803b984e7c95ac8145a78548a0610f8b8b8b # v0.1.3
+        with:
+          policy: strict
+
+      - name: Build container image
+        run: docker build --tag deepsec:supplychain-scan .
+
+      - name: Inventory and scan the built image
+        uses: noeljackson/supplychain@ac3e803b984e7c95ac8145a78548a0610f8b8b8b # v0.1.3
+        with:
+          scan-source: false
+          image: deepsec:supplychain-scan
+          fail-on-severity: high
+          only-fixed: false

@@ -3,8 +3,6 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/noeljackson/deepsec/internal/cli"
@@ -98,10 +96,7 @@ func write(path string, body []byte) error {
 		fmt.Println(string(body))
 		return nil
 	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return err
-	}
-	return os.WriteFile(path, body, 0o644)
+	return writePrivateFile(path, body)
 }
 
 // exportRow is the on-wire shape for JSON export. SARIF emission

@@ -1,0 +1,11 @@
+matcher_only = ["rust-shell-command-execution"]
+
+[provenance]
+source     = "handcraft"
+added_at   = "2026-07-25"
+reviewer   = "@noeljackson"
+review_due = "2026-10-25"
+notes      = "Synthetic Rust shell-execution vulnerable and direct-argv safe twin."
+
+[labels]
+change_rule = "freeze"

@@ -1,0 +1,10 @@
+findings:
+  - id: false-negative-secret-log-001
+    file: src/audit.rs
+    vulnSlugs: [rust-secret-log]
+    severity: HIGH
+    location: { startLine: 5, endLine: 5, tolerance: 1 }
+    processor:
+      mustReportFinding: true
+expected_refusals: 0
+expected_findings_min: 1

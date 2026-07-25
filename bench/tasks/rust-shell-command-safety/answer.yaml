@@ -1,0 +1,13 @@
+issues:
+  - id: rust-shell-command-001
+    file: src/vulnerable.rs
+    severity: HIGH
+    cwe: CWE-78
+    vulnSlugs: [rust-shell-command-execution]
+    location: { startLine: 5, endLine: 5, tolerance: 1 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: rust-direct-argv-safe-twin
+    file: src/safe.rs
+    line: 5
+    forbiddenSlugs: [rust-shell-command-execution]

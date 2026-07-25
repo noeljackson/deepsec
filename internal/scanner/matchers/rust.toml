@@ -1,16 +1,15 @@
 [[matcher]]
 slug = "axum-handler"
-description = "Axum route handler"
-noise_tier = "noisy"
+description = "Axum route exposing an auth, credential, or proxy boundary"
+noise_tier = "normal"
 file_patterns = ["**/*.rs"]
 patterns = [
-  "(?i)\\bRouter::new\\s*\\(\\s*\\)",
-  "(?i)\\.route\\s*\\(\\s*\"/[^\"]*\"\\s*,",
+  "(?i)\\.route\\s*\\(\\s*\"/[^\"]*(?:admin|auth|secret|credential|token|proxy)[^\"]*\"\\s*,",
 ]
 require_content = ["axum"]
 snippet_after = 12
 requires = { tech = ["axum"] }
-label = "Axum route"
+label = "sensitive Axum route boundary"
 
 [[matcher]]
 slug = "actix-handler"
@@ -100,7 +99,7 @@ label = "sqlx query built via format!()"
 
 [[matcher]]
 slug = "rust-process-command-from-input"
-description = "Command::new called with a non-literal argument"
+description = "Command::new selects an executable from a non-literal value; this is argv execution, not shell injection"
 noise_tier = "normal"
 file_patterns = ["**/*.rs"]
 patterns = [
@@ -108,7 +107,200 @@ patterns = [
   "(?i)Command::new\\s*\\(\\s*&?req\\.",
 ]
 snippet_after = 6
-label = "Command::new(<var>) — argv from input?"
+label = "dynamic executable selection — verify allowlist, not shell quoting"
+
+[[matcher]]
+slug = "rust-child-process-inherits-credentials"
+description = "Child receives an explicit environment map without clearing inherited credentials; inspect token and basic-auth leakage across the execution boundary"
+noise_tier = "normal"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "(?s)Command::new\\s*\\([^;]{0,960}?\\.envs\\s*\\(",
+]
+suppress_patterns = [
+  "(?s)\\.env_(?:clear|remove)\\s*\\(",
+]
+snippet_before = 2
+snippet_after = 20
+label = "child environment inherits parent credentials unless explicitly cleared"
+
+[[matcher]]
+slug = "rust-shell-command-execution"
+description = "Rust launches a shell interpreter; dynamic arguments can become shell injection"
+noise_tier = "normal"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "(?i)Command::new\\s*\\(\\s*[\"'](?:sh|bash|zsh|cmd(?:\\.exe)?|powershell(?:\\.exe)?)[\"']\\s*\\)\\s*\\.arg\\s*\\(\\s*[\"'](?:-c|/c|/command)[\"']",
+]
+snippet_after = 8
+label = "shell interpreter launched via Command"
+
+[[matcher]]
+slug = "rust-jwt-validation-boundary"
+description = "Rust JWT validation boundary; inspect issuer, audience, expiry, algorithms, and claims"
+noise_tier = "normal"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "\\bdecode\\s*::\\s*<[^>]+>\\s*\\(",
+]
+require_content = ["jsonwebtoken"]
+snippet_before = 24
+snippet_after = 12
+label = "JWT decode/validation boundary"
+
+[[matcher]]
+slug = "rust-jwt-validation-disabled"
+description = "Rust JWT validation explicitly disables expiry, audience, or not-before checks"
+noise_tier = "precise"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "\\bvalidation\\.(?:validate_exp|validate_aud|validate_nbf)\\s*=\\s*false\\b",
+  "\\bValidation::default\\s*\\(\\s*\\)",
+]
+require_content = ["jsonwebtoken"]
+snippet_after = 8
+label = "JWT validation check disabled/defaulted"
+
+[[matcher]]
+slug = "rust-jwt-untrusted-algorithm"
+description = "Rust JWT validation accepts the unsigned none algorithm"
+noise_tier = "precise"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "\\bAlgorithm::None\\b",
+  "[\"']none[\"']\\s*\\.parse\\s*::<\\s*Algorithm",
+]
+require_content = ["jsonwebtoken"]
+snippet_after = 8
+label = "unsigned JWT algorithm accepted"
+
+[[matcher]]
+slug = "rust-jwks-refresh-boundary"
+description = "Remote JWKS refresh boundary; inspect kid selection, cache, rotation, and request amplification controls"
+noise_tier = "normal"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "\\.json\\s*::\\s*<\\s*JwkSet\\s*>\\s*\\(",
+]
+require_content = ["JwkSet"]
+snippet_before = 28
+snippet_after = 8
+label = "remote JWKS refresh"
+
+[[matcher]]
+slug = "rust-reqwest-dynamic-url"
+description = "Reqwest sends a request to a variable URL; inspect origin allowlisting, redirects, and sensitive headers"
+noise_tier = "normal"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "\\.(?:get|post|put|delete|patch)\\s*\\(\\s*&?(?:url|uri|target|endpoint|request_url|requestUrl)\\b",
+  "\\.request\\s*\\(\\s*[^,]+,\\s*&?(?:url|uri|target|endpoint|request_url|requestUrl)\\b",
+]
+require_content = ["reqwest"]
+snippet_before = 16
+snippet_after = 12
+label = "Reqwest dynamic URL boundary"
+
+[[matcher]]
+slug = "rust-reqwest-ssrf"
+description = "Reqwest request uses a request/query field directly as its URL"
+noise_tier = "normal"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "\\.(?:get|post|put|delete|patch)\\s*\\(\\s*(?:request|req|query|params)\\.[A-Za-z_][A-Za-z0-9_]*\\s*\\)",
+]
+require_content = ["reqwest"]
+snippet_before = 12
+snippet_after = 8
+label = "Reqwest URL directly from request data"
+
+[[matcher]]
+slug = "rust-reqwest-client-boundary"
+description = "Reqwest client construction; inspect timeout, redirect, HTTPS, and proxy policy"
+noise_tier = "noisy"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "\\breqwest::Client::builder\\s*\\(\\s*\\)",
+]
+require_content = ["reqwest"]
+snippet_after = 14
+label = "Reqwest client policy boundary"
+
+[[matcher]]
+slug = "rust-proxy-credential-injection"
+description = "Credential is injected into an outbound HTTP header; inspect route policy and response redaction"
+noise_tier = "normal"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "HeaderValue::from_str\\s*\\(\\s*&?format!\\s*\\([^\\n]*(?:secret|token|credential)",
+  "\\.(?:bearer_auth|basic_auth)\\s*\\(\\s*(?:token|secret|credential)\\b",
+]
+require_content = ["reqwest"]
+snippet_before = 16
+snippet_after = 18
+label = "credential injected into outbound request"
+
+[[matcher]]
+slug = "rust-proxy-request-boundary"
+description = "Rust proxy forwards a variable method and target; inspect method/path/query/header enforcement"
+noise_tier = "normal"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "\\.request\\s*\\(\\s*(?:method|request_method)\\b\\s*,\\s*(?:target|url|uri)\\b",
+]
+require_content = ["reqwest"]
+snippet_before = 24
+snippet_after = 18
+label = "proxy request forwarding boundary"
+
+[[matcher]]
+slug = "rust-proxy-forwards-client-authorization"
+description = "Proxy copies caller-provided Authorization to an upstream; this can cross an authority boundary"
+noise_tier = "normal"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "(?i)\\.header\\s*\\(\\s*(?:AUTHORIZATION|header::AUTHORIZATION)\\s*,\\s*(?:incoming|client|request)_?(?:authorization|auth|token)\\b",
+]
+require_content = ["reqwest"]
+snippet_before = 16
+snippet_after = 12
+label = "client Authorization forwarded to upstream"
+
+[[matcher]]
+slug = "rust-secret-response-boundary"
+description = "Secret-like value is serialized into an HTTP response; inspect authentication, cache controls, and scope"
+noise_tier = "normal"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "\\b(?:Json|json!)\\s*\\(\\s*(?:secrets?|tokens?|credentials?|passwords?)\\b",
+]
+snippet_before = 16
+snippet_after = 8
+label = "secret-like data sent in response"
+
+[[matcher]]
+slug = "rust-secret-log"
+description = "Rust tracing log includes a secret-like value"
+noise_tier = "normal"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "(?is)tracing::(?:trace|debug|info|warn|error)!\\s*\\([^)]{0,512}\\b(?:access_?token|refresh_?token|id_?token|client_?secret|password|credential|secret)\\s*=",
+]
+snippet_after = 4
+label = "secret-like value in tracing log"
+
+[[matcher]]
+slug = "rust-basic-argon2-boundary"
+description = "Argon2 password verification boundary; inspect concurrency and cost controls"
+noise_tier = "normal"
+file_patterns = ["**/*.rs"]
+patterns = [
+  "\\bArgon2::(?:default|new)\\s*\\([^\\n]*\\)\\s*\\.verify_password\\s*\\(",
+]
+require_content = ["argon2"]
+snippet_before = 18
+snippet_after = 10
+label = "Argon2 password verification"
 
 [[matcher]]
 slug = "rust-deserialize-from-str-untrusted"

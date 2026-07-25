@@ -25,6 +25,9 @@ func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 		Use:   "process",
 		Short: "Investigate pending candidates with an AI backend",
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if maxCost <= 0 {
+				return fmt.Errorf("--max-cost-usd must be greater than zero")
+			}
 			ctx, err := loader()
 			if err != nil {
 				return err
@@ -183,7 +186,7 @@ func NewProcessCmd(loader func() (*cli.Context, error)) *cobra.Command {
 	cmd.Flags().StringVar(&filesFrom, "files-from", "", "Direct mode: read file paths from this file (- = stdin)")
 	cmd.Flags().StringVar(&diff, "diff", "", "Direct mode: process only files changed vs this git ref")
 	cmd.Flags().IntVar(&reinvestigate, "reinvestigate", 0, "Wave marker (skip files already analyzed at this marker)")
-	cmd.Flags().Float64Var(&maxCost, "max-cost-usd", 0, "Abort the run when cumulative cost exceeds this USD amount")
+	cmd.Flags().Float64Var(&maxCost, "max-cost-usd", 5.0, "Abort the run when cumulative cost exceeds this USD amount (must be finite and greater than zero)")
 	cmd.Flags().BoolVar(&toolsEnabled, "tools", false, "Enable multi-turn read-only investigation tools")
 	cmd.Flags().IntVar(&maxTurns, "max-turns", 8, "Max model turns per investigation when --tools is enabled")
 	cmd.Flags().BoolVar(&skepticEnabled, "skeptic", false, "Second-pass adversarial review: try to disprove each finding before persisting it")

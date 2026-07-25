@@ -1,6 +1,7 @@
 package core
 
 import (
+	"os"
 	"path/filepath"
 	"sort"
 	"testing"
@@ -22,6 +23,36 @@ func TestEnsureProjectIsIdempotent(t *testing.T) {
 	require.Equal(t, a.ProjectID, b.ProjectID)
 	require.Equal(t, a.CreatedAt, b.CreatedAt)
 	require.Equal(t, "https://github.com/x/r", a.GithubURL)
+}
+
+func TestPersistenceUsesPrivateModesAndRejectsSymlinks(t *testing.T) {
+	r := tempRoot(t)
+	_, err := r.EnsureProject("p", "/tmp/x", "")
+	require.NoError(t, err)
+
+	dataInfo, err := os.Stat(r.Path)
+	require.NoError(t, err)
+	require.Equal(t, os.FileMode(0o700), dataInfo.Mode().Perm())
+	projectDir, err := r.DataDir("p")
+	require.NoError(t, err)
+	projectInfo, err := os.Stat(projectDir)
+	require.NoError(t, err)
+	require.Equal(t, os.FileMode(0o700), projectInfo.Mode().Perm())
+
+	rec := &FileRecord{FilePath: "src/a.ts", ProjectID: "p", Status: StatusPending}
+	require.NoError(t, r.WriteFileRecord(rec))
+	path, err := r.FileRecordPath("p", "src/a.ts")
+	require.NoError(t, err)
+	info, err := os.Stat(path)
+	require.NoError(t, err)
+	require.Equal(t, os.FileMode(0o600), info.Mode().Perm())
+
+	link, err := r.FileRecordPath("p", "src/linked.ts")
+	require.NoError(t, err)
+	require.NoError(t, os.MkdirAll(filepath.Dir(link), 0o700))
+	require.NoError(t, os.Symlink(path, link))
+	_, err = r.ReadFileRecord("p", "src/linked.ts")
+	require.Error(t, err)
 }
 
 func TestReadProjectConfigMissingReturnsNil(t *testing.T) {
@@ -50,6 +81,25 @@ func TestFileRecordRoundtrip(t *testing.T) {
 	require.NotNil(t, back)
 	require.Equal(t, "src/a.ts", back.FilePath)
 	require.Len(t, back.Candidates, 1)
+}
+
+func TestReadFileRecordRedactsLegacySensitiveFields(t *testing.T) {
+	r := tempRoot(t)
+	_, err := r.EnsureProject("p", "/tmp/x", "")
+	require.NoError(t, err)
+	rec := &FileRecord{
+		FilePath: "src/a.ts", ProjectID: "p", Status: StatusPending,
+		Candidates: []CandidateMatch{{VulnSlug: "test", Snippet: "api_key=sk-test-abcdefghijklmnopqrstuvwxyz"}},
+	}
+	require.NoError(t, r.WriteFileRecord(rec))
+	path, err := r.FileRecordPath("p", "src/a.ts")
+	require.NoError(t, err)
+	// Simulate a pre-redaction Deepsec record retained on disk.
+	require.NoError(t, os.WriteFile(path, []byte(`{"filePath":"src/a.ts","projectId":"p","candidates":[{"vulnSlug":"test","snippet":"api_key=sk-test-abcdefghijklmnopqrstuvwxyz"}],"status":"pending"}`), 0o600))
+	got, err := r.ReadFileRecord("p", "src/a.ts")
+	require.NoError(t, err)
+	require.NotContains(t, got.Candidates[0].Snippet, "sk-test-abcdefghijklmnopqrstuvwxyz")
+	require.Contains(t, got.Candidates[0].Snippet, RedactedSecret)
 }
 
 func TestReadFileRecordMissingReturnsNil(t *testing.T) {
@@ -109,6 +159,22 @@ func TestRunMetaLifecycle(t *testing.T) {
 	require.Len(t, runs, 1)
 	require.Equal(t, RunPhaseDone, runs[0].Phase)
 	require.NotEmpty(t, runs[0].CompletedAt)
+}
+
+func TestReadRunMetaRejectsSymlink(t *testing.T) {
+	r := tempRoot(t)
+	_, err := r.EnsureProject("p", "/tmp/x", "")
+	require.NoError(t, err)
+	m := NewRunMeta("p", "20260511000000-aaaa", "/tmp/x", RunTypeScan)
+	require.NoError(t, r.WriteRunMeta(m))
+	p, err := r.RunMetaPath("p", m.RunID)
+	require.NoError(t, err)
+	target := filepath.Join(t.TempDir(), "run.json")
+	require.NoError(t, os.WriteFile(target, []byte("{}"), 0o600))
+	require.NoError(t, os.Remove(p))
+	require.NoError(t, os.Symlink(target, p))
+	_, err = r.ReadRunMeta("p", m.RunID)
+	require.Error(t, err)
 }
 
 func TestCompleteRunMissingReturnsNil(t *testing.T) {

@@ -189,14 +189,22 @@ func buildSourcePatchPrompt(finding PatchFinding) (string, string, error) {
 		Candidates  []core.CandidateMatch `json:"candidates,omitempty"`
 	}{
 		ID: finding.ID, ProjectID: finding.ProjectID, FilePath: finding.FilePath,
-		Index: finding.Index, FileContent: finding.FileContent, Finding: finding.Finding,
-		Candidates: finding.Candidates,
+		Index: finding.Index, FileContent: core.RedactSecrets(finding.FileContent), Finding: core.RedactFinding(finding.Finding),
+		Candidates: redactCandidates(finding.Candidates),
 	}
 	body, err := json.MarshalIndent(payload, "", "  ")
 	if err != nil {
 		return "", "", err
 	}
 	return promptdata.PatcherPrompt(), string(body), nil
+}
+
+func redactCandidates(candidates []core.CandidateMatch) []core.CandidateMatch {
+	out := make([]core.CandidateMatch, len(candidates))
+	for i, candidate := range candidates {
+		out[i] = core.RedactCandidate(candidate)
+	}
+	return out
 }
 
 func BuildPatchFindings(projectID, projectRoot string, records []*core.FileRecord, sinceRun string, severities, slugs []string) ([]PatchFinding, error) {

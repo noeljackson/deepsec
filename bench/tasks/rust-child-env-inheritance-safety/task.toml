@@ -1,0 +1,10 @@
+matcher_only = ["rust-child-process-inherits-credentials"]
+
+[provenance]
+source     = "handcraft"
+added_at   = "2026-07-25"
+reviewer   = "@noeljackson"
+review_due = "2027-07-25"
+
+[labels]
+change_rule = "freeze"

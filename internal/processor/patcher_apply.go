@@ -317,17 +317,17 @@ func writePatchProvenance(opts PatchRunOptions, finding PatchFinding, patch Sour
 	if err != nil {
 		return "", err
 	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	if err := securePatchOutputDir(filepath.Dir(path)); err != nil {
 		return "", err
 	}
 	prov := PatchProvenance{
 		FindingID: finding.ID, ProjectID: opts.ProjectID, FilePath: finding.FilePath,
-		Decision: patch.Decision, Diff: patch.Diff, Rationale: patch.Rationale,
-		Confidence: patch.Confidence, FilesTouched: patch.FilesTouched, Reason: patch.Reason,
+		Decision: patch.Decision, Diff: core.RedactSecrets(patch.Diff), Rationale: core.RedactSecrets(patch.Rationale),
+		Confidence: patch.Confidence, FilesTouched: patch.FilesTouched, Reason: core.RedactSecrets(patch.Reason),
 		Provider: opts.ProviderName, ModelConfig: opts.ModelSettings.AsMap(),
 		Usage: proposal.Usage, CostUSD: proposal.Cost,
-		ValidationCommand: validation.Command, ValidationExitCode: validation.ExitCode,
-		ValidationStdout: validation.Stdout, ValidationStderr: validation.Stderr,
+		ValidationCommand: core.RedactSecrets(validation.Command), ValidationExitCode: validation.ExitCode,
+		ValidationStdout: core.RedactSecrets(validation.Stdout), ValidationStderr: core.RedactSecrets(validation.Stderr),
 		ValidationSkipped: validation.Skipped, Applied: commit != "", Branch: branch, Commit: commit,
 		CreatedAt: opts.Now().UTC().Format(time.RFC3339),
 	}
@@ -338,7 +338,7 @@ func writePatchProvenance(opts PatchRunOptions, finding PatchFinding, patch Sour
 	if err != nil {
 		return "", err
 	}
-	return path, os.WriteFile(path, body, 0o644)
+	return path, writePrivatePatchFile(path, body)
 }
 
 func appendPatchDecision(opts PatchRunOptions, finding PatchFinding, patch SourcePatch, validation validationResult, branch, commit string) error {
@@ -346,15 +346,15 @@ func appendPatchDecision(opts PatchRunOptions, finding PatchFinding, patch Sourc
 	fmt.Fprintf(&b, "## %s finding=%s\n\n", opts.Now().UTC().Format(time.RFC3339), finding.ID)
 	fmt.Fprintf(&b, "- Project: %s\n- File: %s\n- Slug: %s\n- Decision: %s\n", opts.ProjectID, finding.FilePath, finding.Finding.VulnSlug, patch.Decision)
 	if patch.Rationale != "" {
-		fmt.Fprintf(&b, "- Rationale: %s\n", patch.Rationale)
+		fmt.Fprintf(&b, "- Rationale: %s\n", core.RedactSecrets(patch.Rationale))
 	}
 	if patch.Reason != "" {
-		fmt.Fprintf(&b, "- Reason: %s\n", patch.Reason)
+		fmt.Fprintf(&b, "- Reason: %s\n", core.RedactSecrets(patch.Reason))
 	}
 	if validation.Skipped {
 		fmt.Fprintf(&b, "- Validation: skipped\n")
 	} else if validation.Command != "" {
-		fmt.Fprintf(&b, "- Validation: exit=%d command=%q\n", validation.ExitCode, validation.Command)
+		fmt.Fprintf(&b, "- Validation: exit=%d command=%q\n", validation.ExitCode, core.RedactSecrets(validation.Command))
 	}
 	if branch != "" {
 		fmt.Fprintf(&b, "- Branch: %s\n", branch)
@@ -363,13 +363,50 @@ func appendPatchDecision(opts PatchRunOptions, finding PatchFinding, patch Sourc
 		fmt.Fprintf(&b, "- Commit: %s\n", commit)
 	}
 	b.WriteString("\n")
-	f, err := os.OpenFile(opts.DecisionLogPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+	f, err := os.OpenFile(opts.DecisionLogPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
+	if err := os.Chmod(opts.DecisionLogPath, 0o600); err != nil {
+		return err
+	}
 	_, err = f.WriteString(b.String())
 	return err
+}
+
+func securePatchOutputDir(path string) error {
+	if err := os.MkdirAll(path, 0o700); err != nil {
+		return err
+	}
+	info, err := os.Lstat(path)
+	if err != nil {
+		return err
+	}
+	if info.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("refusing symlinked patch output directory: %s", path)
+	}
+	return os.Chmod(path, 0o700)
+}
+
+func writePrivatePatchFile(path string, body []byte) error {
+	if info, err := os.Lstat(path); err == nil && info.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("refusing to overwrite symlinked patch provenance: %s", path)
+	} else if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
+	if err != nil {
+		return err
+	}
+	if _, err := f.Write(body); err != nil {
+		_ = f.Close()
+		return err
+	}
+	if err := f.Close(); err != nil {
+		return err
+	}
+	return os.Chmod(path, 0o600)
 }
 
 func refuseSelfPatch(projectRoot string) error {

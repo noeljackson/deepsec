@@ -80,9 +80,21 @@ func WalkProject(root string) ([]string, error) {
 			return nil
 		}
 		name := d.Name()
+		if d.Type()&fs.ModeSymlink != 0 {
+			// Never follow a project-controlled symlink: scanning its target
+			// could escape the declared project root.
+			return nil
+		}
 		if d.IsDir() {
 			if _, drop := IgnoreDirs[name]; drop {
 				return fs.SkipDir
+			}
+			rel, err := filepath.Rel(root, path)
+			if err == nil && ignorer != nil {
+				rel = filepath.ToSlash(rel)
+				if ignorer.MatchesPath(rel) || ignorer.MatchesPath(rel+"/") {
+					return fs.SkipDir
+				}
 			}
 			return nil
 		}

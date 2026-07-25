@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/noeljackson/deepsec/internal/core"
 	promptdata "github.com/noeljackson/deepsec/internal/processor/prompts"
 )
 
@@ -64,7 +65,7 @@ func ProposeNewMatcher(ctx context.Context, backend AgentBackend, cluster Recall
 		return NewMatcher{}, err
 	}
 	if raw, ok := backend.(PatchJSONBackend); ok {
-		body, _, _, err := raw.ProposePatchJSON(ctx, system, user, NewMatcherSchema)
+		body, _, _, err := raw.ProposePatchJSON(ctx, system, core.RedactSecrets(user), NewMatcherSchema)
 		if err != nil {
 			return NewMatcher{}, err
 		}
@@ -74,10 +75,10 @@ func ProposeNewMatcher(ctx context.Context, backend AgentBackend, cluster Recall
 		ProjectRoot: ".",
 		Files: []InvestigateFile{{
 			Path:    "recall.json",
-			Content: user,
+			Content: core.RedactSecrets(user),
 		}},
 		ProjectInfo:  "bounded recall-proposal: propose one new matcher",
-		PromptAppend: system + "\n\n" + user,
+		PromptAppend: system + "\n\n" + core.RedactSecrets(user),
 		SlugNotes:    []string{cluster.VulnSlug},
 	})
 	if err != nil {

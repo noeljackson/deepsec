@@ -1,0 +1,13 @@
+issues:
+  - id: rust-reqwest-ssrf-001
+    file: src/vulnerable.rs
+    severity: HIGH
+    cwe: CWE-918
+    vulnSlugs: [rust-reqwest-ssrf]
+    location: { startLine: 8, endLine: 8, tolerance: 1 }
+    scanner: { mustEmitCandidate: true }
+decoys:
+  - id: rust-reqwest-configured-origin-safe-twin
+    file: src/safe.rs
+    line: 5
+    forbiddenSlugs: [rust-reqwest-ssrf]

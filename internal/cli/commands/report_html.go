@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -43,13 +42,13 @@ func runHTMLReport(projectID string, records []*core.FileRecord, minSev core.Sev
 		}
 		return rows[i].path < rows[j].path
 	})
-	if err := os.MkdirAll(output, 0o755); err != nil {
+	if err := ensurePrivateDir(output); err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Join(output, "findings"), 0o755); err != nil {
+	if err := ensurePrivateDir(filepath.Join(output, "findings")); err != nil {
 		return err
 	}
-	if err := os.WriteFile(filepath.Join(output, "style.css"), []byte(htmlStyleCSS), 0o644); err != nil {
+	if err := writePrivateFile(filepath.Join(output, "style.css"), []byte(htmlStyleCSS)); err != nil {
 		return err
 	}
 	entries := make([]htmlEntry, 0, len(rows))
@@ -64,17 +63,16 @@ func runHTMLReport(projectID string, records []*core.FileRecord, minSev core.Sev
 	if err != nil {
 		return fmt.Errorf("parse finding template: %w", err)
 	}
-	indexFile, err := os.Create(filepath.Join(output, "index.html"))
-	if err != nil {
-		return err
-	}
-	defer indexFile.Close()
-	if err := indexTmpl.Execute(indexFile, indexData{
+	var index strings.Builder
+	if err := indexTmpl.Execute(&index, indexData{
 		ProjectID:     projectID,
 		TotalFindings: len(entries),
 		Entries:       entries,
 		Counts:        severityCounts(entries),
 	}); err != nil {
+		return err
+	}
+	if err := writePrivateFile(filepath.Join(output, "index.html"), []byte(index.String())); err != nil {
 		return err
 	}
 	for _, e := range entries {
@@ -88,12 +86,11 @@ func runHTMLReport(projectID string, records []*core.FileRecord, minSev core.Sev
 }
 
 func writeFindingPage(tmpl *template.Template, path, projectID string, e htmlEntry) error {
-	f, err := os.Create(path)
-	if err != nil {
+	var body strings.Builder
+	if err := tmpl.Execute(&body, findingData{ProjectID: projectID, Entry: e}); err != nil {
 		return err
 	}
-	defer f.Close()
-	return tmpl.Execute(f, findingData{ProjectID: projectID, Entry: e})
+	return writePrivateFile(path, []byte(body.String()))
 }
 
 type htmlEntry struct {

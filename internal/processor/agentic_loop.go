@@ -10,7 +10,10 @@ import (
 	agenttools "github.com/noeljackson/deepsec/internal/processor/tools"
 )
 
-const reportFindingsToolName = "report_findings"
+const (
+	reportFindingsToolName = "report_findings"
+	maxToolCallsPerTurn    = 8
+)
 
 type toolLoopCall struct {
 	ID   string
@@ -78,14 +81,17 @@ func runAgenticInvestigation(ctx context.Context, batch *InvestigateBatch, clien
 			}
 			if env.Refusal != "" {
 				return &InvestigateOutput{
-					Refusal:    &core.RefusalReport{Refused: true, Reason: env.Refusal},
+					Refusal:    &core.RefusalReport{Refused: true, Reason: core.RedactSecrets(env.Refusal)},
 					Usage:      totalUsage,
 					DurationMs: durationMs,
 					NumTurns:   turn,
 					CostUSD:    totalCost,
 				}, nil
 			}
-			out := buildInvestigateOutput(batch, env, totalUsage, durationMs)
+			out, err := buildInvestigateOutput(batch, env, totalUsage, durationMs)
+			if err != nil {
+				return nil, fmt.Errorf("agentic report_findings: %w", err)
+			}
 			out.NumTurns = turn
 			out.CostUSD = totalCost
 			return out, nil
@@ -102,6 +108,9 @@ func runAgenticInvestigation(ctx context.Context, batch *InvestigateBatch, clien
 			}
 			return refusalOutput(totalUsage, durationMs, turn, totalCost, reason), nil
 		}
+		if len(resp.Calls) > maxToolCallsPerTurn {
+			return refusalOutput(totalUsage, durationMs, turn, totalCost, "tool call cap reached during agentic investigation"), nil
+		}
 
 		results := make([]toolLoopResult, 0, len(resp.Calls))
 		for _, call := range resp.Calls {
@@ -112,14 +121,17 @@ func runAgenticInvestigation(ctx context.Context, batch *InvestigateBatch, clien
 				}
 				if env.Refusal != "" {
 					return &InvestigateOutput{
-						Refusal:    &core.RefusalReport{Refused: true, Reason: env.Refusal},
+						Refusal:    &core.RefusalReport{Refused: true, Reason: core.RedactSecrets(env.Refusal)},
 						Usage:      totalUsage,
 						DurationMs: durationMs,
 						NumTurns:   turn,
 						CostUSD:    totalCost,
 					}, nil
 				}
-				out := buildInvestigateOutput(batch, env, totalUsage, durationMs)
+				out, err := buildInvestigateOutput(batch, env, totalUsage, durationMs)
+				if err != nil {
+					return nil, fmt.Errorf("agentic report_findings: %w", err)
+				}
 				out.NumTurns = turn
 				out.CostUSD = totalCost
 				return out, nil
@@ -135,12 +147,25 @@ func runAgenticInvestigation(ctx context.Context, batch *InvestigateBatch, clien
 			}
 			content, err := tool.Run(ctx, call.Args)
 			if err != nil {
-				results = append(results, toolLoopResult{Call: call, Content: err.Error(), IsError: true})
+				results = append(results, toolLoopResult{Call: call, Content: core.RedactSecrets(err.Error()), IsError: true})
 				continue
 			}
 			results = append(results, toolLoopResult{Call: call, Content: content})
 		}
-		turns = append(turns, toolLoopTurn{Calls: resp.Calls, Results: results})
+		safeCalls := make([]toolLoopCall, len(resp.Calls))
+		for i, call := range resp.Calls {
+			safeCalls[i] = call
+			safeArgs := core.RedactSecrets(string(call.Args))
+			if json.Valid([]byte(safeArgs)) {
+				safeCalls[i].Args = json.RawMessage(safeArgs)
+			} else {
+				safeCalls[i].Args = json.RawMessage("{}")
+			}
+		}
+		for i := range results {
+			results[i].Call = safeCalls[i]
+		}
+		turns = append(turns, toolLoopTurn{Calls: safeCalls, Results: results})
 	}
 
 	return refusalOutput(totalUsage, uint64(time.Since(start).Milliseconds()), maxTurns, totalCost, "max tool turns reached"), nil

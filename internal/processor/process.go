@@ -332,7 +332,7 @@ func appendFindings(rec *core.FileRecord, runID string, findings []ProducedFindi
 			continue
 		}
 		seen[key] = true
-		rec.Findings = append(rec.Findings, core.Finding{
+		finding := core.RedactFinding(core.Finding{
 			Severity:        f.Severity,
 			VulnSlug:        f.VulnSlug,
 			Title:           f.Title,
@@ -342,6 +342,7 @@ func appendFindings(rec *core.FileRecord, runID string, findings []ProducedFindi
 			Confidence:      f.Confidence,
 			ProducedByRunID: runID,
 		})
+		rec.Findings = append(rec.Findings, finding)
 	}
 }
 

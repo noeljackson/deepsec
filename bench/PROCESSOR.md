@@ -176,3 +176,13 @@ JSONL line ordering can race with the model's per-batch dispatch.
 
 Pair `--record` with `--temperature 0` and `--seed N` (OpenAI-compat
 providers) to make the captured run as reproducible as possible.
+
+## Adversarial-source fixtures
+
+`prompt-injection-true-positive` and `false-negative-manipulation` carry
+hostile source comments next to genuine bugs. They lock in Deepsec's local
+security boundary: source remains data, candidate/response persistence is
+redacted, and a reviewed finding is not silently discarded because a comment
+asks for it. Replay fixtures cannot demonstrate that every external model will
+obey the boundary; use them alongside the prompt unit tests and a separately
+approved, bounded provider evaluation when changing models.

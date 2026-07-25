@@ -90,6 +90,33 @@ func TestReadFileTruncatesLargeOutput(t *testing.T) {
 	out, err := ts["read_file"].Run(context.Background(), raw(map[string]any{"path": "big.txt"}))
 	require.NoError(t, err)
 	require.Contains(t, out, "results truncated")
+	require.Contains(t, out, "source truncated at tool byte limit")
+}
+
+func TestReadBoundedFileNeverLoadsBeyondLimit(t *testing.T) {
+	root := t.TempDir()
+	path := filepath.Join(root, "large.txt")
+	require.NoError(t, os.WriteFile(path, []byte(strings.Repeat("x", MaxReadBytes*2)), 0o600))
+	body, truncated, err := readBoundedFile(path, MaxReadBytes)
+	require.NoError(t, err)
+	require.True(t, truncated)
+	require.Len(t, body, MaxReadBytes)
+}
+
+func TestReadFileRejectsSymlinkEscapeAndRedactsOutput(t *testing.T) {
+	root := t.TempDir()
+	outside := filepath.Join(t.TempDir(), "outside.txt")
+	require.NoError(t, os.WriteFile(outside, []byte("API_KEY=sk-test-abcdefghijklmnopqrstuvwxyz\n"), 0o600))
+	require.NoError(t, os.Symlink(outside, filepath.Join(root, "escape.txt")))
+	write(t, root, "src/config.ts", "const API_KEY = 'sk-test-abcdefghijklmnopqrstuvwxyz'\n")
+	ts := ByName(New(root))
+
+	_, err := ts["read_file"].Run(context.Background(), raw(map[string]any{"path": "escape.txt"}))
+	require.Error(t, err)
+	out, err := ts["read_file"].Run(context.Background(), raw(map[string]any{"path": "src/config.ts"}))
+	require.NoError(t, err)
+	require.NotContains(t, out, "sk-test-abcdefghijklmnopqrstuvwxyz")
+	require.Contains(t, out, "[REDACTED]")
 }
 
 func write(t *testing.T, root, rel, body string) {

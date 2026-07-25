@@ -53,3 +53,7 @@ text = """Dockerfile: mutable FROM tags break supply-chain integrity. RUN as roo
 [[highlight]]
 tag = "github-actions"
 text = """GitHub Actions: pull_request_target + checkout of PR head = arbitrary code execution with secrets. Branch protection does not save you here."""
+
+[[highlight]]
+tag = "helm"
+text = """Helm: assess the rendered Kubernetes workload, not values alone. Service account, security context, secret mounts, ingress, and network policy determine the actual boundary."""

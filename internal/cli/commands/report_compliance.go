@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path/filepath"
 	"runtime/debug"
 	"sort"
 	"time"
@@ -380,10 +379,7 @@ func writeComplianceReport(rep *ComplianceReport, path string) error {
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return err
-	}
-	return os.WriteFile(path, body, 0o600)
+	return writePrivateFile(path, body)
 }
 
 // verifyComplianceFile reads, parses, and verifies a compliance
